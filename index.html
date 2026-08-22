@@ -608,7 +608,7 @@
           <div class="about-name">梦语 <span class="about-ver" id="aboutVer"></span></div>
           <p class="about-intro">梦语是一款连接各家大模型接口的多 AI 人物群聊软件，纯浏览器本地运行：和最多 8 位 AI角色在「群聊」聊天，或写下「故事」让它们一起演剧情，记录保存在本机。</p>
           <div class="about-links">
-            <button class="about-btn" id="aboutGithub" title="GitHub（占位）">GitHub</button>
+            <button class="about-btn" id="aboutGithub" title="GitHub 仓库">GitHub</button>
             <button class="about-btn" id="aboutBili" title="哔哩哔哩（占位）">哔哩哔哩</button>
           </div>
         </div>
@@ -1006,8 +1006,11 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.1.1';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.1.2';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.1.2', date:'2026-08-23', title:'GitHub 开源', items:[
+    '「关于」面板的 GitHub 按钮接入开源仓库（https://github.com/mingyuezai0/Dreamchat），点击在新窗口打开'
+  ]},
   { v:'0.1.1', date:'2026-08-23', title:'骰子工具 · 主题开关修复', items:[
     '🎲 骰子工具：可选 4 / 6 / 8 / 12 面并自定义每面内容，投出后可重投 / 取消 / 附消息确认发出',
     '修复黑夜、卷轴风格下 O/N 开关开启态不显示紫色的问题'
@@ -2294,7 +2297,7 @@ document.querySelector('.rail-logo').addEventListener('click', function(){ enter
 $('btnBackPanel').addEventListener('click', function(){ showPanelView('conv'); });
 $('btnBackWorld').addEventListener('click', function(){ showPanelView('conv'); });
 $('btnBackAbout').addEventListener('click', function(){ showPanelView('conv'); });
-$('aboutGithub').addEventListener('click', function(){ showToast('GitHub 主页占位，敬请期待'); });
+$('aboutGithub').addEventListener('click', function(){ window.open('https://github.com/mingyuezai0/Dreamchat','_blank'); });
 $('aboutBili').addEventListener('click', function(){ showToast('哔哩哔哩主页占位，敬请期待'); });
 function renderClList(){
   var box = $('clList');
