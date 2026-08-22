@@ -271,9 +271,11 @@
   .about-name{font-size:19px; font-weight:700; margin-top:12px; letter-spacing:.5px;}
   .about-ver{font-size:13px; font-weight:600; color:#7a5cf0; margin-left:2px;}
   .about-intro{font-size:12px; line-height:1.7; color:var(--muted); margin-top:8px; max-width:250px;}
-  .about-links{display:flex; gap:10px; margin-top:14px;}
-  .about-btn{min-width:96px; padding:8px 0; border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--text); background:#fff;}
+  .about-links{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; width:100%;}
+  .about-btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-width:96px; padding:8px 0; border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--text); background:#fff;}
   .about-btn:hover{border-color:#7a5cf0; color:#7a5cf0;}
+  .about-btn svg{width:15px; height:15px; fill:currentColor; flex-shrink:0;}
+  .about-btn .ab-ico{font-size:15px; line-height:1;}
   .about-sec{padding:14px 4px 4px;}
   .about-sec h4{font-size:13px; color:var(--muted); margin-bottom:12px; font-weight:600;}
   .cl-list{display:flex; flex-direction:column; gap:8px;}
@@ -532,6 +534,7 @@
     </div>
     <div class="rail-grow"></div>
     <div class="rail-dot" id="keyDot" title="全局 API Key 是否已配置"></div>
+    <button id="btnMarket" class="rail-btn" title="集市（暂未开放）">🛍️</button>
     <button id="btnCards" class="rail-btn" title="角色卡库">🃏</button>
     <button id="btnWorlds" class="rail-btn" title="世界书库">📖</button>
     <button id="btnAbout" class="rail-btn" title="关于">ℹ️</button>
@@ -608,8 +611,10 @@
           <div class="about-name">梦语 <span class="about-ver" id="aboutVer"></span></div>
           <p class="about-intro">梦语是一款连接各家大模型接口的多 AI 人物群聊软件，纯浏览器本地运行：和最多 8 位 AI角色在「群聊」聊天，或写下「故事」让它们一起演剧情，记录保存在本机。</p>
           <div class="about-links">
-            <button class="about-btn" id="aboutGithub" title="GitHub 仓库">GitHub</button>
-            <button class="about-btn" id="aboutBili" title="哔哩哔哩主页">哔哩哔哩</button>
+            <button class="about-btn" id="aboutGithub" title="GitHub 仓库"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>GitHub</button>
+            <button class="about-btn" id="aboutBili" title="哔哩哔哩主页"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z"/></svg>哔哩哔哩</button>
+            <button class="about-btn" id="aboutQQ" title="QQ群（暂未开放）"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.395 15.035a40 40 0 0 0-.803-2.264l-1.079-2.695c.001-.032.014-.562.014-.836C19.526 4.632 17.351 0 12 0S4.474 4.632 4.474 9.241c0 .274.013.804.014.836l-1.08 2.695a39 39 0 0 0-.802 2.264c-1.021 3.283-.69 4.643-.438 4.673.54.065 2.103-2.472 2.103-2.472 0 1.469.756 3.387 2.394 4.771-.612.188-1.363.479-1.845.835-.434.32-.379.646-.301.778.343.578 5.883.369 7.482.189 1.6.18 7.14.389 7.483-.189.078-.132.132-.458-.301-.778-.483-.356-1.233-.646-1.846-.836 1.637-1.384 2.393-3.302 2.393-4.771 0 0 1.563 2.537 2.103 2.472.251-.03.581-1.39-.438-4.673"/></svg>QQ群</button>
+            <button class="about-btn" id="aboutSite" title="官方网站（暂未开放）"><span class="ab-ico">🌐</span>官方网站</button>
           </div>
         </div>
         <div class="about-sec">
@@ -1006,8 +1011,13 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.1.3';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.1.4';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.1.4', date:'2026-08-23', title:'导出命名 · 集市 · 关于面板', items:[
+    '导出文件名统一规则：角色卡「梦语-角色卡-角色名」/ 世界书「梦语-世界书-世界书名」/ 记忆转移「梦语-记忆-群聊或故事名」',
+    '主页功能栏新增「集市」入口（暂未开放）',
+    '「关于」面板新增 QQ群、官方网站入口（暂未开放），并为 GitHub / 哔哩哔哩 / QQ群 配上品牌图标'
+  ]},
   { v:'0.1.3', date:'2026-08-23', title:'哔哩哔哩主页接入', items:[
     '「关于」面板的哔哩哔哩按钮接入作者主页，点击在新窗口打开'
   ]},
@@ -2221,7 +2231,7 @@ function exportBackup(){
   var a = document.createElement('a');
   var fname = (cv.name || '群聊').replace(/[\\/:*?"<>|]/g, '_').slice(0, 20);
   a.href = url;
-  a.download = '梦语备份-' + fname + '.json';
+  a.download = '梦语-记忆-' + fname + '.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -2293,6 +2303,7 @@ function showPanelView(v){
   if(v==='worlds') renderWorldPanel();
 }
 function enterMobilePanel(){ if(window.innerWidth <= 780) document.body.classList.remove('chat-open'); }
+$('btnMarket').addEventListener('click', function(){ showToast('集市暂未开放，敬请期待'); });
 $('btnCards').addEventListener('click', function(){ enterMobilePanel(); showPanelView('cards'); });
 $('btnWorlds').addEventListener('click', function(){ enterMobilePanel(); showPanelView('worlds'); });
 $('btnAbout').addEventListener('click', function(){ enterMobilePanel(); showPanelView('about'); });
@@ -2302,6 +2313,8 @@ $('btnBackWorld').addEventListener('click', function(){ showPanelView('conv'); }
 $('btnBackAbout').addEventListener('click', function(){ showPanelView('conv'); });
 $('aboutGithub').addEventListener('click', function(){ window.open('https://github.com/mingyuezai0/Dreamchat','_blank'); });
 $('aboutBili').addEventListener('click', function(){ window.open('https://space.bilibili.com/498726578','_blank'); });
+$('aboutQQ').addEventListener('click', function(){ showToast('QQ群暂未开放，敬请期待'); });
+$('aboutSite').addEventListener('click', function(){ showToast('官方网站暂未开放，敬请期待'); });
 function renderClList(){
   var box = $('clList');
   if(!box) return;
@@ -2407,12 +2420,12 @@ function downloadFile(name, obj){
   setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
 }
 function exportCard(card){
-  downloadFile('角色卡-' + (card.name||'未命名').replace(/[\\/:*?"<>|]/g,'_') + '.json',
+  downloadFile('梦语-角色卡-' + (card.name||'未命名').replace(/[\\/:*?"<>|]/g,'_') + '.json',
     { __mengyu_card__:true, version:1, app:'梦语', card: JSON.parse(JSON.stringify(card)) });
   addNote('已导出角色卡「'+card.name+'」。');
 }
 function exportWorld(w){
-  downloadFile('世界书-' + (w.name||'未命名').replace(/[\\/:*?"<>|]/g,'_') + '.json',
+  downloadFile('梦语-世界书-' + (w.name||'未命名').replace(/[\\/:*?"<>|]/g,'_') + '.json',
     { __mengyu_world__:true, version:1, app:'梦语', world: JSON.parse(JSON.stringify(w)) });
   addNote('已导出世界书「'+w.name+'」。');
 }
