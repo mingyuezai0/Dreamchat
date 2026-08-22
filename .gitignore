@@ -1,0 +1,11 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 日志与临时文件
+*.log
+*.tmp
+
+# 本地备份
+*.bak
