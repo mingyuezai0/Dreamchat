@@ -2,6 +2,14 @@
 
 一个连接 DeepSeek API 的多 AI 人物群聊软件，纯网页版，单文件，浏览器直接打开即可用。
 
+## 开源
+
+本项目已在 GitHub 开源（**MIT 协议**）：
+
+- 仓库：**https://github.com/mingyuezai0/Dreamchat**
+
+欢迎 Star / Issue / PR。
+
 ## 快速开始
 
 1. 双击打开 `index.html`。
