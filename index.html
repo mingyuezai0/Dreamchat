@@ -862,7 +862,7 @@
       <input type="text" id="gsApiBase" placeholder="如 https://api.deepseek.com/v1，留空用全局" autocomplete="off">
       <label>模型名称（可选）</label>
       <input type="text" id="gsModel" placeholder="如 deepseek-v4-flash，留空用全局" autocomplete="off">
-      <p class="hint-text">三项都可单独填，给这个群覆盖全局设置：Key、接口地址、模型名称都留空时才用全局设置。</p>
+      <p class="hint-text">本群填了 API Key 才用自己的 API：此时接口地址 / 模型名称（留空则用全局）一起对本群生效；本群 Key 留空则完全用全局设置。</p>
     </div>
 
     <!-- 记忆转移 -->
@@ -1096,8 +1096,12 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.2.1';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.2.2';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.2.2', date:'2026-08-23', title:'群接口按 Key 门控', items:[
+    '群设置 / 故事设置里的「官方接口网站 / 模型名称」不再单独生效：只有本群填了 API Key 时，它们才随 Key 一起对本群生效；本群 Key 留空则完全用全局设置（Key、接口、模型都用全局的）',
+    '本群填 Key 时自动去除首尾空格，纯空格等同没填、回退全局 Key'
+  ]},
   { v:'0.2.1', date:'2026-08-23', title:'群级接口三件套 · 库操作不打扰', items:[
     '「群设置 → API」更完善：除了 API Key，还能单独填官方接口网站与模型名称，三项都可留空回退全局设置',
     '每个群 / 故事的接口地址、模型名、Key 独立生效：发送、记忆提炼、总结、记忆压缩、费用估算都用本群自己的配置',
@@ -1457,11 +1461,13 @@ function avatarHtml(c){
   if(a.mode==='svg' && a.value) return '<span class="av-svg">'+a.value+'</span>';
   return '<span>'+esc(a.value||'🤖')+'</span>';
 }
-function groupKey(cv){ return (cv && cv.apiKey) || settings.apiKey; }
-/* 本群单独填写的接口地址；没填则用全局地址 */
-function groupBase(cv){ return (cv && cv.apiBase && cv.apiBase.trim()) || settings.apiBase; }
-/* 本群单独填写的模型名称；没填则用全局模型 */
-function groupModel(cv){ return (cv && cv.model && cv.model.trim()) || settings.model; }
+function groupKey(cv){ return ((cv && cv.apiKey) || '').trim() || settings.apiKey; }
+/* 本群是否填了自己的 API Key（填了 Key 才用本群自己的 API 配置，否则完全用全局） */
+function groupHasKey(cv){ return !!((cv && cv.apiKey) || '').trim(); }
+/* 本群单独填写的接口地址：仅当本群填了 Key 时才用它，否则用全局地址 */
+function groupBase(cv){ return groupHasKey(cv) ? ((cv.apiBase && cv.apiBase.trim()) || settings.apiBase) : settings.apiBase; }
+/* 本群单独填写的模型名称：仅当本群填了 Key 时才用它，否则用全局模型 */
+function groupModel(cv){ return groupHasKey(cv) ? ((cv.model && cv.model.trim()) || settings.model) : settings.model; }
 /* 没有有效 Key（空或纯空格）时返回 true（各接口都需要 Key） */
 function missingKey(cv){
   var k = groupKey(cv);
