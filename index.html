@@ -210,10 +210,23 @@
   html[data-theme="dark"] .kw-row{background:#1b1f28;}
   html[data-theme="scroll"] .kw-row{background:#f7f0dc;}
   .kw-head{display:flex; gap:8px; align-items:center;}
-  .kw-head input{flex:1; min-width:0;}
-  .kw-del{flex-shrink:0; width:28px; height:28px; border-radius:8px; color:var(--muted); font-size:13px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center;}
+  .kw-head .kw-key{flex:0 1 150px; min-width:0; max-width:100%; border:1px solid var(--border); border-radius:8px; padding:7px 10px; font-size:13px; background:#fff; color:var(--text); outline:none;}
+  html[data-theme="dark"] .kw-head .kw-key{background:#232833;}
+  html[data-theme="scroll"] .kw-head .kw-key{background:#fbf3e1;}
+  .kw-head .kw-key:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.12);}
+  .kw-detail-btn{flex-shrink:0; height:30px; padding:0 12px; border-radius:8px; font-size:12px; color:var(--muted); border:1px solid var(--border); background:#fff; cursor:pointer;}
+  html[data-theme="dark"] .kw-detail-btn{background:#262b35; color:#c6cdd9;}
+  html[data-theme="scroll"] .kw-detail-btn{background:#efe0ba; color:#6d5c3f;}
+  .kw-detail-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .kw-del{flex-shrink:0; width:28px; height:28px; border-radius:8px; color:var(--muted); font-size:13px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; background:transparent; cursor:pointer;}
   .kw-del:hover{color:var(--danger); border-color:var(--danger); background:#fdecec;}
-  .kw-row .kw-detail{margin-top:8px; background:var(--bg); color:var(--text);}
+  html[data-theme="dark"] .kw-del:hover{background:#3a2729;}
+  html[data-theme="scroll"] .kw-del:hover{background:#f2ddcf;}
+  .kw-detail-wrap{margin-top:8px;}
+  .kw-detail-wrap .kw-detail{width:100%; border:1px solid var(--border); border-radius:8px; padding:7px 10px; font-size:13px; resize:vertical; background:#fff; color:var(--text); outline:none;}
+  html[data-theme="dark"] .kw-detail-wrap .kw-detail{background:#232833;}
+  html[data-theme="scroll"] .kw-detail-wrap .kw-detail{background:#fbf3e1;}
+  .kw-detail-wrap .kw-detail:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.12);}
   .kw-empty{margin:2px 0 0;}
 
   .tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;}
@@ -1118,8 +1131,14 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.2.3';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.2.4';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.2.4', date:'2026-08-24', title:'关键词 UI 优化 · 教程更新 · 风格还原修复', items:[
+    '关键词的「词」输入框改短（最多 20 字），「详情」改为词框右侧的「详情」按钮，点击展开 / 收起，查看和编辑更方便',
+    '关键词相关的输入框在黑夜风格与卷轴风格下的文字不再看不清，配色统一适配两种风格',
+    '修复：切换风格后不点「保存」就退出设置界面，之前只是预览的风格仍会保留的问题；点遮罩退出也会还原回已保存的风格',
+    '黑板的功能教程内容已随新功能更新；以后功能有较大更新时会同步刷新教程（老用户也会补收到一次新教程）'
+  ]},
   { v:'0.2.3', date:'2026-08-24', title:'关键词 · 防遗忘', items:[
     'AI 角色与世界观都能单独添加「关键词」：每个关键词可点击添加并编写详情，角色卡与世界书里也能编辑',
     '有人提到某角色的关键词时，该角色会先查看关键词详情，再按剧情需要选择性作出反应',
@@ -1284,10 +1303,12 @@ var board = [];
 var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
+// 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
+var BOARD_TUT_VERSION = 2;
 var BOARD_TUTORIAL = [
-  { color:'c0', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、设群名头像与世界观、单独配 API。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数小工具。\n· 每条消息下可「编辑 / 复制 / 重置」。' },
-  { color:'c1', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「总结」压缩上下文。\n· 故事自带一位「NPC角色」：剧情需要路人时它会自己登场。\n· 旁白单独成块显示在消息之间，只能复制。' },
-  { color:'c2', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 点某条会话进入聊天；手机上点左上「⟵ 返回」回主页。' }
+  { color:'c0', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词；开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数小工具；每条消息可「编辑 / 复制 / 重置」。' },
+  { color:'c1', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 故事自带一位「NPC角色」：剧情需要路人时它会自己登场，编辑里能看它按角色分开的记忆。\n· 旁白单独成块显示在消息之间，只能复制。' },
+  { color:'c2', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。' }
 ];
 var panelView = 'conv';
 var libMode = 'card';
@@ -1456,14 +1477,14 @@ function load(){
   try{ board = boardRaw === null ? null : JSON.parse(boardRaw); }catch(e){ board = null; }
   if(!Array.isArray(board)) board = [];
   var tutShown = false;
-  try{ tutShown = localStorage.getItem(LS.boardTut) === '1'; }catch(e){}
+  try{ tutShown = localStorage.getItem(LS.boardTut) === String(BOARD_TUT_VERSION); }catch(e){}
   if(!tutShown){
-    // 首次（或还没收到过的用户，含老用户）补三条「功能教程」便签：拼到已有便签后面；删掉后不再出现
+    // 首次打开、或教程内容升级后（BOARD_TUT_VERSION 变化）补「功能教程」便签：拼到已有便签后面；删掉后不再出现
     var tut = BOARD_TUTORIAL.map(function(t, i){
       return { id: seq++, text: t.text, color: t.color, ts: Date.now() };
     });
     board = board.concat(tut);
-    try{ localStorage.setItem(LS.boardTut, '1'); }catch(e){}
+    try{ localStorage.setItem(LS.boardTut, String(BOARD_TUT_VERSION)); }catch(e){}
     boardColorIdx = board.length;
     save();
   }
@@ -3482,10 +3503,13 @@ var editKwDraft = [], gsKwDraft = [], libKwDraft = [];
 function kwRowHtml(k){
   return '<div class="kw-row">' +
     '<div class="kw-head">' +
-      '<input class="kw-key" maxlength="30" placeholder="关键词，如：红宝石戒指" value="'+esc(k.key||'')+'">' +
-      '<button class="kw-del" title="删除这个关键词">✕</button>' +
+      '<input type="text" class="kw-key" maxlength="20" placeholder="关键词" value="'+esc(k.key||'')+'">' +
+      '<button type="button" class="kw-detail-btn" title="查看或编辑详情">详情</button>' +
+      '<button type="button" class="kw-del" title="删除这个关键词">✕</button>' +
     '</div>' +
-    '<textarea class="kw-detail" rows="2" placeholder="详情：有人提到这个关键词时，会看到这段内容…">'+esc(k.detail||'')+'</textarea>' +
+    '<div class="kw-detail-wrap' + (k._open ? '' : ' hidden') + '">' +
+      '<textarea class="kw-detail" rows="3" placeholder="详情：有人提到这个关键词时，会看到这段内容…">'+esc(k.detail||'')+'</textarea>' +
+    '</div>' +
   '</div>';
 }
 function renderKwBox(box, list){
@@ -3495,6 +3519,23 @@ function renderKwBox(box, list){
 }
 function bindKwEditor(box, getList, addBtn){
   box.addEventListener('click', function(e){
+    var db = e.target.closest('.kw-detail-btn');
+    if(db){
+      var row = db.closest('.kw-row');
+      if(!row) return;
+      var list = getList();
+      var rows = box.querySelectorAll('.kw-row');
+      var i = Array.prototype.indexOf.call(rows, row);
+      if(i < 0 || !list[i]) return;
+      list[i]._open = !list[i]._open;
+      var wasOpen = list[i]._open;
+      renderKwBox(box, list);
+      if(wasOpen){
+        var rows2 = box.querySelectorAll('.kw-row');
+        if(rows2[i]){ var ta = rows2[i].querySelector('.kw-detail'); if(ta) ta.focus(); }
+      }
+      return;
+    }
     var del = e.target.closest('.kw-del');
     if(!del) return;
     var row = del.closest('.kw-row');
@@ -3532,7 +3573,9 @@ function kwDraftFrom(list){
   return (list || []).map(function(k){ return { id:k.id, key:k.key||'', detail:k.detail||'' }; });
 }
 function kwDraftCommit(list){
-  return list.filter(function(k){ return !!(k.key && k.key.trim()); });
+  return list.filter(function(k){ return !!(k.key && k.key.trim()); }).map(function(k){
+    return { id:k.id, key:k.key, detail:k.detail };
+  });
 }
 function normalizeKw(list){
   if(!Array.isArray(list)) return [];
@@ -3903,6 +3946,7 @@ document.querySelectorAll('.modal-overlay').forEach(function(ov){
     if(e.target === ov){
       if(ov.id === 'confirmModal') resetConfirm();
       else ov.classList.add('hidden');
+      if(ov.id === 'settingsModal') applyTheme(settings.theme);   // 未保存的风格预览，点遮罩退出时还原已保存主题
     }
   });
 });
