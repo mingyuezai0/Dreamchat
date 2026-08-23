@@ -64,7 +64,8 @@
   .back-btn{display:none; margin-right:2px; color:var(--muted); font-size:18px; padding:4px 8px; border-radius:8px;}
   .back-btn:hover{background:#eef0f5; color:var(--text);}
   .header-actions{display:flex; gap:6px; flex-shrink:0;}
-  .text-btn{font-size:15px; color:var(--muted); padding:8px 14px; border-radius:10px;}
+  .text-btn{font-size:15px; color:var(--muted); padding:8px 14px; border-radius:10px; display:inline-flex; align-items:center; gap:6px;}
+  .text-btn svg{width:16px; height:16px; flex-shrink:0;}
   .text-btn:hover{background:#eef0f5; color:var(--text);}
 
   .msg-list{flex:1; overflow-y:auto; padding:20px 22px;}
@@ -121,6 +122,7 @@
   .fab-menu{background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:0 10px 28px rgba(31,36,48,.16); padding:6px; display:flex; flex-direction:column; gap:2px;}
   .fab-menu.hidden{display:none;}
   .fab-item{display:flex; align-items:center; gap:8px; width:100%; min-width:120px; padding:9px 12px; border-radius:10px; font-size:13px; color:var(--text); text-align:left;}
+  .fab-item svg{width:16px; height:16px; flex-shrink:0; color:var(--muted);}
   .fab-item:hover{background:var(--main); color:var(--accent);}
   .fab-item:active{transform:scale(.98);}
 
@@ -208,9 +210,12 @@
   .avatar-editor .tabs{margin-bottom:10px;}
   .avatar-editor .tabs button{font-size:12px; padding:5px 12px;}
   .emoji-grid{display:grid; grid-template-columns:repeat(8,1fr); gap:4px;}
-  .emoji-grid button{font-size:20px; height:34px; border-radius:8px;}
+  .emoji-grid button{font-size:20px; height:34px; border-radius:8px; padding:0; display:flex; align-items:center; justify-content:center;}
+  .emoji-grid button .av-svg{width:30px; height:30px;}
   .emoji-grid button:hover{background:#f0f2f7;}
   .emoji-grid button.selected{background:#e3e9ff; outline:2px solid var(--accent);}
+  .av-svg{display:flex; width:100%; height:100%; align-items:center; justify-content:center; overflow:hidden;}
+  .av-svg svg{width:100%; height:100%; display:block;}
   .tabpane.hidden{display:none;}
   .avatar-preview{display:flex; align-items:center; justify-content:center; margin-top:12px;}
   .avatar-preview .char-avatar{width:56px; height:56px; font-size:28px;}
@@ -360,6 +365,7 @@
     .bubble{max-width:84%;}
     .fab{right:12px; margin-bottom:8px;}
     .fab-item{min-height:42px; font-size:14px;}
+    .fab-item svg{width:18px; height:18px;}
     body:not(.chat-open) .fab{display:none;}   /* 手机端主页不显示聊天区「＋」，只在聊天里显示 */
   }
 
@@ -686,7 +692,7 @@
       </div>
       <div class="header-actions">
         <button id="btnSummary" class="text-btn" title="压缩上下文：把较早的对话总结成要点，防止角色因上下文过长而遗忘设定">总结【上下文】</button>
-        <button id="btnGroupSettings" class="text-btn" title="本群设置：AI成员 / 世界观 / 玩家设定 / API / 记忆转移 / 清空·删除">⚙ 群设置</button>
+        <button id="btnGroupSettings" class="text-btn" title="本群设置：AI成员 / 世界观 / 玩家设定 / API / 记忆转移 / 清空·删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>群设置</button>
       </div>
     </header>
     <div id="msgList" class="msg-list"></div>
@@ -706,10 +712,10 @@
       </div>
       <div class="fab" id="fabWrap">
         <div class="fab-menu hidden" id="fabMenu">
-          <button class="fab-item" data-act="search">🔍 搜索</button>
-          <button class="fab-item" data-act="dice">🎲 骰子</button>
-          <button class="fab-item" data-act="cost">📊 费用</button>
-          <button class="fab-item" data-act="len">📏 字数</button>
+          <button class="fab-item" data-act="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>搜索</button>
+          <button class="fab-item" data-act="dice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8" cy="8" r="1"/><circle cx="16" cy="8" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/></svg>骰子</button>
+          <button class="fab-item" data-act="cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>费用</button>
+          <button class="fab-item" data-act="len"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>字数</button>
         </div>
         <button id="btnMore" class="fab-btn" title="更多工具">
           <svg id="morePlus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -797,7 +803,7 @@
       <label id="gsAvLabel">群聊头像</label>
       <div class="avatar-editor">
         <div class="tabs" id="gsAvTabs">
-          <button data-tab="emoji" class="active">Emoji</button>
+          <button data-tab="emoji" class="active">二次元</button>
           <button data-tab="upload">上传图片</button>
         </div>
         <div class="tabpane" data-pane="emoji">
@@ -907,7 +913,7 @@
     <label>头像</label>
     <div class="avatar-editor">
       <div class="tabs" id="avatarTabs">
-        <button data-tab="emoji" class="active">Emoji</button>
+        <button data-tab="emoji" class="active">二次元</button>
         <button data-tab="upload">上传图片</button>
       </div>
       <div class="tabpane" data-pane="emoji">
@@ -941,7 +947,7 @@
     <label>头像（展示主体）</label>
     <div class="avatar-editor">
       <div class="tabs" id="libAvTabs">
-        <button data-tab="emoji" class="active">Emoji</button>
+        <button data-tab="emoji" class="active">二次元</button>
         <button data-tab="upload">上传图片</button>
       </div>
       <div class="tabpane" data-pane="emoji">
@@ -1055,8 +1061,13 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.1.6';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.1.7';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.1.7', date:'2026-08-23', title:'二次元头像 · 小工具图标统一', items:[
+    '自带头像从 emoji 全部换成二次元风格：新建群聊 / 故事 / 成员的默认头像固定为动漫头像，头像面板可选 16 种二次元头像',
+    '聊天右下角「＋」里的小工具（搜索 / 骰子 / 费用 / 字数）图标换成描线风格，与主页图标统一',
+    '「⚙ 群设置 / 故事设置」的齿轮图标换成与主页设置一致的描线图标'
+  ]},
   { v:'0.1.6', date:'2026-08-23', title:'加号图标 · 界面设置 · NPC角色 · 黑板', items:[
     '「＋ / ×」加号图标、新建 / 创建 / 添加按钮统一换成描线风格图标',
     '界面设置新增「选择对话」开关：开启后「下轮对话」人物条隐藏头像，只显示名字',
@@ -1097,18 +1108,68 @@ var LEN_TIERS = [30,50,70,100,150,200];   // 回复字数额设档位
 var SENT_PUNCT = ['。','！','？','…','\n','"','”'];   // 句子结尾标点：截断时尽量收在完整句子末尾
 var DICE_FACE_SETS = [4,6,8,12];   // 骰子可选面数
 var DICE_DEFAULT_FACES = 6;        // 骰子默认面数
-var EMOJIS = ['🤖','😺','🦊','🐼','🐰','🐯','🦁','🐸','🐙','🦄','🐧','🐨','🐻','🦖','😎','🤠','🧙','🦸','🐳','🌸','🍀','⚡','🎭','🌙'];
 var DEFAULT_PERSONA = '你是一位在「梦语」群聊里随和的AI人物，说话自然、友好，像真人一样参与聊天。';
+/* --- 内联 SVG 二次元头像（自带头像从 emoji 全部换成动漫风） --- */
+var F_BOB = 'M40 13 C23 13 14 23 14 37 C14 45 18 51 24 53 C26 53 27 50 26 47 L26 40 C26 36 29 34 33 35 L33 40 L38 40 L38 35 L42 35 L42 40 L47 40 L47 35 C51 34 54 36 54 40 L54 47 C53 50 54 53 56 53 C62 51 66 45 66 37 C66 23 57 13 40 13 Z';
+var F_SHORT = 'M40 13 C23 13 14 23 14 37 C14 41 16 44 20 45 L22 45 L22 39 C22 36 25 34 28 35 L28 40 L33 40 L33 35 L38 35 L38 40 L42 40 L42 35 L47 35 L47 40 L52 40 L52 35 C55 34 58 36 58 39 L58 45 L60 45 C64 44 66 41 66 37 C66 23 57 13 40 13 Z';
+function avSvg(o){
+  var H = o.hair;
+  var back = o.long ? '<ellipse cx="17" cy="52" rx="7" ry="15" fill="'+H+'"/><ellipse cx="63" cy="52" rx="7" ry="15" fill="'+H+'"/>'
+            : o.twin ? '<circle cx="15" cy="50" r="10" fill="'+H+'"/><circle cx="65" cy="50" r="10" fill="'+H+'"/>' : '';
+  var top = o.top || '';
+  if(o.ahoge) top += '<path d="M45 12 C47 4 54 4 54 8" stroke="'+H+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+  if(o.ears) top += '<path d="M22 24 L28 8 L38 20 Z" fill="'+H+'"/><path d="M58 24 L52 8 L42 20 Z" fill="'+H+'"/><path d="M25 23 L29 13 L35 21 Z" fill="#ffb3c6" opacity=".55"/><path d="M55 23 L51 13 L45 21 Z" fill="#ffb3c6" opacity=".55"/>';
+  if(o.bun) top += '<ellipse cx="40" cy="14" rx="6" ry="5.5" fill="'+H+'"/><ellipse cx="40" cy="21" rx="9" ry="3" fill="'+H+'"/>';
+  if(o.tie) top += '<circle cx="15" cy="40" r="3.4" fill="'+o.tie+'"/><circle cx="65" cy="40" r="3.4" fill="'+o.tie+'"/>';
+  if(o.band) top += '<path d="M24 31 C30 27 50 27 56 31 L56 35 C50 31 30 31 24 35 Z" fill="'+o.band+'"/>';
+  return '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect width="80" height="80" rx="40" fill="'+o.bg+'"/>' + back +
+    '<circle cx="40" cy="45" r="25" fill="#ffe4cf"/>' +
+    '<ellipse cx="26" cy="47" rx="2.6" ry="3.8" fill="#ffd0b0"/><ellipse cx="54" cy="47" rx="2.6" ry="3.8" fill="#ffd0b0"/>' +
+    '<ellipse cx="32" cy="49" rx="4.2" ry="5.2" fill="'+o.eye+'"/><ellipse cx="48" cy="49" rx="4.2" ry="5.2" fill="'+o.eye+'"/>' +
+    '<circle cx="33.7" cy="46.8" r="1.6" fill="#fff"/><circle cx="49.7" cy="46.8" r="1.6" fill="#fff"/>' +
+    '<circle cx="30.2" cy="50.8" r="1" fill="#fff" opacity=".85"/><circle cx="46.2" cy="50.8" r="1" fill="#fff" opacity=".85"/>' +
+    '<path d="M27 37 Q32 35 37 37" stroke="'+o.brow+'" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+    '<path d="M43 37 Q48 35 53 37" stroke="'+o.brow+'" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+    '<path d="M35 57 Q40 60 45 57" stroke="#d9776b" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+    '<ellipse cx="26.5" cy="54" rx="3.4" ry="2" fill="#ffb3c6" opacity=".6"/><ellipse cx="53.5" cy="54" rx="3.4" ry="2" fill="#ffb3c6" opacity=".6"/>' +
+    '<path d="'+(o.front||F_BOB)+'" fill="'+H+'"/>' + top +
+    '</svg>';
+}
+var ANIME_AVS = [
+  avSvg({bg:'#ffe3ec', hair:'#f2913d', brow:'#c96f26', eye:'#5c3a99', long:true, ahoge:true}),
+  avSvg({bg:'#e3ecff', hair:'#3b2b2b', brow:'#2a1f1f', eye:'#7a4e2b'}),
+  avSvg({bg:'#ffe0f0', hair:'#ff9ec4', brow:'#d97a9e', eye:'#3b6ea5', twin:true, tie:'#e86a8e'}),
+  avSvg({bg:'#fff4d6', hair:'#ffd97a', brow:'#d9a94a', eye:'#2e7d4f', long:true}),
+  avSvg({bg:'#ece4ff', hair:'#b08cf7', brow:'#8a67c9', eye:'#a05ce0', ears:true}),
+  avSvg({bg:'#e0f0ff', hair:'#6aa7ff', brow:'#4a7fc9', eye:'#33385e', long:true}),
+  avSvg({bg:'#e4f7e0', hair:'#7ecb6b', brow:'#5aa04f', eye:'#2f6b3a', ahoge:true, front:F_SHORT}),
+  avSvg({bg:'#ffe4de', hair:'#e0554f', brow:'#b83c36', eye:'#7a2e2e', twin:true, tie:'#ffd7d0'}),
+  avSvg({bg:'#eef0f4', hair:'#c9ccd6', brow:'#9aa0ad', eye:'#4a4f63', long:true}),
+  avSvg({bg:'#f6e7d4', hair:'#8a5a33', brow:'#6b4426', eye:'#3b3b3b', band:'#e0554f'}),
+  avSvg({bg:'#e6e9f2', hair:'#2e2e36', brow:'#22222a', eye:'#8a6b2e', ears:true}),
+  avSvg({bg:'#e3f6fb', hair:'#7fd0e8', brow:'#5aa7bd', eye:'#2e6b8a', twin:true, tie:'#4aa7c9'}),
+  avSvg({bg:'#f2e9dc', hair:'#a97a4a', brow:'#8a5f34', eye:'#5c5c5c'}),
+  avSvg({bg:'#e6f7ef', hair:'#6fd6b0', brow:'#4fa88a', eye:'#2f6b5c', bun:true}),
+  avSvg({bg:'#fff4f0', hair:'#f2e6d8', brow:'#c9b8a3', eye:'#4a5c8a', twin:true, tie:'#ecc2cd'}),
+  avSvg({bg:'#ffe4ec', hair:'#e86a8e', brow:'#c24e70', eye:'#5c2e3b', ahoge:true})
+];
+var AV_NAMES = ['橙发少女','黑发短发','粉发双马尾','金发长直','紫发猫耳','蓝发中长','绿发呆毛','红发双马尾','银发长直','茶棕发带','墨黑猫耳','天蓝双马尾','奶咖短发','薄荷盘发','奶油双马尾','玫红刘海'];
+var DEFAULT_AV = { mode:'svg', value:ANIME_AVS[0] };   // 新建群聊/故事/成员/角色的固定默认头像
 var AUTO_NAMES = ['小智','小美','阿豪','小雨','小云','小星','阿枫','小梦'];
-var AUTO_EMOJIS = ['🤖','🦊','🐼','🌧','☁️','⭐','🐺','🌙'];
 var DEFAULT_CHARS = [
-  { name:'小智', avatar:{mode:'emoji',value:'🤖'}, persona:'你是「小智」，一位好奇心旺盛的科学家，喜欢用通俗的话解释复杂的事物，偶尔冒出几个冷知识。', present:true, memory:'' },
-  { name:'小美', avatar:{mode:'emoji',value:'🦊'}, persona:'你是「小美」，一位温柔细心的生活顾问，说话体贴、乐于关心别人，常常给出实用的建议。', present:true, memory:'' },
-  { name:'阿豪', avatar:{mode:'emoji',value:'🐼'}, persona:'你是「阿豪」，一位幽默开朗的运动达人，爱开玩笑，说话轻松活泼，总能活跃气氛。', present:true, memory:'' }
+  { name:'小智', avatar:{mode:'svg', value:ANIME_AVS[1]}, persona:'你是「小智」，一位好奇心旺盛的科学家，喜欢用通俗的话解释复杂的事物，偶尔冒出几个冷知识。', present:true, memory:'' },
+  { name:'小美', avatar:{mode:'svg', value:ANIME_AVS[2]}, persona:'你是「小美」，一位温柔细心的生活顾问，说话体贴、乐于关心别人，常常给出实用的建议。', present:true, memory:'' },
+  { name:'阿豪', avatar:{mode:'svg', value:ANIME_AVS[6]}, persona:'你是「阿豪」，一位幽默开朗的运动达人，爱开玩笑，说话轻松活泼，总能活跃气氛。', present:true, memory:'' }
 ];
 var ICON_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
+var ICON_GEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>';
+var ICON_SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>';
+var ICON_DICE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8" cy="8" r="1"/><circle cx="16" cy="8" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/></svg>';
+var ICON_CHART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>';
+var ICON_LEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>';
 var NPC_NAME = 'NPC角色';
-var NPC_ROLE_AVS = ['🧑','👨','👩','🧓','👵','👨🦱','👩🦰','🧑🦲','👱','👵'];  // 路人头像池，按角色名散列取
+var NPC_ROLE_AVS = ANIME_AVS;  // 路人头像池（复用二次元头像），按角色名散列取
 
 var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null, hideChipAvatar:false };
 var convs = [];
@@ -1118,9 +1179,10 @@ var generating = false;
 var stopFlag = false;
 var activeCtrls = {};
 var msgEls = {};
-var avatarDraft = { mode:'emoji', value:'🤖' };
-var gsAvatarDraft = { mode:'emoji', value:'👥' };
-var libAvatarDraft = { mode:'emoji', value:'🤖' };
+function defaultAvatar(){ return { mode:'svg', value:ANIME_AVS[0] }; }
+var avatarDraft = defaultAvatar();
+var gsAvatarDraft = defaultAvatar();
+var libAvatarDraft = defaultAvatar();
 var editCharId = null;
 var cmTimer = null;
 var cmAction = null;
@@ -1166,7 +1228,7 @@ function assignId(o){
 
 /* ---------- 故事固定 NPC 角色 ---------- */
 function makeNpc(){
-  return { name:NPC_NAME, avatar:{mode:'emoji',value:'🎭'}, isNpc:true, present:true, memory:'',
+  return { name:NPC_NAME, avatar:defaultAvatar(), isNpc:true, present:true, memory:'',
     persona:'你是「NPC角色」，一个专门扮演路人/临时角色的固定 NPC。每当剧情需要路人登场（服务员、老板、小贩、村民、路人甲、敌人……），你就扮演那个角色并临时改用自己的名字出场；没有需要登场的人时，就安静地不抢戏。' };
 }
 function npcChar(cv){ if(!cv) return null; for(var i=0;i<cv.chars.length;i++){ if(cv.chars[i].isNpc) return cv.chars[i]; } return null; }
@@ -1177,7 +1239,7 @@ function ensureNpc(cv){
 function npcRoleAvatar(name){
   var s = 0;
   for(var i=0;i<name.length;i++) s = (s*31 + name.charCodeAt(i)) % 997;
-  return { mode:'emoji', value: NPC_ROLE_AVS[Math.abs(s) % NPC_ROLE_AVS.length] };
+  return { mode:'svg', value: NPC_ROLE_AVS[Math.abs(s) % NPC_ROLE_AVS.length] };
 }
 function msgLabel(m){ return (m && m.npcRole) ? m.npcRole : (m ? m.speaker : ''); }
 function npcSys(cv, c){
@@ -1276,7 +1338,7 @@ function load(){
   if(!Array.isArray(cards)) cards = [];
   cards.forEach(function(c){
     if(typeof c.name !== 'string' || !c.name) c.name = '未命名';
-    if(!c.avatar || typeof c.avatar !== 'object' || !c.avatar.mode) c.avatar = { mode:'emoji', value:'🤖' };
+    if(!c.avatar || typeof c.avatar !== 'object' || !c.avatar.mode) c.avatar = defaultAvatar();
     if(typeof c.persona !== 'string') c.persona = '';
     if(typeof c.memory !== 'string') c.memory = '';
     assignId(c);
@@ -1288,7 +1350,7 @@ function load(){
   if(!Array.isArray(worlds)) worlds = [];
   worlds.forEach(function(w){
     if(typeof w.name !== 'string' || !w.name) w.name = '未命名';
-    if(!w.avatar || typeof w.avatar !== 'object' || !w.avatar.mode) w.avatar = { mode:'emoji', value:'🌍' };
+    if(!w.avatar || typeof w.avatar !== 'object' || !w.avatar.mode) w.avatar = defaultAvatar();
     if(typeof w.world !== 'string') w.world = '';
     assignId(w);
   });
@@ -1305,8 +1367,9 @@ function save(){
 }
 function avatarHtml(c){
   if(!c) return '<span>🤖</span>';
-  var a = c.avatar || {mode:'emoji', value:'🤖'};
+  var a = c.avatar || defaultAvatar();
   if((a.mode==='url' || a.mode==='upload') && a.value) return '<img src="'+esc(a.value)+'" alt="">';
+  if(a.mode==='svg' && a.value) return '<span class="av-svg">'+a.value+'</span>';
   return '<span>'+esc(a.value||'🤖')+'</span>';
 }
 function groupKey(cv){ return cv.apiKey || settings.apiKey; }
@@ -1333,7 +1396,7 @@ function convAvatarInner(cv){
   var ch = null;
   for(var i=0;i<cv.chars.length;i++){ if(cv.chars[i].present){ ch = cv.chars[i]; break; } }
   if(!ch) ch = cv.chars[0];
-  return ch ? avatarHtml(ch) : '<span>👥</span>';
+  return ch ? avatarHtml(ch) : '<span class="av-svg">'+DEFAULT_AV.value+'</span>';
 }
 function convAvatarHtml(cv){
   return '<div class="conv-avatar">'+convAvatarInner(cv)+'</div>';
@@ -1761,7 +1824,7 @@ function renderChatHeader(){
   var present = cv.chars.filter(function(c){ return c.present; });
   $('headerSub').textContent = '成员 '+cv.chars.length+'/'+MAX_MEMBERS+' · 在场：' + (present.length ? present.map(function(c){return c.name;}).join('、') : '（无）');
   updateSummaryBtn();
-  $('btnGroupSettings').textContent = '⚙ ' + settingsLabel(cv);
+  $('btnGroupSettings').innerHTML = ICON_GEAR + settingsLabel(cv);
   $('btnGroupSettings').title = (cv.mode === 'story' ? '本故事设置' : '本群设置') + '：AI成员 / 世界观 / 玩家设定 / API / 记忆转移 / 清空·删除';
   $('keyDot').className = 'rail-dot' + (settings.apiKey ? ' on' : '');
 }
@@ -2290,10 +2353,10 @@ function setGsAvatarTab(tab){
   var panes = document.querySelectorAll('#groupSettingsModal .avatar-editor .tabpane');
   for(var j=0;j<panes.length;j++) panes[j].classList.toggle('hidden', panes[j].dataset.pane !== tab);
 }
-function selectGsEmoji(e){
-  gsAvatarDraft = { mode:'emoji', value:e };
+function selectGsEmoji(i){
+  gsAvatarDraft = { mode:'svg', value:ANIME_AVS[i] };
   var btns = $('gsEmojiGrid').querySelectorAll('button');
-  for(var i=0;i<btns.length;i++) btns[i].classList.toggle('selected', btns[i].dataset.emoji === e);
+  for(var k=0;k<btns.length;k++) btns[k].classList.toggle('selected', parseInt(btns[k].dataset.idx,10) === i);
   updateGsPreview();
 }
 function updateGsPreview(){
@@ -2302,12 +2365,13 @@ function updateGsPreview(){
 function buildGsEmojiGrid(){
   var g = $('gsEmojiGrid');
   g.innerHTML = '';
-  EMOJIS.forEach(function(e){
+  ANIME_AVS.forEach(function(av, i){
     var b = document.createElement('button');
     b.type = 'button';
-    b.textContent = e;
-    b.dataset.emoji = e;
-    b.addEventListener('click', function(){ selectGsEmoji(e); });
+    b.title = AV_NAMES[i];
+    b.dataset.idx = i;
+    b.innerHTML = '<span class="av-svg">'+av+'</span>';
+    b.addEventListener('click', function(){ selectGsEmoji(i); });
     g.appendChild(b);
   });
 }
@@ -2666,7 +2730,7 @@ function importLibFile(file, kind){
         if(!data || data.__mengyu_card__ !== true || !data.card) throw new Error('不是有效的「角色卡」备份文件。');
         var c = data.card;
         if(typeof c.name !== 'string' || !c.name) throw new Error('角色卡缺少名称。');
-        if(!c.avatar || typeof c.avatar !== 'object' || !c.avatar.mode) c.avatar = { mode:'emoji', value:'🤖' };
+        if(!c.avatar || typeof c.avatar !== 'object' || !c.avatar.mode) c.avatar = defaultAvatar();
         if(typeof c.persona !== 'string') c.persona = '';
         c.memory = '';
         c.id = seq++;
@@ -2677,7 +2741,7 @@ function importLibFile(file, kind){
         if(!data || data.__mengyu_world__ !== true || !data.world) throw new Error('不是有效的「世界书」备份文件。');
         var w = data.world;
         if(typeof w.name !== 'string' || !w.name) throw new Error('世界书缺少名称。');
-        if(!w.avatar || typeof w.avatar !== 'object' || !w.avatar.mode) w.avatar = { mode:'emoji', value:'🌍' };
+        if(!w.avatar || typeof w.avatar !== 'object' || !w.avatar.mode) w.avatar = defaultAvatar();
         if(typeof w.world !== 'string') w.world = '';
         w.id = seq++;
         worlds.push(w);
@@ -2696,19 +2760,20 @@ function importLibFile(file, kind){
 function buildLibEmojiGrid(){
   var g = $('libEmojiGrid');
   g.innerHTML = '';
-  EMOJIS.forEach(function(e){
+  ANIME_AVS.forEach(function(av, i){
     var b = document.createElement('button');
     b.type = 'button';
-    b.textContent = e;
-    b.dataset.emoji = e;
-    b.addEventListener('click', function(){ selectLibEmoji(e); });
+    b.title = AV_NAMES[i];
+    b.dataset.idx = i;
+    b.innerHTML = '<span class="av-svg">'+av+'</span>';
+    b.addEventListener('click', function(){ selectLibEmoji(i); });
     g.appendChild(b);
   });
 }
-function selectLibEmoji(e){
-  libAvatarDraft = { mode:'emoji', value:e };
+function selectLibEmoji(i){
+  libAvatarDraft = { mode:'svg', value:ANIME_AVS[i] };
   var btns = $('libEmojiGrid').querySelectorAll('button');
-  for(var i=0;i<btns.length;i++) btns[i].classList.toggle('selected', btns[i].dataset.emoji === e);
+  for(var k=0;k<btns.length;k++) btns[k].classList.toggle('selected', parseInt(btns[k].dataset.idx,10) === i);
   updateLibPreview();
 }
 function setLibAvatarTab(tab){
@@ -2726,9 +2791,9 @@ function openLibEdit(mode, id){
   var item = (libId != null) ? (mode==='card' ? getCard(libId) : getWorld(libId)) : null;
   $('libTitle').textContent = mode==='card' ? '角色卡设定' : '世界书设定';
   $('libName').value = item ? item.name : '';
-  libAvatarDraft = (item && item.avatar && item.avatar.mode) ? { mode:item.avatar.mode, value:item.avatar.value||'' } : { mode:'emoji', value:(mode==='card' ? '🤖' : '🌍') };
-  setLibAvatarTab(libAvatarDraft.mode === 'url' ? 'emoji' : libAvatarDraft.mode);
-  if(libAvatarDraft.mode === 'emoji') selectLibEmoji(libAvatarDraft.value || (mode==='card' ? '🤖' : '🌍'));
+  libAvatarDraft = (item && item.avatar && item.avatar.mode) ? { mode:item.avatar.mode, value:item.avatar.value||'' } : defaultAvatar();
+  setLibAvatarTab((libAvatarDraft.mode === 'upload' || libAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
+  if(libAvatarDraft.mode === 'svg'){ var _i = ANIME_AVS.indexOf(libAvatarDraft.value); if(_i >= 0) selectLibEmoji(_i); }
   $('libFile').value = '';
   updateLibPreview();
   $('libCardFields').classList.toggle('hidden', mode !== 'card');
@@ -2745,7 +2810,7 @@ function closeLib(){ $('libModal').classList.add('hidden'); }
 function saveLib(){
   var name = $('libName').value.trim();
   if(!name){ alert('请填写名称'); return; }
-  if(libAvatarDraft.mode === 'url' && !libAvatarDraft.value) libAvatarDraft.mode = 'emoji';
+  if((libAvatarDraft.mode === 'url' || libAvatarDraft.mode === 'upload') && !libAvatarDraft.value) libAvatarDraft = defaultAvatar();
   var avatar = { mode:libAvatarDraft.mode, value:libAvatarDraft.value };
   if(libMode === 'card'){
     if(libId == null){
@@ -2780,7 +2845,7 @@ $('libAvTabs').addEventListener('click', function(e){
   if(!b) return;
   var tab = b.dataset.tab;
   setLibAvatarTab(tab);
-  if(tab === 'upload' && libAvatarDraft.mode === 'url' && !libAvatarDraft.value) libAvatarDraft = { mode:'upload', value:'' };
+  if(tab === 'upload' && libAvatarDraft.mode !== 'upload' && !libAvatarDraft.value) libAvatarDraft = { mode:'upload', value:'' };
   updateLibPreview();
 });
 $('libFile').addEventListener('change', function(){
@@ -2851,8 +2916,8 @@ $('worldPickList').addEventListener('click', function(e){
   if(!w) return;
   $('gsWorld').value = w.world || '';
   gsAvatarDraft = { mode:w.avatar.mode, value:w.avatar.value };
-  setGsAvatarTab(gsAvatarDraft.mode === 'url' ? 'emoji' : gsAvatarDraft.mode);
-  if(gsAvatarDraft.mode === 'emoji') selectGsEmoji(gsAvatarDraft.value || '👥');
+  setGsAvatarTab((gsAvatarDraft.mode === 'upload' || gsAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
+  if(gsAvatarDraft.mode === 'svg'){ var _i = ANIME_AVS.indexOf(gsAvatarDraft.value); if(_i >= 0) selectGsEmoji(_i); }
   updateGsPreview();
   closeWorldPick();
   addNote('已填入世界书「'+w.name+'」，点「保存」生效。');
@@ -2875,9 +2940,9 @@ function openGroupSettings(tab){
   $('gsPlayer').value = cv.player || '';
   $('gsApiKey').value = cv.apiKey || '';
   $('gsAutoMem').checked = !!cv.autoMemory;
-  gsAvatarDraft = (cv.avatar && cv.avatar.mode) ? { mode:cv.avatar.mode, value:cv.avatar.value||'' } : { mode:'emoji', value:'👥' };
-  setGsAvatarTab(gsAvatarDraft.mode === 'url' ? 'emoji' : gsAvatarDraft.mode);
-  if(gsAvatarDraft.mode === 'emoji') selectGsEmoji(gsAvatarDraft.value || '👥');
+  gsAvatarDraft = (cv.avatar && cv.avatar.mode) ? { mode:cv.avatar.mode, value:cv.avatar.value||'' } : defaultAvatar();
+  setGsAvatarTab((gsAvatarDraft.mode === 'upload' || gsAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
+  if(gsAvatarDraft.mode === 'svg'){ var _i = ANIME_AVS.indexOf(gsAvatarDraft.value); if(_i >= 0) selectGsEmoji(_i); }
   $('gsAvFile').value = '';
   $('gsTransferMsg').textContent = '';
   updateGsPreview();
@@ -2900,7 +2965,7 @@ function saveGroupSettings(){
   cv.player = $('gsPlayer').value.trim();
   cv.apiKey = $('gsApiKey').value.trim();
   cv.autoMemory = $('gsAutoMem').checked;
-  if(gsAvatarDraft.mode === 'url' && !gsAvatarDraft.value) gsAvatarDraft = { mode:'emoji', value:'👥' };
+  if((gsAvatarDraft.mode === 'url' || gsAvatarDraft.mode === 'upload') && !gsAvatarDraft.value) gsAvatarDraft = defaultAvatar();
   cv.avatar = { mode:gsAvatarDraft.mode, value:gsAvatarDraft.value };
   save(); renderConvList(); renderChatHeader(); renderMsgs(); renderChips();
   closeGroupSettings();
@@ -2948,7 +3013,7 @@ $('gsAddChar').addEventListener('click', function(){
   var cv = current();
   if(!cv || cv.chars.length >= MAX_MEMBERS) return;
   var idx = cv.chars.length;
-  var c = { id:seq++, name:AUTO_NAMES[idx]||('AI '+(idx+1)), avatar:{mode:'emoji', value:AUTO_EMOJIS[idx]||'🤖'}, persona:DEFAULT_PERSONA, present:true, memory:'' };
+  var c = { id:seq++, name:AUTO_NAMES[idx]||('AI '+(idx+1)), avatar:{mode:'svg', value:ANIME_AVS[idx % ANIME_AVS.length]}, persona:DEFAULT_PERSONA, present:true, memory:'' };
   cv.chars.push(c);
   save(); renderGroupMembers(); renderChips(); renderConvList();
   openEdit(c);
@@ -2957,7 +3022,7 @@ $('gsAvTabs').addEventListener('click', function(e){
   var b = e.target.closest('button[data-tab]');
   if(!b) return;
   setGsAvatarTab(b.dataset.tab);
-  if(b.dataset.tab === 'upload' && gsAvatarDraft.mode === 'url' && !gsAvatarDraft.value) gsAvatarDraft = { mode:'upload', value:'' };
+  if(b.dataset.tab === 'upload' && gsAvatarDraft.mode !== 'upload' && !gsAvatarDraft.value) gsAvatarDraft = { mode:'upload', value:'' };
   updateGsPreview();
 });
 $('gsAvFile').addEventListener('change', function(){
@@ -2980,20 +3045,21 @@ $('gsApiToggle').addEventListener('click', function(){
 function buildEmojiGrid(){
   var g = $('emojiGrid');
   g.innerHTML = '';
-  EMOJIS.forEach(function(e){
+  ANIME_AVS.forEach(function(av, i){
     var b = document.createElement('button');
     b.type = 'button';
-    b.textContent = e;
-    b.dataset.emoji = e;
-    b.addEventListener('click', function(){ selectEmoji(e); });
+    b.title = AV_NAMES[i];
+    b.dataset.idx = i;
+    b.innerHTML = '<span class="av-svg">'+av+'</span>';
+    b.addEventListener('click', function(){ selectEmoji(i); });
     g.appendChild(b);
   });
 }
-function selectEmoji(e){
-  avatarDraft = { mode:'emoji', value:e };
+function selectEmoji(i){
+  avatarDraft = { mode:'svg', value:ANIME_AVS[i] };
   var g = $('emojiGrid');
   var btns = g.querySelectorAll('button');
-  for(var i=0;i<btns.length;i++) btns[i].classList.toggle('selected', btns[i].dataset.emoji === e);
+  for(var k=0;k<btns.length;k++) btns[k].classList.toggle('selected', parseInt(btns[k].dataset.idx,10) === i);
   updatePreview();
 }
 function setAvatarTab(tab){
@@ -3029,10 +3095,10 @@ function openEdit(c){
   $('emPersona').value = c.persona || '';
   $('emMemory').value = c.memory || '';
   $('emPresent').checked = !!c.present;
-  var mode = (c.avatar && c.avatar.mode) || 'emoji';
-  avatarDraft = { mode:mode, value:(c.avatar && c.avatar.value) || (mode==='emoji' ? '🤖' : '') };
-  setAvatarTab(mode === 'url' ? 'emoji' : mode);
-  if(mode === 'emoji') selectEmoji(avatarDraft.value || '🤖');
+  var mode = (c.avatar && c.avatar.mode) || 'svg';
+  avatarDraft = { mode:mode, value:(c.avatar && c.avatar.value) || (mode==='svg' ? ANIME_AVS[0] : '') };
+  setAvatarTab((mode === 'upload' || mode === 'url') ? 'upload' : 'emoji');
+  if(mode === 'svg'){ var _i = ANIME_AVS.indexOf(avatarDraft.value); if(_i >= 0) selectEmoji(_i); }
   $('emFile').value = '';
   updatePreview();
   $('editModal').classList.remove('hidden');
@@ -3043,7 +3109,7 @@ $('avatarTabs').addEventListener('click', function(e){
   if(!b) return;
   var tab = b.dataset.tab;
   setAvatarTab(tab);
-  if(tab === 'upload' && avatarDraft.mode === 'url' && !avatarDraft.value) avatarDraft = { mode:'upload', value:'' };
+  if(tab === 'upload' && avatarDraft.mode !== 'upload' && !avatarDraft.value) avatarDraft = { mode:'upload', value:'' };
   updatePreview();
 });
 $('emFile').addEventListener('change', function(){
