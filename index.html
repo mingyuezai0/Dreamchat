@@ -232,8 +232,9 @@
   .kw-empty{margin:2px 0 0;}
 
   /* ---------- 关系图 ---------- */
-  #relView{position:fixed; inset:0; z-index:60; background:var(--bg); display:flex; flex-direction:column;}
+  #relView{position:fixed; inset:0; z-index:60; background:rgba(15,20,35,.45); display:flex; align-items:center; justify-content:center; padding:20px;}
   #relView.hidden{display:none;}
+  .rel-window{position:relative; width:min(96vw,960px); height:min(90vh,720px); max-width:100%; max-height:100%; background:var(--bg); border:1px solid var(--border); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.25); display:flex; flex-direction:column; overflow:hidden;}
   .rel-header{display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); flex-shrink:0;}
   .rel-title{flex:1; font-size:16px; font-weight:700; color:var(--text);}
   .rel-canvas{flex:1; position:relative; overflow:hidden; min-height:0;}
@@ -252,6 +253,10 @@
   .rel-edge-label{font-size:12px; fill:var(--muted); text-anchor:middle; stroke:var(--bg); stroke-width:3px; paint-order:stroke; stroke-linejoin:round;}
   .rel-loading{position:absolute; top:12px; left:50%; transform:translateX(-50%); font-size:13px; color:var(--muted); z-index:2;}
   .rel-note{position:absolute; top:12px; left:50%; transform:translateX(-50%); font-size:12px; color:var(--muted); text-align:center; max-width:82%; line-height:1.5; z-index:2;}
+  .rel-av{pointer-events:none;}
+  .rel-av-me{stroke:var(--text); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .rel-node-center .rel-av-me{stroke:#fff;}
+  .rel-node-nm.rel-node-center text{fill:#fff; font-weight:700;}   /* 名字模式下中心文字在 accent 圆上必须白色（同类上两个类，不能用后代选择器） */
 
   .tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;}
   .tabs button{font-size:13px; padding:6px 14px; border-radius:9px; color:var(--muted); background:#f2f4f8;}
@@ -433,6 +438,8 @@
     .msg.on-screen .msg-actions{opacity:1;}
     .msg-actions button{padding:5px 10px; font-size:12px;}
     .bubble .edit-box{min-height:56px;}
+    #relView{padding:0;}
+    .rel-window{width:100vw; height:100vh; border-radius:0; border:none; box-shadow:none;}
     .rel-header{padding:10px 12px;}
     .rel-node text{font-size:13px;}
     .rel-edge-label{font-size:13px;}
@@ -488,6 +495,7 @@
   html[data-theme="dark"] .chip-hint{color:#7d8495;}
   html[data-theme="dark"] .input-row{background:#1e222c;}
   html[data-theme="dark"] .modal-overlay{background:rgba(0,0,0,.6);}
+  html[data-theme="dark"] #relView{background:rgba(0,0,0,.6);}
   html[data-theme="dark"] .modal{background:#1b1e26;}
   html[data-theme="dark"] .modal label{color:#c6cdd9;}
   html[data-theme="dark"] .modal input[type=text], html[data-theme="dark"] .modal input[type=password],
@@ -578,6 +586,7 @@
   html[data-theme="scroll"] .chip-hint{color:#b7a276;}
   html[data-theme="scroll"] .input-row{background:#f9f0dc;}
   html[data-theme="scroll"] .modal-overlay{background:rgba(60,40,20,.5);}
+  html[data-theme="scroll"] #relView{background:rgba(60,40,20,.5);}
   html[data-theme="scroll"] .modal{background:#f5ecd6;}
   html[data-theme="scroll"] .modal label{color:#6d5c3f;}
   html[data-theme="scroll"] .modal input[type=text], html[data-theme="scroll"] .modal input[type=password],
@@ -1153,14 +1162,17 @@
 
 <!-- 关系图（当前群聊/故事的人物关系连线） -->
 <div id="relView" class="hidden">
-  <div class="rel-header">
-    <button class="icon-btn" id="btnBackRel" title="返回">←</button>
-    <span class="rel-title">关系</span>
-    <button id="btnRelAnalyze" class="text-btn">重新分析</button>
+  <div class="rel-window">
+    <div class="rel-header">
+      <button class="icon-btn" id="btnBackRel" title="返回">←</button>
+      <span class="rel-title">关系</span>
+      <button class="icon-btn" id="btnRelMode" title="切换显示方式"></button>
+      <button id="btnRelAnalyze" class="text-btn">重新分析</button>
+    </div>
+    <div class="rel-canvas" id="relCanvas"><svg id="relSvg"></svg></div>
+    <div class="rel-loading hidden" id="relAnalyzing">正在分析人物关系…</div>
+    <div class="rel-note hidden" id="relNote"></div>
   </div>
-  <div class="rel-canvas" id="relCanvas"><svg id="relSvg"></svg></div>
-  <div class="rel-loading hidden" id="relAnalyzing">正在分析人物关系…</div>
-  <div class="rel-note hidden" id="relNote"></div>
 </div>
 
 <script>
@@ -1173,8 +1185,14 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.2.8';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.2.9';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.2.9', date:'2026-08-24', title:'关系图升级 · 大窗口 · 双显示 · 收录路人', items:[
+    '「关系」改为大窗口显示（桌面居中窗口、手机近全屏），点击窗口外的遮罩即可关闭',
+    '关系图支持两种显示方式：圆圈里显示角色头像 + 名字在下方，或圆圈里直接显示角色名字；可在关系窗口里切换、选择会记住，三种风格都保证可读',
+    '除了已设定的角色，NPC 扮演过、或对话里提到过有明显戏份的角色也会出现在关系网图中（由 AI 判断取舍，几乎没剧情的路人不会录入）',
+    '「我」（用户）不管有没有明确关系，都会与每个已设定的角色相连；关系判断不清时显示「关系未知」'
+  ]},
   { v:'0.2.8', date:'2026-08-24', title:'关系图 · 角色关系可视化', items:[
     '群聊 / 故事右下角「＋」新增「关系」：进入新界面查看当前群聊 / 故事里角色之间的人物关系网络',
     '人物关系由 AI 根据对话自动分析（敌人、兄弟、师徒等），没有交集或关系不明的人物不会相连',
@@ -1338,13 +1356,16 @@ var ICON_DICE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 var ICON_CHART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>';
 var ICON_LEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>';
 var ICON_REL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';   // 关系（三个圆点 + 连线）
+var ICON_REL_TYPE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>';   // 切换为名字显示（Aa）
+var ICON_REL_AV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';   // 切换为头像显示（人物）
+var ICON_ME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="rel-av-me" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle class="rel-av-me" cx="12" cy="7" r="4"/></svg>';   // 关系图「我」的头像（描线人物）
 var ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14"/><path d="M5 14l1-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4l1 3z"/></svg>';
 var AV_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';   // 群聊默认头像：两个人形（描边）
 var AV_STORY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v13"/><path d="M3 18a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/><path d="M17.5 3.5l3.5 3.5"/><path d="M14.5 6.5l3 3"/></svg>';   // 故事默认头像：一本书 + 一支笔（描边）
 var NPC_NAME = 'NPC角色';
 var NPC_ROLE_AVS = ANIME_AVS;  // 路人头像池（复用二次元头像），按角色名散列取
 
-var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null, hideChipAvatar:false };
+var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null, hideChipAvatar:false, relMode:'avatar' };
 var convs = [];
 var activeId = null;
 var seq = 1;
@@ -1369,9 +1390,9 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 6;
+var BOARD_TUT_VERSION = 7;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词；开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「编辑 / 复制 / 重置」。「关系图」能自动分析成员间的人物关系，点角色可切换关系中心。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词；开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「编辑 / 复制 / 重置」。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
   { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 故事自带一位「NPC角色」：剧情需要路人时它会自己登场（路人名不会和已设定成员重名），编辑里能看它按角色分开的记忆。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
   { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
 ];
@@ -1490,6 +1511,7 @@ function load(){
   if(DICE_FACE_SETS.indexOf(settings.diceFaces) === -1) settings.diceFaces = DICE_DEFAULT_FACES;
   if(!Array.isArray(settings.diceLabels) || settings.diceLabels.length !== settings.diceFaces) settings.diceLabels = null;   // 长度不符则重建
   if(typeof settings.hideChipAvatar !== 'boolean') settings.hideChipAvatar = false;
+  if(settings.relMode !== 'name') settings.relMode = 'avatar';   // 关系图显示模式：avatar 头像 / name 名字
 
   try{ convs = JSON.parse(localStorage.getItem(LS.convs)||'null'); }catch(e){ convs = null; }
   if(!Array.isArray(convs)){
@@ -4059,6 +4081,11 @@ document.querySelectorAll('.modal-overlay').forEach(function(ov){
 function relNames(cv){
   var names = ['我'];
   (cv.chars || []).forEach(function(c){ if(c.name && names.indexOf(c.name) === -1) names.push(c.name); });
+  // 已设定角色之外，出现在关系里的名字（NPC 扮演过的 / 对话里提到过、被 AI 收录的角色）也上环
+  (cv.relations || []).forEach(function(e){
+    ['a','b'].forEach(function(k){ var n = e && e[k];
+      if(typeof n === 'string' && n.trim() && names.indexOf(n) === -1) names.push(n.trim()); });
+  });
   return names;
 }
 function relNodeR(isCenter){ var b = (window.innerWidth <= 780 ? 20 : 16); return isCenter ? b + 4 : b; }
@@ -4102,15 +4129,39 @@ function relPosOf(name){
 }
 function relEdgesFor(center){
   var cv = current();
-  var byName = {};
+  var byName = {}, isSet = {};
   relState.nodes.forEach(function(n){ byName[n.name] = 1; });
-  var out = [];
+  (cv.chars || []).forEach(function(c){ if(c.name) isSet[c.name] = 1; });
+  var stored = {};   // 与 center 有已存关系的另一端 → 关系名
   (cv.relations || []).forEach(function(e){
     var far = (e.a === center) ? e.b : (e.b === center ? e.a : null);
-    if(far && far !== center && byName[far] && byName[center]){
-      out.push({ a:center, b:far, rel:(e.rel && e.rel.trim()) ? e.rel.trim() : '相识' });
-    }
+    if(!far || far === center || !byName[far] || !byName[center]) return;
+    stored[far] = (e.rel && e.rel.trim()) ? e.rel.trim() : '相识';
   });
+  var out = [];
+  function push(a, b, rel){ out.push({ a:a, b:b, rel:rel }); }
+  if(center === '我'){
+    // 「我」与每个已设定角色必连：有已知关系用已知，否则「关系未知」
+    (cv.chars || []).forEach(function(c){
+      if(!c.name || c.name === '我' || !byName[c.name]) return;
+      push('我', c.name, stored[c.name] || '关系未知');
+    });
+    // 「我」与 NPC/提到过的角色的已存关系
+    Object.keys(stored).forEach(function(far){
+      if(far === '我' || isSet[far]) return;
+      push('我', far, stored[far]);
+    });
+  } else if(isSet[center] && center !== '我'){
+    // 已设定角色为中心：已存关系（排除 center↔我 这一对）+ 保证 center↔我
+    Object.keys(stored).forEach(function(far){
+      if(far === '我') return;
+      push(center, far, stored[far]);
+    });
+    push(center, '我', stored['我'] || '关系未知');
+  } else {
+    // NPC/提到过的角色为中心：规则照旧，只显示已存关系
+    Object.keys(stored).forEach(function(far){ push(center, far, stored[far]); });
+  }
   return out;
 }
 function renderRelGraph(){
@@ -4134,19 +4185,89 @@ function renderRelGraph(){
     relState.labEls.push(lab);
     svg.appendChild(g);
   });
-  // 再画节点（盖住线头）
+  // 再画节点（盖住线头）；头像模式：圆内嵌角色头像，名字在圆下方；名字模式：圆内直接显示名字
+  var nm = settings.relMode === 'name';
+  var clipIds = {};
+  if(!nm && relState.nodes.some(function(n){ var a = relAvatarOf(n.name); return a && (a.mode === 'url' || a.mode === 'upload') && a.value; })){
+    // url 头像裁成圆形（按各档节点半径各建一个 clipPath）
+    var seenR = {};
+    relState.nodes.forEach(function(n){ seenR[relNodeR(n.name === relState.center)] = 1; });
+    Object.keys(seenR).forEach(function(r){
+      var id = 'relClip' + r;
+      clipIds[r] = id;
+      var d = svg.querySelector('defs') || (function(){ var x = document.createElementNS(ns, 'defs'); svg.insertBefore(x, svg.firstChild); return x; })();
+      var cp = document.createElementNS(ns, 'clipPath');
+      cp.setAttribute('id', id);
+      var cc = document.createElementNS(ns, 'circle');
+      cc.setAttribute('cx', r - 1); cc.setAttribute('cy', r - 1); cc.setAttribute('r', r - 1);
+      cp.appendChild(cc);
+      d.appendChild(cp);
+    });
+  }
   relState.nodes.forEach(function(n){
     var g = document.createElementNS(ns, 'g');
-    g.setAttribute('class', 'rel-node ' + (n.name === relState.center ? 'rel-node-center' : 'rel-node-ring'));
+    g.setAttribute('class', 'rel-node ' + (n.name === relState.center ? 'rel-node-center' : 'rel-node-ring') + (nm ? ' rel-node-nm' : ''));
     g.setAttribute('data-name', n.name);
     var c = document.createElementNS(ns, 'circle');
     g.appendChild(c);
+    var av = null;
+    if(!nm){
+      av = buildRelAvatar(n.name, relNodeR(n.name === relState.center), clipIds);
+      if(av) g.appendChild(av);
+    }
     var t = document.createElementNS(ns, 'text');
     t.textContent = n.name;
     g.appendChild(t);
     svg.appendChild(g);
-    relState.nodeEls[n.name] = { g:g, c:c, t:t };
+    relState.nodeEls[n.name] = { g:g, c:c, t:t, av:av };
   });
+}
+function relAvatarOf(name){
+  var cv = current();
+  if(name === '我') return { mode:'svg', value: ICON_ME, vb:'0 0 24 24' };   // 用户无头像，用描线人物
+  for(var i = 0; i < (cv.chars || []).length; i++){
+    if(cv.chars[i].name === name){
+      var a = cv.chars[i].avatar;
+      if(a && (a.mode === 'svg' || a.mode === 'url' || a.mode === 'upload') && a.value) return a;
+      return defaultAvatar();
+    }
+  }
+  return npcRoleAvatar(name);   // NPC 扮演过的 / 对话里提到过的角色
+}
+function buildRelAvatar(name, r, clipIds){
+  var ns = 'http://www.w3.org/2000/svg';
+  var a = relAvatarOf(name);
+  var g = document.createElementNS(ns, 'g');
+  g.setAttribute('class', 'rel-av');
+  var size = 2 * (r - 1);
+  if(a.mode === 'svg' && a.value){
+    var s = document.createElementNS(ns, 'svg');
+    s.setAttribute('width', size);
+    s.setAttribute('height', size);
+    s.setAttribute('viewBox', a.vb || '0 0 80 80');   // 显式宽高必须：.av-svg 的 100% 规则不作用于 #relSvg
+    s.innerHTML = a.value.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+    g.appendChild(s);
+  } else if((a.mode === 'url' || a.mode === 'upload') && a.value){
+    var img = document.createElementNS(ns, 'image');
+    img.setAttribute('href', a.value);
+    img.setAttribute('width', size);
+    img.setAttribute('height', size);
+    img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    if(clipIds[r]) img.setAttribute('clip-path', 'url(#' + clipIds[r] + ')');
+    g.appendChild(img);
+  }
+  return g;
+}
+function relModeBtn(){
+  var b = $('btnRelMode');
+  if(!b) return;
+  if(settings.relMode === 'name'){
+    b.innerHTML = ICON_REL_AV;
+    b.title = '切换为头像显示';
+  } else {
+    b.innerHTML = ICON_REL_TYPE;
+    b.title = '切换为名字显示';
+  }
 }
 function updateRelGraph(){
   var v = relState.view;
@@ -4162,7 +4283,18 @@ function updateRelGraph(){
     el.c.setAttribute('cy', p.y);
     el.c.setAttribute('r', r);
     el.t.setAttribute('x', p.x);
-    el.t.setAttribute('y', p.y + r + 13);
+    if(settings.relMode === 'name'){
+      // 名字模式：名字居中于圆内，按长度缩字号（太长会挤到圆外）
+      el.t.setAttribute('y', p.y);
+      el.t.setAttribute('dominant-baseline', 'central');
+      var baseFs = window.innerWidth <= 780 ? 13 : 12;
+      el.t.setAttribute('font-size', Math.max(8, Math.min(baseFs, Math.floor(r * 2 * 0.85 / Math.max(2, n.name.length)))));
+    } else {
+      el.t.setAttribute('y', p.y + r + 13);
+      if(el.t.hasAttribute('dominant-baseline')) el.t.removeAttribute('dominant-baseline');
+      if(el.t.hasAttribute('font-size')) el.t.removeAttribute('font-size');
+    }
+    if(el.av) el.av.setAttribute('transform', 'translate(' + (p.x - (r - 1)) + ' ' + (p.y - (r - 1)) + ')');
     var connected = relState.edges.some(function(e){ return e.a === n.name || e.b === n.name; });
     el.g.classList.toggle('dim', !isC && !connected);
   });
@@ -4227,6 +4359,7 @@ function openRel(){
   relState.center = '我';
   $('relView').classList.remove('hidden');
   $('relNote').classList.add('hidden');
+  relModeBtn();
   relState.nodes = relLayout('我');
   relState.edges = relEdgesFor('我');
   relState.view = { tx:$('relCanvas').clientWidth / 2, ty:$('relCanvas').clientHeight / 2, k:1 };
@@ -4247,16 +4380,35 @@ function closeRel(){
   relState.open = false;
   $('relView').classList.add('hidden');
 }
-function applyRelations(cv, edges){
+function relCandidates(cv){
   var names = ['我'];
   (cv.chars || []).forEach(function(c){ if(c.name && names.indexOf(c.name) === -1) names.push(c.name); });
+  var mem = cv.npcMem || {};
+  Object.keys(mem).forEach(function(k){ if(mem[k] && String(mem[k]).trim() && names.indexOf(k) === -1) names.push(k); });   // NPC 扮演过的角色
+  return names;
+}
+function relAccept(cv, name){
+  if(name === '我') return true;
+  for(var i = 0; i < (cv.chars || []).length; i++){ if(cv.chars[i].name === name) return true; }   // 已设定角色
+  if(cv.npcMem && cv.npcMem[name] && String(cv.npcMem[name]).trim()) return true;   // NPC 扮演过的角色
+  if(name.length < 2 || name.length > 8) return false;   // 过短/过长：避免子串误报、防伪造长名
+  if(/^(旁白|叙述|神态|动作|台词|我|玩家)$/.test(name)) return false;
+  // 对话记录里确实提到过（名字必须来自原文，防模型发明新名字）
+  var corpus = '';
+  (cv.history || []).forEach(function(m){
+    if(m.status === 'streaming') return;
+    corpus += (m.speaker || '') + (m.text || '');
+  });
+  return corpus.indexOf(name) !== -1;
+}
+function applyRelations(cv, edges){
   var seen = {}, out = [];
   (Array.isArray(edges) ? edges : []).forEach(function(e){
     var a = e && e.a, b = e && e.b, rel = e && e.rel;
     if(typeof a !== 'string' || typeof b !== 'string') return;
     a = a.trim(); b = b.trim();
     rel = (typeof rel === 'string' && rel.trim()) ? rel.trim() : '相识';
-    if(names.indexOf(a) === -1 || names.indexOf(b) === -1) return;   // 丢弃已删/改名成员
+    if(!relAccept(cv, a) || !relAccept(cv, b)) return;   // 丢弃已删/改名/未出现成员
     if(a === b) return;
     var key = [a, b].sort().join('\u0000');   // 无向去重
     if(seen[key]) return;
@@ -4287,7 +4439,7 @@ function analyzeRelations(cv, auto){
   relState.analyzing = true;
   $('relAnalyzing').classList.remove('hidden');
   $('btnRelAnalyze').disabled = true;
-  var names = relNames(cv);
+  var names = relCandidates(cv);   // 候选名单与 relNames 分离：不含旧关系里的路人名
   var msgs = [{ role:'system', content:'你是「梦语」的关系分析助手。请根据给出的群聊 / 故事记录，分析各角色之间的人物关系。' }];
   var parts = [];
   if(cv.world) parts.push('【世界观】'+cv.world);
@@ -4301,9 +4453,10 @@ function analyzeRelations(cv, auto){
   });
   parts.push('【对话记录】\n' + (lines.length ? lines.join('\n') : '（暂无对话）'));
   var instr = '请从上面的记录里判断人物之间的关系。要求：\n' +
-    '1. 只分析记录中确实体现出关系的人物（如：敌人、兄弟、师徒、恋人、同事、朋友、兄妹等）；没有交集或关系不明的人物之间不要输出关系。\n' +
-    '2. 人物名字只能从「' + names.join('、') + '」里选，不要发明新名字；每条关系包含两个不同的人物。\n' +
-    '3. 只输出一个 JSON 数组，不要任何说明文字，格式为 [{"a":"角色A","b":"角色B","rel":"关系名"}]；没有关系就输出 []。';
+    '1. 「我」（用户）与每个已设定的角色之间都存在一条关系：能判断出具体关系就写具体关系名（如：好友、兄妹、敌人、恋人、师徒、同事等）；判断不出就写「关系未知」。\n' +
+    '2. 其他角色之间，只分析记录中确实体现出关系的人物（如：敌人、兄弟、师徒、恋人、同事、朋友、兄妹等）；没有交集或关系不明的人物之间不要输出关系。\n' +
+    '3. 人物名字可以从「' + names.join('、') + '」里选，不要发明新名字；另外，如果对话里提到过其他有明显戏份的角色（例如某场戏里的重要配角），也可以把名字写进关系（名字必须来自对话记录原文，长度不超过 8 个字）；但只露一面、几乎没剧情的路人不要写。每条关系包含两个不同的人物。\n' +
+    '4. 只输出一个 JSON 数组，不要任何说明文字，格式为 [{"a":"角色A","b":"角色B","rel":"关系名"}]；没有关系就输出 []。';
   msgs.push({ role:'user', content: parts.join('\n\n') + '\n\n' + instr });
   var rb = { model: groupModel(cv), messages: msgs, stream:false, temperature:0.3, max_tokens:500 };
   if(isDeepseek(cv)) rb.thinking = { type:'disabled' };
@@ -4413,6 +4566,14 @@ function relUp(e){
 }
 $('btnBackRel').addEventListener('click', closeRel);
 $('btnRelAnalyze').addEventListener('click', function(){ var cv = current(); if(!cv) return; analyzeRelations(cv, false); });
+$('btnRelMode').addEventListener('click', function(){
+  settings.relMode = settings.relMode === 'avatar' ? 'name' : 'avatar';
+  save();
+  relModeBtn();
+  renderRelGraph();
+  updateRelGraph();
+});
+$('relView').addEventListener('click', function(e){ if(e.target === $('relView')) closeRel(); });   // 点遮罩关闭
 (function(){
   var svg = $('relSvg');
   svg.addEventListener('wheel', relWheel, { passive:false });
