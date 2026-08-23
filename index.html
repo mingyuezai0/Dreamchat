@@ -102,7 +102,7 @@
   .story-narr{display:block; color:#8a91a4; font-style:italic; font-size:13px; line-height:1.6;}
   .story-act{display:block; color:#6a7285; font-style:italic; font-size:13px; line-height:1.6; margin-top:3px;}
   .story-line{display:block; color:#e07a0f; font-weight:600; margin-top:3px;}
-  .story-q{color:#e07a0f; font-weight:600;}
+  .story-q{color:#e07a0f; font-weight:600; font-style:normal;}
 
   /* ---------- 输入区 ---------- */
   .input-area{position:relative; background:rgba(255,255,255,.85); border-top:1px solid var(--border); padding:12px 22px 18px;}
@@ -243,6 +243,9 @@
   html[data-theme="dark"] .npc-badge{border-color:#4a4278; background:#26234a;}
   html[data-theme="scroll"] .npc-badge{border-color:#cdbf93; background:#f1e6c8;}
   .npc-note{font-size:12px; color:var(--muted); white-space:nowrap;}
+  .npc-mem-row{margin-bottom:10px;}
+  .npc-mem-role{font-size:12px; font-weight:600; color:var(--accent); margin-bottom:4px;}
+  .npc-mem-row textarea{width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:10px; font-size:13px; line-height:1.5; resize:vertical; background:var(--bg); color:var(--text); box-sizing:border-box;}
   .char-persona{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px;}
   .char-actions{display:flex;}
   .char-actions .icon-btn{margin-left:2px;}
@@ -653,7 +656,6 @@
         <button class="btn-primary" id="btnAddNote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>添加便签</button>
       </div>
       <div class="board-grid" id="boardGrid"></div>
-      <p class="board-hint">就像贴便签一样，随便写点公告、提醒或灵感，每张便签会自动保存。</p>
     </div>
 
     <div id="aboutView" class="panel-view hidden">
@@ -907,6 +909,9 @@
     </div>
     <label>总结内容</label>
     <textarea id="sumContent" rows="7" readonly placeholder="点击「手动总结」，或在「自动总结」里选一个阈值后，压缩出来的总结会写在这里。压缩后较早的消息会被移除，但总结会随每次对话注入给 AI，关键信息不会丢失。"></textarea>
+    <label class="switch-row" style="margin-top:10px;">同时压缩角色记忆（重要事件保留更多细节）
+      <span class="switch"><input type="checkbox" id="sumCompressMem"><span></span></span>
+    </label>
     <p class="hint-text" id="sumHint"></p>
     <div class="modal-actions">
       <button class="btn-ghost" id="sumClose">关闭</button>
@@ -950,6 +955,10 @@
     <textarea id="emPersona" rows="4" placeholder="描述这个人物的性格、说话风格、知识背景等。这段设定只属于该人物，不会与其他人物混用。"></textarea>
     <label>记忆</label>
     <textarea id="emMemory" rows="3" placeholder="TA 记住的事情。开启「成员自动记忆」后会不断自动更新；你也可以手动写。"></textarea>
+    <div id="emNpcMemBox" class="hidden">
+      <label>已扮演角色的记忆（按角色分开记）</label>
+      <div id="emNpcMems"></div>
+    </div>
     <label class="switch-row">在场（被选入或提及时会回复）
       <span class="switch"><input type="checkbox" id="emPresent"><span></span></span>
     </label>
@@ -1077,14 +1086,21 @@
 (function(){
 'use strict';
 
-var LS = { set:'ds_settings', convs:'ds_convs', chars:'ds_chars', hist:'ds_history', cards:'ds_cards', worlds:'ds_worlds', board:'ds_board' };
+var LS = { set:'ds_settings', convs:'ds_convs', chars:'ds_chars', hist:'ds_history', cards:'ds_cards', worlds:'ds_worlds', board:'ds_board', boardTut:'ds_board_tut' };
 var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.1.9';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.2.0';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.2.0', date:'2026-08-23', title:'NPC只当路人 · 总结压记忆 · 神态不改橙', items:[
+    '黑板的描述文案已精简，删去多余提示语',
+    '三条「功能教程」便签改为对还没有收到过的用户（含老用户）也补贴一次；拼在已有便签后面，删掉后不再出现',
+    '固定「NPC角色」只会扮演路人 / 临时角色：即使 AI 在回复里写了群成员的名字，也不会冒充群成员身份；NPC 的编辑界面可以查看并编辑它按角色分开的记忆（名字 / 在场固定不可改）',
+    '「总结」新增可选开关「同时压缩角色记忆」：开启后总结完会把各成员的记忆也压缩一遍，重要事件（关系、冲突、承诺、玩家的关键决定等）比普通记忆保留更多细节；手动 / 自动总结都会生效',
+    '修复故事显示 bug：神态 / 动作行不再错判成对话的橙色，只有“ ”包起来的台词才是橙色'
+  ]},
   { v:'0.1.9', date:'2026-08-23', title:'重置删链 · 旁白复制 · 置顶 · 黑板教程', items:[
     '「我」的消息点「重置」不再放回输入框：从那条消息起删除原文与 AI 的跟随回复（含旁白），并由 AI 重新生成跟随回复',
     '故事的「旁白」块只保留「复制」按钮，不能编辑或重置',
@@ -1306,7 +1322,9 @@ function finalizeMsg(cv, msg){
     var m = t.match(/^([^\n：:\s]{1,8})[：:]\s*/);
     if(m){
       var role = m[1].trim();
-      if(role && role !== NPC_NAME && !/^(旁白|叙述|神态|动作|台词)$/.test(role)){
+      // 只当路人/临时角色：跳过关键词，也不得冒充已在场的群成员身份
+      var memberNames = (cv.chars||[]).filter(function(x){ return !x.isNpc; }).map(function(x){ return x.name; });
+      if(role && role !== NPC_NAME && memberNames.indexOf(role) === -1 && !/^(旁白|叙述|神态|动作|台词|我)$/.test(role)){
         msg.npcRole = role;
         msg.text = t.slice(m[0].length);
         cv.npcLastRole = role;
@@ -1361,6 +1379,7 @@ function load(){
     if(!cv.avatar || typeof cv.avatar !== 'object' || !cv.avatar.mode) cv.avatar = null;
     if(!cv.npcMem || typeof cv.npcMem !== 'object' || Array.isArray(cv.npcMem)) cv.npcMem = {};
     if(typeof cv.npcLastRole !== 'string') cv.npcLastRole = null;
+    if(typeof cv.compressMem !== 'boolean') cv.compressMem = false;
     cv.chars.forEach(function(c){
       if(typeof c.present==='undefined') c.present = true;
       if(typeof c.memory!=='string') c.memory = '';
@@ -1388,11 +1407,16 @@ function load(){
   var boardRaw = null;
   try{ boardRaw = localStorage.getItem(LS.board); }catch(e){}
   try{ board = boardRaw === null ? null : JSON.parse(boardRaw); }catch(e){ board = null; }
-  if(!Array.isArray(board)){
-    // 首次打开黑板：预置三条「功能教程」便签（用户可自行删除，不固定）；删光后不再生成
-    board = BOARD_TUTORIAL.map(function(t, i){
+  if(!Array.isArray(board)) board = [];
+  var tutShown = false;
+  try{ tutShown = localStorage.getItem(LS.boardTut) === '1'; }catch(e){}
+  if(!tutShown){
+    // 首次（或还没收到过的用户，含老用户）补三条「功能教程」便签：拼到已有便签后面；删掉后不再出现
+    var tut = BOARD_TUTORIAL.map(function(t, i){
       return { id: seq++, text: t.text, color: t.color, ts: Date.now() };
     });
+    board = board.concat(tut);
+    try{ localStorage.setItem(LS.boardTut, '1'); }catch(e){}
     boardColorIdx = board.length;
     save();
   }
@@ -2003,17 +2027,20 @@ function updateNarration(wrap, m, base){
   }
 }
 function storyHtml(text){
-  // 解析 AI 在故事里的回复：神态(灰斜体) / 台词(橙色)
+  // 解析 AI 在故事里的回复：神态/描写(灰斜体) / 台词(只有“ ”包起来的话才是橙色)
   var lines = String(text || '').split('\n');
   var out = [];
   for(var i=0;i<lines.length;i++){
     var line = lines[i].trim();
     if(!line) continue;
-    var m = line.match(/^[【\[]?(旁白|叙述)[】\]]?[：:]\s*(.*)$/);
+    // 去掉 markdown 星号等装饰（如 *神态：…*、**“…”**），再做分类
+    var core = line.replace(/^[\s*（(\[【]+/, '').replace(/[\s*）)\]]】+$/, '').trim();
+    var m = core.match(/^[【\[]?(旁白|叙述)[】\]]?[：:]\s*(.*)$/);
     if(m){ out.push('<div class="story-narr">'+storyQ(m[2])+'</div>'); continue; }
-    m = line.match(/^[【\[]?(神态|动作)[】\]]?[：:]\s*(.*)$/);
+    m = core.match(/^[【\[]?(神态|动作)[】\]]?[：:]\s*(.*)$/);
     if(m){ out.push('<div class="story-act">'+storyQ(m[2])+'</div>'); continue; }
-    out.push('<div class="story-line">'+esc(line)+'</div>');
+    // 剩下的行：没引号的都是神态/描写（灰）；含引号的台词部分用 storyQ 高亮成橙色，其余仍是灰
+    out.push('<div class="story-act">'+storyQ(line)+'</div>');
   }
   return out.join('');
 }
@@ -2260,7 +2287,10 @@ function send(){
     generating = true; setGenerating(true);
     addNote('上下文已达 '+fmtTokens(cv.autoSummary)+'，正在自动总结压缩…');
     summarizeContext(cv).then(function(content){
-      if(content){ applySummary(cv, content); }
+      if(content){
+        applySummary(cv, content);
+        if(cv.compressMem) compressMemories(cv, content);   // 压缩角色记忆（后台进行，不阻塞发送）
+      }
       else addNote('自动总结失败，跳过本次压缩。');
       generating = false; setGenerating(false);
       doSend(cv, text);
@@ -2575,7 +2605,10 @@ function renderGroupMembers(){
           '<div class="char-name">'+esc(c.name)+' <span class="npc-badge" title="固定角色：剧情需要路人登场时，它自动扮演那个路人">固定 NPC</span></div>' +
           '<div class="char-persona">'+esc((c.persona||'').replace(/\s+/g,' ').slice(0,20))+'</div>' +
         '</div>' +
-        '<div class="npc-note" title="名字 / 头像 / 记忆按扮演的角色分开记">路人自动登场</div>';
+        '<div class="npc-note" title="名字 / 头像 / 记忆按扮演的角色分开记">路人自动登场</div>' +
+        '<div class="char-actions">' +
+          '<button class="icon-btn" data-act="edit" title="编辑（含已扮演角色的记忆）">✎</button>' +
+        '</div>';
     } else {
       row.innerHTML =
         '<div class="char-avatar">'+avatarHtml(c)+'</div>' +
@@ -2732,6 +2765,7 @@ function importBackup(file){
       if(!conv.avatar || typeof conv.avatar !== 'object' || !conv.avatar.mode) conv.avatar = null;
       if(!conv.npcMem || typeof conv.npcMem !== 'object' || Array.isArray(conv.npcMem)) conv.npcMem = {};
       if(typeof conv.npcLastRole !== 'string') conv.npcLastRole = null;
+      if(typeof conv.compressMem !== 'boolean') conv.compressMem = false;
       conv.chars.forEach(function(c){ if(typeof c.name !== 'string' || !c.name) c.name = 'AI'; if(typeof c.present === 'undefined') c.present = true; if(typeof c.memory !== 'string') c.memory = ''; });
       ensureNpc(conv);   // 故事自动带上固定 NPC 角色
     }catch(e){
@@ -3337,12 +3371,42 @@ function fileToAvatar(file, cb){
   };
   reader.readAsDataURL(file);
 }
+function buildNpcMems(c){
+  // 固定 NPC 的记忆按「扮演的角色」分开存：列出每个角色一行一个编辑框
+  var box = $('emNpcMems');
+  box.innerHTML = '';
+  var cv = current();
+  var mem = (cv && cv.npcMem) || {};
+  var roles = Object.keys(mem).filter(function(k){ return mem[k] && String(mem[k]).trim(); });
+  if(!roles.length){
+    var empty = document.createElement('p');
+    empty.className = 'muted';
+    empty.style.cssText = 'font-size:12px; margin:0 0 8px;';
+    empty.textContent = 'NPC 还没扮演过具体角色，暂无记忆。剧情需要路人登场、它用某角色名发言后，会按角色自动记在这里。';
+    box.appendChild(empty);
+    return;
+  }
+  roles.forEach(function(role){
+    var row = document.createElement('div');
+    row.className = 'npc-mem-row';
+    row.innerHTML = '<div class="npc-mem-role">'+esc(role)+'</div>' +
+      '<textarea data-npc-role="'+esc(role)+'" rows="3" placeholder="这个角色记住的事情，可手动修改…"></textarea>';
+    row.querySelector('textarea').value = mem[role] || '';
+    box.appendChild(row);
+  });
+}
 function openEdit(c){
   editCharId = c.id;
+  var npc = !!c.isNpc;
   $('emName').value = c.name || '';
+  $('emName').disabled = npc;   // 固定 NPC 名字不可改
   $('emPersona').value = c.persona || '';
   $('emMemory').value = c.memory || '';
   $('emPresent').checked = !!c.present;
+  $('emPresent').disabled = npc;  // 固定 NPC 始终在场
+  var npcBox = $('emNpcMemBox');
+  if(npc){ buildNpcMems(c); npcBox.classList.remove('hidden'); }
+  else npcBox.classList.add('hidden');
   var mode = (c.avatar && c.avatar.mode) || 'svg';
   avatarDraft = { mode:mode, value:(c.avatar && c.avatar.value) || (mode==='svg' ? ANIME_AVS[0] : '') };
   setAvatarTab((mode === 'upload' || mode === 'url') ? 'upload' : 'emoji');
@@ -3376,12 +3440,26 @@ $('emSave').addEventListener('click', function(){
   if(!c) return;
   var name = $('emName').value.trim();
   if(!name){ alert('请填写姓名'); return; }
-  c.name = name;
-  c.persona = $('emPersona').value.trim();
-  c.memory = $('emMemory').value.trim();
-  c.present = $('emPresent').checked;
-  if(avatarDraft.mode === 'url' && !avatarDraft.value) avatarDraft.mode = 'emoji';
-  c.avatar = { mode:avatarDraft.mode, value:avatarDraft.value };
+  if(c.isNpc){
+    // 固定 NPC：名字 / 头像 / 在场固定不动，只改人设与各角色的记忆
+    c.persona = $('emPersona').value.trim();
+    if(!cv.npcMem) cv.npcMem = {};
+    var rows = document.querySelectorAll('#emNpcMems textarea[data-npc-role]');
+    for(var r=0;r<rows.length;r++){
+      var role = rows[r].dataset.npcRole;
+      var val = rows[r].value.trim();
+      if(val) cv.npcMem[role] = val.slice(0,1200);
+      else if(cv.npcMem[role]) delete cv.npcMem[role];
+    }
+    name = c.name;
+  } else {
+    c.name = name;
+    c.persona = $('emPersona').value.trim();
+    c.memory = $('emMemory').value.trim();
+    c.present = $('emPresent').checked;
+    if(avatarDraft.mode === 'url' && !avatarDraft.value) avatarDraft.mode = 'emoji';
+    c.avatar = { mode:avatarDraft.mode, value:avatarDraft.value };
+  }
   save();
   renderGroupMembers(); renderChips(); renderConvList(); renderMsgs();
   closeEdit();
@@ -3484,6 +3562,7 @@ function openSummary(){
   if(!cv) return;
   $('sumConvName').textContent = cv.name;
   $('sumContent').value = cv.summary || '';
+  $('sumCompressMem').checked = !!cv.compressMem;
   $('sumHint').textContent = '';
   renderSumMode();
   $('summaryModal').classList.remove('hidden');
@@ -3556,6 +3635,54 @@ function applySummary(cv, content){
   addNote('已总结压缩上下文：移除 '+removed+' 条较早消息，总结已写入「总结内容」。');
   return removed;
 }
+/* 总结时可选：把每个成员的记忆也压缩一遍（合并最新总结）；重要事件比普通记忆保留更多细节 */
+function compressMemories(cv, summary){
+  var jobs = [];
+  (cv.chars||[]).forEach(function(c){
+    if(c.isNpc){
+      var nm = cv.npcMem || {};
+      Object.keys(nm).forEach(function(role){
+        if(nm[role] && String(nm[role]).trim()){
+          jobs.push({ sys:'你是「NPC角色」，正在扮演「'+role+'」。你作为「'+role+'」当前的记忆：\n'+(nm[role]||'')+'\n\n最新总结：\n'+(summary||'（暂无）'), npcRole:role });
+        }
+      });
+    } else if(c.memory && String(c.memory).trim()){
+      jobs.push({ sys:'你是「'+c.name+'」，你的人设：\n'+(c.persona||'（无）')+'\n\n你当前的记忆：\n'+(c.memory||'')+'\n\n最新总结：\n'+(summary||'（暂无）'), c:c });
+    }
+  });
+  if(!jobs.length) return Promise.resolve(0);
+  var done = 0;
+  var chain = Promise.resolve();
+  jobs.forEach(function(j){
+    chain = chain.then(function(){
+      var msgs = [{ role:'system', content: j.sys +
+        '\n\n请把上面这段「已有记忆」与「最新总结」合并压缩成这份角色压缩后的新记忆。要求：\n' +
+        '1. 重要事件（关系到角色关系、冲突、承诺、玩家的重要决定等）要比普通记忆保留更多细节。\n' +
+        '2. 日常琐事一笔带过；不要编造总结里没有的内容。\n' +
+        '3. 直接输出要点式内容，不要任何说明。' }];
+      msgs.push({ role:'user', content:'请输出压缩后的记忆：' });
+      var b = { model: settings.model, messages: msgs, stream:false, temperature:0, max_tokens:600 };
+      if(isDeepseek()) b.thinking = { type:'disabled' };
+      var h = { 'Content-Type':'application/json' };
+      var gk = groupKey(cv);
+      if(gk && gk.trim()) h['Authorization'] = 'Bearer '+gk;
+      return fetch(apiUrl(), {
+        method:'POST', headers:h, body:JSON.stringify(b)
+      }).then(function(r){
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return r.json();
+      }).then(function(j2){
+        var content = j2.choices && j2.choices[0] && j2.choices[0].message && j2.choices[0].message.content;
+        if(typeof content === 'string' && content.trim()){
+          if(j.npcRole){ if(!cv.npcMem) cv.npcMem = {}; cv.npcMem[j.npcRole] = content.trim().slice(0,1200); }
+          else if(j.c){ j.c.memory = content.trim().slice(0,1200); }
+          done++;
+        }
+      }).catch(function(){}); // 单条压缩失败不影响其它
+    });
+  });
+  return chain.then(function(){ if(done) save(); return done; });
+}
 function doManualSummary(){
   var cv = current();
   if(!cv) return;
@@ -3568,6 +3695,12 @@ function doManualSummary(){
   $('sumHint').textContent = '正在调用 AI 生成总结，请稍候…';
   summarizeContext(cv).then(function(content){
     var removed = applySummary(cv, content);
+    if(cv.compressMem){
+      $('sumHint').textContent = '已生成总结，正在压缩角色记忆…';
+      return compressMemories(cv, content).then(function(n){
+        $('sumHint').textContent = '已生成总结（'+cv.summary.length+' 字），并压缩了 '+n+' 段角色记忆；移除了 '+removed+' 条较早的消息。';
+      });
+    }
     $('sumHint').textContent = '已生成总结（'+cv.summary.length+' 字），移除了 '+removed+' 条较早的消息，保留最近 8 条。';
   }).catch(function(err){
     $('sumHint').textContent = '总结失败：' + err.message;
@@ -3578,6 +3711,13 @@ function doManualSummary(){
 }
 $('btnSummary').addEventListener('click', openSummary);
 $('sumClose').addEventListener('click', closeSummary);
+$('sumCompressMem').addEventListener('change', function(){
+  var cv = current();
+  if(!cv) return;
+  cv.compressMem = this.checked;
+  save();
+  $('sumHint').textContent = this.checked ? '已开启：总结后会把各成员记忆也压缩一遍（重要事件保留更多细节）。' : '已关闭：总结时只压缩上下文，不压缩角色记忆。';
+});
 $('btnSumManual').addEventListener('click', doManualSummary);
 $('btnSumAuto').addEventListener('click', function(){
   $('sumAutoArea').classList.remove('hidden');
