@@ -82,6 +82,12 @@
   .bubble .text.streaming::after{content:'▍'; animation:blink 1s step-start infinite; color:var(--accent);}
   @keyframes blink{50%{opacity:0;}}
   .bubble .status{font-size:12px; color:var(--accent); margin-top:4px; padding:0 4px;}
+  .msg-actions{display:flex; align-items:center; gap:1px; margin-top:2px; padding:0 2px; opacity:0; transition:opacity .15s;}
+  .msg:hover .msg-actions{opacity:1;}
+  .msg.user .msg-actions{justify-content:flex-end;}
+  .msg-actions button{font-size:11px; color:var(--muted); background:transparent; border:none; padding:3px 7px; border-radius:6px;}
+  .msg-actions button:hover{background:#eef0f5; color:var(--text);}
+  .bubble .edit-box{width:100%; min-height:60px; background:var(--panel); color:var(--text); border:1px solid var(--accent); border-radius:8px; padding:8px 10px; font-size:14px; line-height:1.6; resize:vertical;}
   .msg.note{justify-content:center;}
   .msg.note .note-text{background:#e8ebf2; color:var(--muted); font-size:12px; padding:5px 14px; border-radius:20px;}
   /* ---------- 故事模式（旁白在消息之间 / 神态 / 台词） ---------- */
@@ -367,6 +373,9 @@
     .fab-item{min-height:42px; font-size:14px;}
     .fab-item svg{width:18px; height:18px;}
     body:not(.chat-open) .fab{display:none;}   /* 手机端主页不显示聊天区「＋」，只在聊天里显示 */
+    .msg-actions{opacity:1;}                     /* 手机端消息操作按钮常显 */
+    .msg-actions button{padding:5px 10px; font-size:12px;}
+    .bubble .edit-box{min-height:56px;}
   }
 
   /* 界面设置 · UI 风格选择 */
@@ -408,6 +417,8 @@
   html[data-theme="dark"] .story-act{color:#a2abbd;}
   html[data-theme="dark"] .story-line{color:#f08a1e;}
   html[data-theme="dark"] .story-q{color:#f08a1e;}
+  html[data-theme="dark"] .msg-actions button:hover{background:#2a2f3a;}
+  html[data-theme="dark"] .bubble .edit-box{background:#232833;}
   html[data-theme="dark"] .input-area{background:rgba(23,26,33,.88);}
   html[data-theme="dark"] .chip{background:#1e222c;}
   html[data-theme="dark"] .chip .chip-av{background:#2a2f3a;}
@@ -513,6 +524,8 @@
   html[data-theme="scroll"] .switch input:checked + span{background:#7a5cf0;}   /* 开启态统一紫色，覆盖上面的 track 背景 */
   html[data-theme="scroll"] .emoji-grid button:hover{background:#ecdfbe;}
   html[data-theme="scroll"] .emoji-grid button.selected{background:#e0c69a;}
+  html[data-theme="scroll"] .msg-actions button:hover{background:#ecdfbe;}
+  html[data-theme="scroll"] .bubble .edit-box{background:#efe2c2;}
   html[data-theme="scroll"] .member-row{border-bottom:1px solid #e3d3ab;}
   html[data-theme="scroll"] .char-avatar{background:#efe0ba;}
   html[data-theme="scroll"] .modal .btn-add{border-color:#c9b58a;}
@@ -1061,8 +1074,12 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.1.7';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.1.8';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.1.8', date:'2026-08-23', title:'消息操作 · 删除不自动新建', items:[
+    '每条消息下面新增「编辑 / 复制 / 重置」三个小功能：编辑可随意改写已发出的内容并会被记住；复制一键复制原文；重置可重新生成该条回复，重新生成仍遵循字数上限，我的消息则放回输入框方便改写重发',
+    '删除最后一个群聊 / 故事后不再自动新建一个群聊；新用户首次打开仍自带一个默认群聊'
+  ]},
   { v:'0.1.7', date:'2026-08-23', title:'二次元头像 · 小工具图标统一', items:[
     '自带头像从 emoji 全部换成二次元风格：新建群聊 / 故事 / 成员的默认头像固定为动漫头像，头像面板可选 16 种二次元头像',
     '聊天右下角「＋」里的小工具（搜索 / 骰子 / 费用 / 字数）图标换成描线风格，与主页图标统一',
@@ -1293,7 +1310,8 @@ function load(){
   if(typeof settings.hideChipAvatar !== 'boolean') settings.hideChipAvatar = false;
 
   try{ convs = JSON.parse(localStorage.getItem(LS.convs)||'null'); }catch(e){ convs = null; }
-  if(!Array.isArray(convs) || !convs.length){
+  if(!Array.isArray(convs)){
+    // 全新用户（从没存过 ds_convs）：自带一个默认群聊；删光后（存的是空数组）保持为空，不再自动新建
     var oldChars = [], oldHist = [];
     try{ oldChars = JSON.parse(localStorage.getItem(LS.chars)||'[]'); }catch(e){}
     try{ oldHist = JSON.parse(localStorage.getItem(LS.hist)||'[]'); }catch(e){}
@@ -1355,7 +1373,7 @@ function load(){
     assignId(w);
   });
 
-  if(!getConv(activeId)) activeId = convs[0].id;
+  if(!getConv(activeId) && convs.length) activeId = convs[0].id;   // 没有会话时保持空（不选中任何会话）
   renderGlobal();
 }
 function save(){
@@ -1455,12 +1473,14 @@ function deleteConv(id){
   var cv = getConv(id);
   if(!cv) return;
   stopAll();
+  var last = convs.length === 1;
   convs = convs.filter(function(c){ return c.id !== id; });
-  if(!convs.length){ convs.push(newConv()); activeId = convs[0].id; }
+  if(!convs.length){ activeId = null; }   // 删光最后一个：保持空，不自动新建
   else if(activeId === id){ activeId = convs[0].id; }
   save(); renderConvList(); renderMsgs(); renderChips();
   closeGroupSettings();
-  addNote('已删除'+kindLabel(cv)+'。');
+  if(last) showToast('已删除'+kindLabel(cv)+'。');
+  else addNote('已删除'+kindLabel(cv)+'。');
 }
 function doNewConv(){
   stopAll();
@@ -1818,7 +1838,12 @@ $('btnBack').addEventListener('click', function(){ document.body.classList.remov
 
 function renderChatHeader(){
   var cv = current();
-  if(!cv) return;
+  if(!cv){
+    $('convName').textContent = '';
+    $('headerAvatar').innerHTML = '';
+    $('headerSub').textContent = '';
+    return;
+  }
   $('convName').textContent = cv.name;
   $('headerAvatar').innerHTML = convAvatarInner(cv);
   var present = cv.chars.filter(function(c){ return c.present; });
@@ -1835,7 +1860,13 @@ function renderMsgs(){
   list.innerHTML = '';
   msgEls = {};
   var cv = current();
-  if(!cv) return;
+  if(!cv){
+    var n = document.createElement('div');
+    n.className = 'msg note';
+    n.innerHTML = '<div class="note-text">还没有会话，点上方「＋」新建聊天或开始故事吧。</div>';
+    list.appendChild(n);
+    return;
+  }
   cv.history.forEach(function(m){ appendMsgEl(list, m); });
   scrollBottom();
 }
@@ -1854,6 +1885,11 @@ function appendMsgEl(list, m){
     '<div class="bubble">' + nameHtml +
       '<div class="text"></div>' +
       '<div class="status"></div>' +
+      '<div class="msg-actions">' +
+        '<button type="button" data-act="edit">编辑</button>' +
+        '<button type="button" data-act="copy">复制</button>' +
+        '<button type="button" data-act="reset">重置</button>' +
+      '</div>' +
     '</div>';
   list.appendChild(wrap);
   msgEls[m.id] = wrap;
@@ -1940,6 +1976,136 @@ function storyQ(t){
   if(last < t.length) out += esc(t.slice(last));
   return out || esc(t);
 }
+
+/* ---------- 消息操作：编辑 / 复制 / 重置 ---------- */
+function findMsg(cv, mid){
+  if(!cv) return null;
+  for(var i=0;i<cv.history.length;i++){ if(cv.history[i].id === mid) return cv.history[i]; }
+  return null;
+}
+function restoreMsgView(wrap, mid){
+  // 从编辑态恢复：把 textarea 换回 .text，并还原 编辑/复制/重置 按钮
+  if(!wrap.querySelector('.text')){
+    var eb = wrap.querySelector('.edit-box');
+    var fresh = document.createElement('div');
+    fresh.className = 'text';
+    if(eb) eb.parentNode.replaceChild(fresh, eb);
+    else wrap.querySelector('.bubble').appendChild(fresh);
+  }
+  var actions = wrap.querySelector('.msg-actions');
+  actions.innerHTML =
+    '<button type="button" data-act="edit">编辑</button>' +
+    '<button type="button" data-act="copy">复制</button>' +
+    '<button type="button" data-act="reset">重置</button>';
+  var m = mid ? findMsg(current(), mid) : null;
+  if(m) setMsgText(m);
+}
+function enterEdit(mid){
+  var cv = current(), m = findMsg(cv, mid);
+  if(!m || m.status === 'streaming') return;
+  var wrap = msgEls[mid];
+  if(!wrap) return;
+  var textEl = wrap.querySelector('.text');
+  var ta = document.createElement('textarea');
+  ta.className = 'edit-box';
+  ta.value = m.text;
+  ta.placeholder = '改写这条消息的内容，保存后会被记忆…';
+  textEl.parentNode.replaceChild(ta, textEl);
+  var actions = wrap.querySelector('.msg-actions');
+  actions.innerHTML =
+    '<button type="button" data-act="edit-save">保存</button>' +
+    '<button type="button" data-act="edit-cancel">取消</button>';
+  ta.focus();
+  ta.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); editSave(mid); }
+  });
+}
+function editSave(mid){
+  var cv = current(), m = findMsg(cv, mid);
+  if(!m) return;
+  var wrap = msgEls[mid];
+  if(!wrap) return;
+  var ta = wrap.querySelector('.edit-box');
+  if(!ta) return;
+  var t = ta.value.trim();
+  if(!t){ showToast('内容不能为空'); ta.focus(); return; }
+  m.text = t;
+  m.status = 'done';
+  cv.lastActiveAt = Date.now();
+  save();
+  restoreMsgView(wrap, mid);
+  renderConvList();
+  showToast('已编辑并保存');
+}
+function editCancel(mid){
+  var wrap = msgEls[mid];
+  if(wrap) restoreMsgView(wrap, mid);
+}
+function copyText(text){
+  function ok(){ showToast('已复制'); }
+  function legacy(){
+    try{
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      ok();
+    }catch(e){ showToast('复制失败，请手动选择'); }
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(ok, legacy);
+  } else legacy();
+}
+function copyMsg(mid){
+  var m = findMsg(current(), mid);
+  if(!m) return;
+  copyText(m.text);
+}
+function resetMsg(mid){
+  var cv = current();
+  if(!cv) return;
+  var m = findMsg(cv, mid);
+  if(!m) return;
+  if(m.status === 'streaming'){ showToast('生成中的消息不能重置'); return; }
+  stopAll();
+  if(m.speakerId === 'user'){
+    // 我的消息：原文放回输入框，方便改完重发
+    cv.history.splice(cv.history.indexOf(m), 1);
+    cv.lastActiveAt = Date.now();
+    save(); renderMsgs(); renderConvList();
+    var inp = $('input');
+    inp.value = (inp.value ? inp.value + '\n' : '') + m.text;
+    autoGrow(); inp.focus();
+    addNote('已把消息放回输入框，可修改后重新发送。');
+    return;
+  }
+  var c = getChar(cv, m.speakerId);
+  if(!c) return;
+  cv.history.splice(cv.history.indexOf(m), 1);
+  cv.lastActiveAt = Date.now();
+  save(); renderMsgs(); renderConvList();
+  stopFlag = false;
+  setGenerating(true);
+  generateReply(c, cv).then(function(){ setGenerating(false); }, function(){ setGenerating(false); });
+}
+$('msgList').addEventListener('click', function(e){
+  var btn = e.target.closest('[data-act]');
+  if(!btn) return;
+  var wrap = btn.closest('.msg[data-id]');
+  if(!wrap) return;
+  var act = btn.getAttribute('data-act');
+  var mid = Number(wrap.dataset.id);
+  if(act === 'edit') enterEdit(mid);
+  else if(act === 'edit-save') editSave(mid);
+  else if(act === 'edit-cancel') editCancel(mid);
+  else if(act === 'copy') copyMsg(mid);
+  else if(act === 'reset') resetMsg(mid);
+});
+
 function addNote(text){
   var list = $('msgList');
   var n = document.createElement('div');
