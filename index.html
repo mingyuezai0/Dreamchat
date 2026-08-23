@@ -40,8 +40,10 @@
   .conv-item:hover{background:#f5f6fa;}
   .conv-item.active{background:#eef2ff;}
   .conv-item.active::before{content:''; position:absolute; left:-8px; top:20%; bottom:20%; width:3px; border-radius:3px; background:var(--accent);}
-  .conv-avatar{width:44px; height:44px; border-radius:50%; overflow:hidden; flex-shrink:0; background:#eef1fb; display:flex; align-items:center; justify-content:center; font-size:22px; position:relative;}
+  /* 会话头像框：群聊=圆角方形（双人图标），故事=圆形（书和笔），配色随主题 */
+  .conv-avatar{width:44px; height:44px; border-radius:12px; overflow:hidden; flex-shrink:0; background:#ece9ff; border:1px solid #d9d3ff; display:flex; align-items:center; justify-content:center; font-size:22px; position:relative; color:#6a5ff0;}
   .conv-avatar img{width:100%; height:100%; object-fit:cover;}
+  .conv-avatar.story,.header-avatar.story{border-radius:50%; background:#fdf0dd; border-color:#f2d9ae; color:#b06d1f;}
   .conv-info{flex:1; min-width:0;}
   .conv-name{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .conv-preview{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;}
@@ -63,7 +65,7 @@
   .chat-header h2{font-size:16px;}
   .chat-header .sub{font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none;}
   .chat-header .sub::-webkit-scrollbar{display:none;}
-  .header-avatar{width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:#eef1fb; display:flex; align-items:center; justify-content:center; font-size:20px; position:relative;}
+  .header-avatar{width:40px; height:40px; border-radius:12px; overflow:hidden; flex-shrink:0; background:#ece9ff; border:1px solid #d9d3ff; display:flex; align-items:center; justify-content:center; font-size:20px; position:relative; color:#6a5ff0;}
   .header-avatar img{width:100%; height:100%; object-fit:cover;}
   .back-btn{display:none; margin-right:2px; color:var(--muted); font-size:18px; padding:4px 8px; border-radius:8px;}
   .back-btn:hover{background:#eef0f5; color:var(--text);}
@@ -440,7 +442,8 @@
   html[data-theme="dark"] .icon-btn:hover{background:#262b35;}
   html[data-theme="dark"] .icon-btn.danger:hover{background:#3a2729;}
   html[data-theme="dark"] .chat-header{background:rgba(23,26,33,.7);}
-  html[data-theme="dark"] .header-avatar{background:#262b35;}
+  html[data-theme="dark"] .conv-avatar,html[data-theme="dark"] .header-avatar{background:#2a2f52; border-color:#3a4077; color:#7b6df5;}
+  html[data-theme="dark"] .conv-avatar.story,html[data-theme="dark"] .header-avatar.story{background:#3a2f1f; border-color:#58472c; color:#e5b25c;}
   html[data-theme="dark"] .back-btn:hover{background:#262b35;}
   html[data-theme="dark"] .text-btn:hover{background:#262b35;}
   html[data-theme="dark"] .msg .avatar{background:#262b35;}
@@ -531,7 +534,8 @@
   html[data-theme="scroll"] .icon-btn:hover{background:#ecdfbe;}
   html[data-theme="scroll"] .icon-btn.danger:hover{background:#f2ddcf;}
   html[data-theme="scroll"] .chat-header{background:rgba(245,236,214,.75);}
-  html[data-theme="scroll"] .header-avatar{background:#efe0ba;}
+  html[data-theme="scroll"] .conv-avatar,html[data-theme="scroll"] .header-avatar{background:#e6dab8; border-color:#c9b57f; color:#6a5ff0;}
+  html[data-theme="scroll"] .conv-avatar.story,html[data-theme="scroll"] .header-avatar.story{background:#f6e8c8; border-color:#dfc088; color:#a03d28;}
   html[data-theme="scroll"] .back-btn:hover{background:#ecdfbe;}
   html[data-theme="scroll"] .text-btn:hover{background:#ecdfbe;}
   html[data-theme="scroll"] .msg .avatar{background:#efe0ba;}
@@ -1131,8 +1135,13 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.2.4';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.2.5';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.2.5', date:'2026-08-24', title:'默认头像与头像框 · 教程原地更新', items:[
+    '群聊未设置头像时默认显示「两个人形」描边图标，故事默认显示「一本书加一支笔」描边图标，聊天列表和顶部都会显示',
+    '会话列表新增头像框区分：群聊是方形头像框、故事是圆形头像框，深色 / 卷轴风格也配好了各自的配色',
+    '黑板功能教程升级改为「原地改旧教程便签」，不再新增便签；用户已删掉的教程便签不会重新贴出'
+  ]},
   { v:'0.2.4', date:'2026-08-24', title:'关键词 UI 优化 · 教程更新 · 风格还原修复', items:[
     '关键词的「词」输入框改短（最多 20 字），「详情」改为词框右侧的「详情」按钮，点击展开 / 收起，查看和编辑更方便',
     '关键词相关的输入框在黑夜风格与卷轴风格下的文字不再看不清，配色统一适配两种风格',
@@ -1265,7 +1274,6 @@ var ANIME_AVS = [
   avSvg({bg:'#ffe4ec', hair:'#e86a8e', brow:'#c24e70', eye:'#5c2e3b', ahoge:true})
 ];
 var AV_NAMES = ['橙发少女','黑发短发','粉发双马尾','金发长直','紫发猫耳','蓝发中长','绿发呆毛','红发双马尾','银发长直','茶棕发带','墨黑猫耳','天蓝双马尾','奶咖短发','薄荷盘发','奶油双马尾','玫红刘海'];
-var DEFAULT_AV = { mode:'svg', value:ANIME_AVS[0] };   // 新建群聊/故事/成员/角色的固定默认头像
 var AUTO_NAMES = ['小智','小美','阿豪','小雨','小云','小星','阿枫','小梦'];
 var DEFAULT_CHARS = [
   { name:'小智', avatar:{mode:'svg', value:ANIME_AVS[1]}, persona:'你是「小智」，一位好奇心旺盛的科学家，喜欢用通俗的话解释复杂的事物，偶尔冒出几个冷知识。', present:true, memory:'' },
@@ -1279,6 +1287,8 @@ var ICON_DICE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 var ICON_CHART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>';
 var ICON_LEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>';
 var ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14"/><path d="M5 14l1-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4l1 3z"/></svg>';
+var AV_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';   // 群聊默认头像：两个人形（描边）
+var AV_STORY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v13"/><path d="M3 18a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/><path d="M17.5 3.5l3.5 3.5"/><path d="M14.5 6.5l3 3"/></svg>';   // 故事默认头像：一本书 + 一支笔（描边）
 var NPC_NAME = 'NPC角色';
 var NPC_ROLE_AVS = ANIME_AVS;  // 路人头像池（复用二次元头像），按角色名散列取
 
@@ -1304,12 +1314,19 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 2;
+var BOARD_TUT_VERSION = 3;
 var BOARD_TUTORIAL = [
-  { color:'c0', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词；开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数小工具；每条消息可「编辑 / 复制 / 重置」。' },
-  { color:'c1', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 故事自带一位「NPC角色」：剧情需要路人时它会自己登场，编辑里能看它按角色分开的记忆。\n· 旁白单独成块显示在消息之间，只能复制。' },
-  { color:'c2', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词；开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数小工具；每条消息可「编辑 / 复制 / 重置」。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 故事自带一位「NPC角色」：剧情需要路人时它会自己登场，编辑里能看它按角色分开的记忆。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事默认是「书和笔」头像、圆形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：方形头像框是「群聊」（双人图标）、圆形是「故事」（书和笔），一眼区分。' }
 ];
+/* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
+function tutSlotOf(n){
+  if(typeof n.tut === 'number') return n.tut;
+  var t = String(n.text || '');
+  for(var i=0;i<BOARD_TUTORIAL.length;i++){ if(t.indexOf(BOARD_TUTORIAL[i].head) === 0) return i; }
+  return -1;
+}
 var panelView = 'conv';
 var libMode = 'card';
 var libId = null;
@@ -1476,14 +1493,33 @@ function load(){
   try{ boardRaw = localStorage.getItem(LS.board); }catch(e){}
   try{ board = boardRaw === null ? null : JSON.parse(boardRaw); }catch(e){ board = null; }
   if(!Array.isArray(board)) board = [];
-  var tutShown = false;
-  try{ tutShown = localStorage.getItem(LS.boardTut) === String(BOARD_TUT_VERSION); }catch(e){}
-  if(!tutShown){
-    // 首次打开、或教程内容升级后（BOARD_TUT_VERSION 变化）补「功能教程」便签：拼到已有便签后面；删掉后不再出现
-    var tut = BOARD_TUTORIAL.map(function(t, i){
-      return { id: seq++, text: t.text, color: t.color, ts: Date.now() };
-    });
-    board = board.concat(tut);
+  var tutMarker = null;
+  try{ tutMarker = localStorage.getItem(LS.boardTut); }catch(e){}
+  if(String(tutMarker) !== String(BOARD_TUT_VERSION)){
+    // 教程内容升级（BOARD_TUT_VERSION 变化）：直接在旧教程便签上改，不会新增便签；
+    // 用户已删掉的教程便签不再补回；只有从未收到过教程的新用户才首次贴出三条。
+    var tutSlots = [], hasTut = false;
+    board.forEach(function(n){ var s = tutSlotOf(n); if(s < 0) return; hasTut = true; if(!tutSlots[s] || (n.id||0) > (tutSlots[s].id||0)) tutSlots[s] = n; });
+    if(hasTut){
+      var keep = [];
+      board.forEach(function(n){
+        var s = tutSlotOf(n);
+        if(s >= 0 && n !== tutSlots[s]) return;   // 同槽位旧的重复教程便签：丢弃，只保留最新一张
+        if(s >= 0){
+          n.text = BOARD_TUTORIAL[s].text;   // 原地改文字与颜色，保留原有位置和顺序
+          n.color = BOARD_TUTORIAL[s].color;
+          n.tut = s;
+          if(typeof n.ts !== 'number') n.ts = Date.now();
+        }
+        keep.push(n);
+      });
+      board = keep;
+    } else if(tutMarker === null){
+      // 首次打开：贴出三条教程便签
+      for(var k=0;k<BOARD_TUTORIAL.length;k++){
+        board.push({ id: seq++, text: BOARD_TUTORIAL[k].text, color: BOARD_TUTORIAL[k].color, tut: k, ts: Date.now() });
+      }
+    }
     try{ localStorage.setItem(LS.boardTut, String(BOARD_TUT_VERSION)); }catch(e){}
     boardColorIdx = board.length;
     save();
@@ -1540,15 +1576,16 @@ function stopAll(){
 }
 
 /* ---------- 会话列表 ---------- */
+/* 群聊 / 故事未自带头像时的默认头像：群聊=双人形描边图标，故事=书和笔描边图标 */
+function convDefaultAv(cv){
+  return { mode:'svg', value: (cv && cv.mode === 'story') ? AV_STORY : AV_CHAT };
+}
 function convAvatarInner(cv){
   if(cv.avatar && cv.avatar.value) return avatarHtml({avatar:cv.avatar});
-  var ch = null;
-  for(var i=0;i<cv.chars.length;i++){ if(cv.chars[i].present){ ch = cv.chars[i]; break; } }
-  if(!ch) ch = cv.chars[0];
-  return ch ? avatarHtml(ch) : '<span class="av-svg">'+DEFAULT_AV.value+'</span>';
+  return avatarHtml({ avatar: convDefaultAv(cv) });
 }
 function convAvatarHtml(cv){
-  return '<div class="conv-avatar">'+convAvatarInner(cv)+'</div>';
+  return '<div class="conv-avatar'+(cv && cv.mode === 'story' ? ' story' : '')+'">'+convAvatarInner(cv)+'</div>';
 }
 function lastMsg(cv){
   for(var i=cv.history.length-1;i>=0;i--){ if(cv.history[i].status !== 'streaming') return cv.history[i]; }
@@ -1995,6 +2032,7 @@ function renderChatHeader(){
     return;
   }
   $('convName').textContent = cv.name;
+  $('headerAvatar').className = 'header-avatar' + (cv.mode === 'story' ? ' story' : '');
   $('headerAvatar').innerHTML = convAvatarInner(cv);
   var present = cv.chars.filter(function(c){ return c.present; });
   $('headerSub').textContent = '成员 '+cv.chars.length+'/'+MAX_MEMBERS+' · 在场：' + (present.length ? present.map(function(c){return c.name;}).join('、') : '（无）');
@@ -3322,7 +3360,7 @@ function openGroupSettings(tab){
   $('gsApiBase').value = cv.apiBase || '';
   $('gsModel').value = cv.model || '';
   $('gsAutoMem').checked = !!cv.autoMemory;
-  gsAvatarDraft = (cv.avatar && cv.avatar.mode) ? { mode:cv.avatar.mode, value:cv.avatar.value||'' } : defaultAvatar();
+  gsAvatarDraft = (cv.avatar && cv.avatar.mode) ? { mode:cv.avatar.mode, value:cv.avatar.value||'' } : convDefaultAv(cv);
   setGsAvatarTab((gsAvatarDraft.mode === 'upload' || gsAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
   if(gsAvatarDraft.mode === 'svg'){ var _i = ANIME_AVS.indexOf(gsAvatarDraft.value); if(_i >= 0) selectGsEmoji(_i); }
   $('gsAvFile').value = '';
