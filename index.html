@@ -231,6 +231,28 @@
   .kw-detail-wrap .kw-detail:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.12);}
   .kw-empty{margin:2px 0 0;}
 
+  /* ---------- 关系图 ---------- */
+  #relView{position:fixed; inset:0; z-index:60; background:var(--bg); display:flex; flex-direction:column;}
+  #relView.hidden{display:none;}
+  .rel-header{display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); flex-shrink:0;}
+  .rel-title{flex:1; font-size:16px; font-weight:700; color:var(--text);}
+  .rel-canvas{flex:1; position:relative; overflow:hidden; min-height:0;}
+  #relSvg{width:100%; height:100%; display:block; touch-action:none; cursor:grab;}
+  #relSvg.dragging{cursor:grabbing;}
+  .rel-node{cursor:pointer;}
+  .rel-node circle{stroke-width:1.5;}
+  .rel-node-ring circle{fill:var(--panel); stroke:var(--border);}
+  .rel-node-ring.dim{opacity:.35;}
+  .rel-node-ring.dim:hover{opacity:.7;}
+  .rel-node-center circle{fill:var(--accent); stroke:var(--accent-2);}
+  .rel-node text{font-size:12px; text-anchor:middle; pointer-events:none; user-select:none; fill:var(--text);}
+  .rel-node-ring text{fill:var(--text);}
+  .rel-node-center text{fill:var(--accent); font-weight:700;}
+  .rel-edge-line{stroke:var(--accent); stroke-width:1.5; opacity:.8;}
+  .rel-edge-label{font-size:12px; fill:var(--muted); text-anchor:middle; stroke:var(--bg); stroke-width:3px; paint-order:stroke; stroke-linejoin:round;}
+  .rel-loading{position:absolute; top:12px; left:50%; transform:translateX(-50%); font-size:13px; color:var(--muted); z-index:2;}
+  .rel-note{position:absolute; top:12px; left:50%; transform:translateX(-50%); font-size:12px; color:var(--muted); text-align:center; max-width:82%; line-height:1.5; z-index:2;}
+
   .tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;}
   .tabs button{font-size:13px; padding:6px 14px; border-radius:9px; color:var(--muted); background:#f2f4f8;}
   .tabs button.active{background:var(--accent); color:#fff;}
@@ -411,6 +433,9 @@
     .msg.on-screen .msg-actions{opacity:1;}
     .msg-actions button{padding:5px 10px; font-size:12px;}
     .bubble .edit-box{min-height:56px;}
+    .rel-header{padding:10px 12px;}
+    .rel-node text{font-size:13px;}
+    .rel-edge-label{font-size:13px;}
   }
 
   /* 界面设置 · UI 风格选择 */
@@ -767,6 +792,7 @@
           <button class="fab-item" data-act="dice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8" cy="8" r="1"/><circle cx="16" cy="8" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/></svg>骰子</button>
           <button class="fab-item" data-act="cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>费用</button>
           <button class="fab-item" data-act="len"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>字数</button>
+          <button class="fab-item" data-act="rel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>关系</button>
         </div>
         <button id="btnMore" class="fab-btn" title="更多工具">
           <svg id="morePlus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -1125,6 +1151,18 @@
 <!-- 居中提醒（渐变红字，淡入淡出） -->
 <div id="toast" class="toast"><span class="toast-txt"></span></div>
 
+<!-- 关系图（当前群聊/故事的人物关系连线） -->
+<div id="relView" class="hidden">
+  <div class="rel-header">
+    <button class="icon-btn" id="btnBackRel" title="返回">←</button>
+    <span class="rel-title">关系</span>
+    <button id="btnRelAnalyze" class="text-btn">重新分析</button>
+  </div>
+  <div class="rel-canvas" id="relCanvas"><svg id="relSvg"></svg></div>
+  <div class="rel-loading hidden" id="relAnalyzing">正在分析人物关系…</div>
+  <div class="rel-note hidden" id="relNote"></div>
+</div>
+
 <script>
 (function(){
 'use strict';
@@ -1135,8 +1173,13 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.2.7';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.2.8';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.2.8', date:'2026-08-24', title:'关系图 · 角色关系可视化', items:[
+    '群聊 / 故事右下角「＋」新增「关系」：进入新界面查看当前群聊 / 故事里角色之间的人物关系网络',
+    '人物关系由 AI 根据对话自动分析（敌人、兄弟、师徒等），没有交集或关系不明的人物不会相连',
+    '点任意角色即可把 TA 设为中心，中心切换带平滑动画；关系图支持拖拽平移与滚轮 / 双指缩放，桌面与手机、三种风格通用'
+  ]},
   { v:'0.2.7', date:'2026-08-24', title:'NPC 路人绝不冒充已设定角色', items:[
     '故事里的 NPC 扮演路人时，提示词会列出已设定好的角色名并明确禁止使用，路人只能起这些名字之外的新名字',
     '即使模型偶尔仍写了已设定角色的名字，也会自动剥掉该名字前缀，以「NPC角色」身份保留内容，不再冒充该成员'
@@ -1294,6 +1337,7 @@ var ICON_SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 var ICON_DICE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8" cy="8" r="1"/><circle cx="16" cy="8" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/></svg>';
 var ICON_CHART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>';
 var ICON_LEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>';
+var ICON_REL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';   // 关系（三个圆点 + 连线）
 var ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14"/><path d="M5 14l1-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4l1 3z"/></svg>';
 var AV_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';   // 群聊默认头像：两个人形（描边）
 var AV_STORY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v13"/><path d="M3 18a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/><path d="M17.5 3.5l3.5 3.5"/><path d="M14.5 6.5l3 3"/></svg>';   // 故事默认头像：一本书 + 一支笔（描边）
@@ -1312,6 +1356,9 @@ function defaultAvatar(){ return { mode:'svg', value:ANIME_AVS[0] }; }
 var avatarDraft = defaultAvatar();
 var gsAvatarDraft = defaultAvatar();
 var libAvatarDraft = defaultAvatar();
+/* ---------- 关系图状态 ---------- */
+var relState = { open:false, center:'我', nodes:[], edges:[], view:{tx:0,ty:0,k:1}, anim:null, drag:false, dragFrom:null, pinch:null, pointers:{}, analyzing:false };
+var REL_K_MIN = 0.5, REL_K_MAX = 2.5;
 var editCharId = null;
 var cmTimer = null;
 var cmAction = null;
@@ -1322,9 +1369,9 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 5;
+var BOARD_TUT_VERSION = 6;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词；开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数小工具；每条消息可「编辑 / 复制 / 重置」。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词；开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「编辑 / 复制 / 重置」。「关系图」能自动分析成员间的人物关系，点角色可切换关系中心。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
   { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 故事自带一位「NPC角色」：剧情需要路人时它会自己登场（路人名不会和已设定成员重名），编辑里能看它按角色分开的记忆。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
   { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
 ];
@@ -1433,7 +1480,7 @@ function newConv(name, chars, history){
   chars.forEach(function(c){ if(typeof c.present==='undefined') c.present = true; if(typeof c.memory!=='string') c.memory=''; assignId(c); });
   history.forEach(assignId);
   var now = Date.now();
-  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', player:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, npcMem:{}, npcLastRole:null, createdAt:now, lastActiveAt:now };
+  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', player:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, npcMem:{}, npcLastRole:null, relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
 }
 function load(){
   try{ settings = Object.assign({apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE}, JSON.parse(localStorage.getItem(LS.set)||'{}')); }catch(e){}
@@ -1476,6 +1523,8 @@ function load(){
     if(!cv.npcMem || typeof cv.npcMem !== 'object' || Array.isArray(cv.npcMem)) cv.npcMem = {};
     if(typeof cv.npcLastRole !== 'string') cv.npcLastRole = null;
     if(typeof cv.compressMem !== 'boolean') cv.compressMem = false;
+    if(!Array.isArray(cv.relations)) cv.relations = [];
+    if(typeof cv.relationsTs !== 'number') cv.relationsTs = 0;
     cv.worldKeywords = normalizeKw(cv.worldKeywords);
     cv.chars.forEach(function(c){
       if(typeof c.present==='undefined') c.present = true;
@@ -1749,6 +1798,7 @@ $('fabMenu').addEventListener('click', function(e){
   else if(act === 'dice') openDice();
   else if(act === 'cost') openCost();
   else if(act === 'len') openLen();
+  else if(act === 'rel') openRel();
 });
 document.addEventListener('click', closeFabMenu);
 
@@ -2913,6 +2963,8 @@ function importBackup(file){
       if(!conv.npcMem || typeof conv.npcMem !== 'object' || Array.isArray(conv.npcMem)) conv.npcMem = {};
       if(typeof conv.npcLastRole !== 'string') conv.npcLastRole = null;
       if(typeof conv.compressMem !== 'boolean') conv.compressMem = false;
+      if(!Array.isArray(conv.relations)) conv.relations = [];
+      if(typeof conv.relationsTs !== 'number') conv.relationsTs = 0;
       conv.worldKeywords = normalizeKw(conv.worldKeywords);
       conv.chars.forEach(function(c){ if(typeof c.name !== 'string' || !c.name) c.name = 'AI'; if(typeof c.present === 'undefined') c.present = true; if(typeof c.memory !== 'string') c.memory = ''; c.keywords = normalizeKw(c.keywords); });
       ensureNpc(conv);   // 故事自动带上固定 NPC 角色
@@ -4002,6 +4054,373 @@ document.querySelectorAll('.modal-overlay').forEach(function(ov){
     }
   });
 });
+
+/* ---------- 关系图 ---------- */
+function relNames(cv){
+  var names = ['我'];
+  (cv.chars || []).forEach(function(c){ if(c.name && names.indexOf(c.name) === -1) names.push(c.name); });
+  return names;
+}
+function relNodeR(isCenter){ var b = (window.innerWidth <= 780 ? 20 : 16); return isCenter ? b + 4 : b; }
+function relRingR(){
+  var c = $('relCanvas');
+  return Math.min(c.clientWidth || 600, c.clientHeight || 400) * 0.32;
+}
+function relLayout(center){
+  var cv = current();
+  var others = relNames(cv).filter(function(n){ return n !== center; });
+  var R = relRingR(), N = Math.max(others.length, 1);
+  var nodes = [{ name:center, x:0, y:0 }];
+  others.forEach(function(n, i){
+    var a = (i / N) * 2 * Math.PI - Math.PI / 2;   // 第一个成员放在正上方
+    nodes.push({ name:n, x:R * Math.cos(a), y:R * Math.sin(a) });
+  });
+  return nodes;
+}
+function relSwitchLayout(newCenter){
+  var cv = current();
+  var slotOf = {};
+  relState.nodes.forEach(function(n, i){ slotOf[n.name] = i; });   // i=0 是中心，环上槽位 = i-1
+  var oldCenter = relState.center;
+  var others = relNames(cv).filter(function(n){ return n !== newCenter; });
+  var R = relRingR(), N = Math.max(others.length, 1);
+  var nodes = [{ name:newCenter, x:0, y:0 }];
+  others.forEach(function(n, i){
+    // 旧中心去点中节点原来的环上槽位，其余成员保持原位（最小移动 → 丝滑）
+    var slot = (n === oldCenter)
+      ? (slotOf[newCenter] !== undefined ? slotOf[newCenter] - 1 : i)
+      : (slotOf[n] !== undefined ? slotOf[n] - 1 : i);
+    slot = Math.max(0, Math.min(N - 1, slot));
+    var a = (slot / N) * 2 * Math.PI - Math.PI / 2;
+    nodes.push({ name:n, x:R * Math.cos(a), y:R * Math.sin(a) });
+  });
+  return nodes;
+}
+function relPosOf(name){
+  for(var i = 0; i < relState.nodes.length; i++){ if(relState.nodes[i].name === name) return relState.nodes[i]; }
+  return null;
+}
+function relEdgesFor(center){
+  var cv = current();
+  var byName = {};
+  relState.nodes.forEach(function(n){ byName[n.name] = 1; });
+  var out = [];
+  (cv.relations || []).forEach(function(e){
+    var far = (e.a === center) ? e.b : (e.b === center ? e.a : null);
+    if(far && far !== center && byName[far] && byName[center]){
+      out.push({ a:center, b:far, rel:(e.rel && e.rel.trim()) ? e.rel.trim() : '相识' });
+    }
+  });
+  return out;
+}
+function renderRelGraph(){
+  var svg = $('relSvg'), ns = 'http://www.w3.org/2000/svg';
+  svg.innerHTML = '';
+  relState.lineEls = [];
+  relState.labEls = [];
+  relState.nodeEls = {};
+  // 先画边（在节点下层）
+  relState.edges.forEach(function(e){
+    var g = document.createElementNS(ns, 'g');
+    g.setAttribute('class', 'rel-edge');
+    var line = document.createElementNS(ns, 'line');
+    line.setAttribute('class', 'rel-edge-line');
+    g.appendChild(line);
+    relState.lineEls.push(line);
+    var lab = document.createElementNS(ns, 'text');
+    lab.setAttribute('class', 'rel-edge-label');
+    lab.textContent = e.rel;
+    g.appendChild(lab);
+    relState.labEls.push(lab);
+    svg.appendChild(g);
+  });
+  // 再画节点（盖住线头）
+  relState.nodes.forEach(function(n){
+    var g = document.createElementNS(ns, 'g');
+    g.setAttribute('class', 'rel-node ' + (n.name === relState.center ? 'rel-node-center' : 'rel-node-ring'));
+    g.setAttribute('data-name', n.name);
+    var c = document.createElementNS(ns, 'circle');
+    g.appendChild(c);
+    var t = document.createElementNS(ns, 'text');
+    t.textContent = n.name;
+    g.appendChild(t);
+    svg.appendChild(g);
+    relState.nodeEls[n.name] = { g:g, c:c, t:t };
+  });
+}
+function updateRelGraph(){
+  var v = relState.view;
+  var pos = {};
+  relState.nodes.forEach(function(n){ pos[n.name] = { x:v.tx + v.k * n.x, y:v.ty + v.k * n.y }; });
+  relState.nodes.forEach(function(n){
+    var el = relState.nodeEls[n.name];
+    if(!el) return;
+    var p = pos[n.name];
+    var isC = (n.name === relState.center);
+    var r = relNodeR(isC);
+    el.c.setAttribute('cx', p.x);
+    el.c.setAttribute('cy', p.y);
+    el.c.setAttribute('r', r);
+    el.t.setAttribute('x', p.x);
+    el.t.setAttribute('y', p.y + r + 13);
+    var connected = relState.edges.some(function(e){ return e.a === n.name || e.b === n.name; });
+    el.g.classList.toggle('dim', !isC && !connected);
+  });
+  relState.edges.forEach(function(e, i){
+    var line = relState.lineEls[i], lab = relState.labEls[i];
+    if(!line) return;
+    var p1 = pos[e.a], p2 = pos[e.b];
+    if(!p1 || !p2) return;
+    line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+    line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+    var mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+    var dx = p2.x - p1.x, dy = p2.y - p1.y, L = Math.hypot(dx, dy) || 1;
+    var px = -dy / L * 10, py = dx / L * 10;
+    lab.setAttribute('x', mx + px);
+    lab.setAttribute('y', my + py - 3);
+  });
+}
+function relNodeClick(name){
+  if(name === relState.center || relState.anim) return;
+  var fromPos = {};
+  relState.nodes.forEach(function(n){ fromPos[n.name] = { x:n.x, y:n.y }; });
+  var fromView = { tx:relState.view.tx, ty:relState.view.ty, k:relState.view.k };
+  var toNodes = relSwitchLayout(name);
+  var toPos = {};
+  toNodes.forEach(function(n){ toPos[n.name] = { x:n.x, y:n.y }; });
+  relState.center = name;
+  relState.edges = relEdgesFor(name);
+  renderRelGraph();
+  var C = { x:$('relCanvas').clientWidth / 2, y:$('relCanvas').clientHeight / 2 };
+  var toView = { tx:C.x, ty:C.y, k:fromView.k };
+  var t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+  var dur = 350;
+  function frame(now){
+    var t = Math.min(1, ((now || t0) - t0) / dur);
+    var e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;   // easeInOutCubic
+    relState.view.tx = fromView.tx + (toView.tx - fromView.tx) * e;
+    relState.view.ty = fromView.ty + (toView.ty - fromView.ty) * e;
+    relState.view.k = fromView.k + (toView.k - fromView.k) * e;
+    relState.nodes.forEach(function(n){
+      var f = fromPos[n.name], g = toPos[n.name];
+      if(!f || !g) return;
+      n.x = f.x + (g.x - f.x) * e;
+      n.y = f.y + (g.y - f.y) * e;
+    });
+    updateRelGraph();
+    if(t < 1){
+      relState.anim = requestAnimationFrame(frame);
+    } else {
+      relState.anim = null;
+      relState.view = toView;
+      relState.nodes = toNodes;
+      updateRelGraph();
+    }
+  }
+  relState.anim = requestAnimationFrame(frame);
+}
+function openRel(){
+  var cv = current();
+  if(!cv){ showToast('还没有打开任何群聊/故事。'); return; }
+  stopAll();
+  relState.open = true;
+  relState.center = '我';
+  $('relView').classList.remove('hidden');
+  $('relNote').classList.add('hidden');
+  relState.nodes = relLayout('我');
+  relState.edges = relEdgesFor('我');
+  relState.view = { tx:$('relCanvas').clientWidth / 2, ty:$('relCanvas').clientHeight / 2, k:1 };
+  renderRelGraph();
+  updateRelGraph();
+  if(Array.isArray(cv.relations) && cv.relations.length){
+    return;   // 已有关系：直接展示
+  }
+  if(missingKey(cv)){
+    $('relNote').textContent = keyNote(cv);
+    $('relNote').classList.remove('hidden');
+  } else {
+    analyzeRelations(cv, true);
+  }
+}
+function closeRel(){
+  if(relState.anim){ cancelAnimationFrame(relState.anim); relState.anim = null; }
+  relState.open = false;
+  $('relView').classList.add('hidden');
+}
+function applyRelations(cv, edges){
+  var names = ['我'];
+  (cv.chars || []).forEach(function(c){ if(c.name && names.indexOf(c.name) === -1) names.push(c.name); });
+  var seen = {}, out = [];
+  (Array.isArray(edges) ? edges : []).forEach(function(e){
+    var a = e && e.a, b = e && e.b, rel = e && e.rel;
+    if(typeof a !== 'string' || typeof b !== 'string') return;
+    a = a.trim(); b = b.trim();
+    rel = (typeof rel === 'string' && rel.trim()) ? rel.trim() : '相识';
+    if(names.indexOf(a) === -1 || names.indexOf(b) === -1) return;   // 丢弃已删/改名成员
+    if(a === b) return;
+    var key = [a, b].sort().join('\u0000');   // 无向去重
+    if(seen[key]) return;
+    seen[key] = 1;
+    out.push({ a:a, b:b, rel:rel });
+  });
+  cv.relations = out;
+  cv.relationsTs = Date.now();
+  save();
+  return out;
+}
+function parseEdges(raw, cv){
+  var arr = null;
+  if(typeof raw === 'string'){
+    try{ arr = JSON.parse(raw); }catch(e){}
+    if(!Array.isArray(arr)){
+      var m = raw.match(/\[[\s\S]*\]/);   // 抗 markdown 围栏 / 散文 / 截断
+      if(m){ try{ arr = JSON.parse(m[0]); }catch(e2){} }
+    }
+  } else if(Array.isArray(raw)){
+    arr = raw;
+  }
+  return applyRelations(cv, arr);
+}
+function analyzeRelations(cv, auto){
+  if(relState.analyzing) return;
+  if(missingKey(cv)){ showToast(keyNote(cv)); return; }
+  relState.analyzing = true;
+  $('relAnalyzing').classList.remove('hidden');
+  $('btnRelAnalyze').disabled = true;
+  var names = relNames(cv);
+  var msgs = [{ role:'system', content:'你是「梦语」的关系分析助手。请根据给出的群聊 / 故事记录，分析各角色之间的人物关系。' }];
+  var parts = [];
+  if(cv.world) parts.push('【世界观】'+cv.world);
+  if(cv.player) parts.push('【玩家设定】'+cv.player);
+  (cv.chars || []).forEach(function(ch){ if(ch.persona) parts.push('【'+ch.name+'】'+ch.persona); });
+  if(cv.summary) parts.push('【此前的总结】'+cv.summary);
+  var lines = [];
+  (cv.history || []).forEach(function(m){
+    if(m.status === 'streaming') return;
+    lines.push((m.speakerId === 'user' ? '我' : (m.speaker || '？')) + '：' + m.text);
+  });
+  parts.push('【对话记录】\n' + (lines.length ? lines.join('\n') : '（暂无对话）'));
+  var instr = '请从上面的记录里判断人物之间的关系。要求：\n' +
+    '1. 只分析记录中确实体现出关系的人物（如：敌人、兄弟、师徒、恋人、同事、朋友、兄妹等）；没有交集或关系不明的人物之间不要输出关系。\n' +
+    '2. 人物名字只能从「' + names.join('、') + '」里选，不要发明新名字；每条关系包含两个不同的人物。\n' +
+    '3. 只输出一个 JSON 数组，不要任何说明文字，格式为 [{"a":"角色A","b":"角色B","rel":"关系名"}]；没有关系就输出 []。';
+  msgs.push({ role:'user', content: parts.join('\n\n') + '\n\n' + instr });
+  var rb = { model: groupModel(cv), messages: msgs, stream:false, temperature:0.3, max_tokens:500 };
+  if(isDeepseek(cv)) rb.thinking = { type:'disabled' };
+  var rh = { 'Content-Type':'application/json' };
+  var rgk = groupKey(cv);
+  if(rgk && rgk.trim()) rh['Authorization'] = 'Bearer ' + rgk;
+  fetch(apiUrl(cv), { method:'POST', headers:rh, body:JSON.stringify(rb) })
+    .then(function(r){
+      if(!r.ok) return r.text().then(function(){ throw new Error('HTTP ' + r.status); }, function(){ throw new Error('HTTP ' + r.status); });
+      return r.json();
+    })
+    .then(function(j){
+      var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      if(typeof content !== 'string' || !content.trim()) throw new Error('empty');
+      applyRelations(cv, parseEdges(content, cv));
+      showToast(auto ? '已自动分析出人物关系' : '已重新分析');
+      if(!$('relView').classList.contains('hidden')){
+        relState.center = '我';
+        relState.nodes = relLayout('我');
+        relState.edges = relEdgesFor('我');
+        relState.view = { tx:$('relCanvas').clientWidth / 2, ty:$('relCanvas').clientHeight / 2, k:1 };
+        renderRelGraph(); updateRelGraph();
+      }
+    })
+    .catch(function(){ showToast('关系分析失败，请稍后再试'); })   // 分析失败保留旧关系
+    .then(function(){
+      relState.analyzing = false;
+      $('relAnalyzing').classList.add('hidden');
+      $('btnRelAnalyze').disabled = false;
+    });
+}
+/* 缩放 / 平移（Pointer Events 单指平移 + 双指捏合，滚轮以光标为中心缩放） */
+function relWheel(e){
+  if(relState.anim) return;
+  e.preventDefault();
+  var r = $('relSvg').getBoundingClientRect();
+  var mx = e.clientX - r.left, my = e.clientY - r.top;
+  var k0 = relState.view.k;
+  var k2 = Math.max(REL_K_MIN, Math.min(REL_K_MAX, k0 * Math.exp(-e.deltaY * 0.0015)));
+  var f = k2 / k0;
+  relState.view.tx = mx - (mx - relState.view.tx) * f;
+  relState.view.ty = my - (my - relState.view.ty) * f;
+  relState.view.k = k2;
+  updateRelGraph();
+}
+function relPnt(e){ return { x:e.clientX, y:e.clientY }; }
+function relDown(e){
+  if(relState.anim) return;
+  relState.pointers[e.pointerId] = relPnt(e);
+  var svg = $('relSvg');
+  if(typeof svg.setPointerCapture === 'function'){
+    try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+  }
+  var ids = Object.keys(relState.pointers);
+  if(ids.length === 1){
+    relState.drag = true;
+    relState.moved = false;
+    relState.dragFrom = { x:e.clientX, y:e.clientY, tx:relState.view.tx, ty:relState.view.ty };
+    var n = (e.target && e.target.closest) ? e.target.closest('.rel-node') : null;
+    relState.downName = n ? n.getAttribute('data-name') : null;
+    svg.classList.add('dragging');
+  } else if(ids.length === 2){
+    relState.drag = false; relState.downName = null;
+    svg.classList.remove('dragging');
+    var p = ids.map(function(id){ return relState.pointers[id]; });
+    relState.pinch = {
+      d0:Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y),
+      m0:{ x:(p[0].x + p[1].x) / 2, y:(p[0].y + p[1].y) / 2 },
+      k0:relState.view.k, tx0:relState.view.tx, ty0:relState.view.ty
+    };
+  }
+}
+function relMove(e){
+  if(relState.anim) return;
+  if(!relState.pointers[e.pointerId]) return;
+  relState.pointers[e.pointerId] = relPnt(e);
+  var ids = Object.keys(relState.pointers);
+  if(ids.length === 1 && relState.drag){
+    var dx = e.clientX - relState.dragFrom.x, dy = e.clientY - relState.dragFrom.y;
+    if(Math.abs(dx) + Math.abs(dy) > 6) relState.moved = true;
+    relState.view.tx = relState.dragFrom.tx + dx;
+    relState.view.ty = relState.dragFrom.ty + dy;
+    updateRelGraph();
+  } else if(ids.length === 2 && relState.pinch){
+    var p = ids.map(function(id){ return relState.pointers[id]; });
+    var d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+    var m = { x:(p[0].x + p[1].x) / 2, y:(p[0].y + p[1].y) / 2 };
+    var k2 = Math.max(REL_K_MIN, Math.min(REL_K_MAX, relState.pinch.k0 * (d / relState.pinch.d0)));
+    var f = k2 / relState.pinch.k0, m0 = relState.pinch.m0;
+    relState.view.tx = m0.x - (m0.x - relState.pinch.tx0) * f + (m.x - m0.x);
+    relState.view.ty = m0.y - (m0.y - relState.pinch.ty0) * f + (m.y - m0.y);
+    relState.view.k = k2;
+    updateRelGraph();
+  }
+}
+function relUp(e){
+  delete relState.pointers[e.pointerId];
+  var ids = Object.keys(relState.pointers);
+  if(ids.length === 0){
+    if(relState.drag && !relState.moved && relState.downName && relState.downName !== relState.center){
+      relNodeClick(relState.downName);
+    }
+    relState.drag = false; relState.downName = null;
+    $('relSvg').classList.remove('dragging');
+  }
+  if(ids.length < 2) relState.pinch = null;
+}
+$('btnBackRel').addEventListener('click', closeRel);
+$('btnRelAnalyze').addEventListener('click', function(){ var cv = current(); if(!cv) return; analyzeRelations(cv, false); });
+(function(){
+  var svg = $('relSvg');
+  svg.addEventListener('wheel', relWheel, { passive:false });
+  svg.addEventListener('pointerdown', relDown);
+  svg.addEventListener('pointermove', relMove);
+  svg.addEventListener('pointerup', relUp);
+  svg.addEventListener('pointercancel', relUp);
+})();
 
 /* ---------- 启动 ---------- */
 function renderGlobal(){
