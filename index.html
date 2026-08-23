@@ -46,6 +46,10 @@
   .conv-name{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .conv-preview{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;}
   .conv-time{font-size:11px; color:#b6bcc9; flex-shrink:0; align-self:flex-start; margin-top:3px;}
+  .conv-pin{flex-shrink:0; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; background:transparent; border:none; border-radius:7px; color:var(--muted); cursor:pointer; opacity:.45; transition:opacity .15s; align-self:center;}
+  .conv-pin svg{width:14px; height:14px;}
+  .conv-pin:hover{opacity:1; background:#eef0f5; color:var(--text);}
+  .conv-pin.on{opacity:1; color:var(--accent);}
 
   .icon-btn{width:30px; height:30px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:15px; color:var(--muted); flex-shrink:0;}
   .icon-btn svg{width:16px; height:16px;}
@@ -93,6 +97,8 @@
   /* ---------- 故事模式（旁白在消息之间 / 神态 / 台词） ---------- */
   .msg.narr{justify-content:center;}
   .msg.narr .narr-text{color:#8a91a4; font-style:italic; font-size:13px; text-align:center; line-height:1.6; padding:3px 24px;}
+  .msg.narr .msg-actions{justify-content:center; margin-top:0;}
+  .msg.narr .msg-actions button{font-size:11px; padding:2px 8px;}
   .story-narr{display:block; color:#8a91a4; font-style:italic; font-size:13px; line-height:1.6;}
   .story-act{display:block; color:#6a7285; font-style:italic; font-size:13px; line-height:1.6; margin-top:3px;}
   .story-line{display:block; color:#e07a0f; font-weight:600; margin-top:3px;}
@@ -373,7 +379,8 @@
     .fab-item{min-height:42px; font-size:14px;}
     .fab-item svg{width:18px; height:18px;}
     body:not(.chat-open) .fab{display:none;}   /* 手机端主页不显示聊天区「＋」，只在聊天里显示 */
-    .msg-actions{opacity:1;}                     /* 手机端消息操作按钮常显 */
+    .msg-actions{opacity:0;}                     /* 手机端操作栏默认隐藏：消息滚入屏幕（on-screen）时显示 */
+    .msg.on-screen .msg-actions{opacity:1;}
     .msg-actions button{padding:5px 10px; font-size:12px;}
     .bubble .edit-box{min-height:56px;}
   }
@@ -403,6 +410,7 @@
   html[data-theme="dark"] .conv-item:hover{background:#22262f;}
   html[data-theme="dark"] .conv-item.active{background:#242d45;}
   html[data-theme="dark"] .conv-time{color:#7d8495;}
+  html[data-theme="dark"] .conv-pin:hover{background:#262b35;}
   html[data-theme="dark"] .icon-btn:hover{background:#262b35;}
   html[data-theme="dark"] .icon-btn.danger:hover{background:#3a2729;}
   html[data-theme="dark"] .chat-header{background:rgba(23,26,33,.7);}
@@ -493,6 +501,7 @@
   html[data-theme="scroll"] .conv-item:hover{background:#f0e4c6;}
   html[data-theme="scroll"] .conv-item.active{background:#ecd9ae;}
   html[data-theme="scroll"] .conv-time{color:#b7a276;}
+  html[data-theme="scroll"] .conv-pin:hover{background:#ecdfbe;}
   html[data-theme="scroll"] .icon-btn:hover{background:#ecdfbe;}
   html[data-theme="scroll"] .icon-btn.danger:hover{background:#f2ddcf;}
   html[data-theme="scroll"] .chat-header{background:rgba(245,236,214,.75);}
@@ -1074,8 +1083,15 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.1.8';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.1.9';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.1.9', date:'2026-08-23', title:'重置删链 · 旁白复制 · 置顶 · 黑板教程', items:[
+    '「我」的消息点「重置」不再放回输入框：从那条消息起删除原文与 AI 的跟随回复（含旁白），并由 AI 重新生成跟随回复',
+    '故事的「旁白」块只保留「复制」按钮，不能编辑或重置',
+    '手机端「编辑 / 复制 / 重置」与旁白的「复制」只在消息滚到屏幕可见时才显示',
+    '黑板为全新用户自动贴出「群聊 / 故事 / 主页」三条功能教程便签，可自行删除，不再自动出现',
+    '主页会话列表每个聊天右侧新增置顶小图标：点击置顶排到最前，再点一次取消'
+  ]},
   { v:'0.1.8', date:'2026-08-23', title:'消息操作 · 删除不自动新建', items:[
     '每条消息下面新增「编辑 / 复制 / 重置」三个小功能：编辑可随意改写已发出的内容并会被记住；复制一键复制原文；重置可重新生成该条回复，重新生成仍遵循字数上限，我的消息则放回输入框方便改写重发',
     '删除最后一个群聊 / 故事后不再自动新建一个群聊；新用户首次打开仍自带一个默认群聊'
@@ -1185,6 +1201,7 @@ var ICON_SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 var ICON_DICE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8" cy="8" r="1"/><circle cx="16" cy="8" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/></svg>';
 var ICON_CHART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>';
 var ICON_LEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>';
+var ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14"/><path d="M5 14l1-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4l1 3z"/></svg>';
 var NPC_NAME = 'NPC角色';
 var NPC_ROLE_AVS = ANIME_AVS;  // 路人头像池（复用二次元头像），按角色名散列取
 
@@ -1208,6 +1225,12 @@ var worlds = [];
 var board = [];
 var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
+// 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
+var BOARD_TUTORIAL = [
+  { color:'c0', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、设群名头像与世界观、单独配 API。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数小工具。\n· 每条消息下可「编辑 / 复制 / 重置」。' },
+  { color:'c1', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「总结」压缩上下文。\n· 故事自带一位「NPC角色」：剧情需要路人时它会自己登场。\n· 旁白单独成块显示在消息之间，只能复制。' },
+  { color:'c2', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 点某条会话进入聊天；手机上点左上「⟵ 返回」回主页。' }
+];
 var panelView = 'conv';
 var libMode = 'card';
 var libId = null;
@@ -1362,8 +1385,17 @@ function load(){
     assignId(c);
   });
   try{ worlds = JSON.parse(localStorage.getItem(LS.worlds)||'[]'); }catch(e){ worlds = []; }
-  try{ board = JSON.parse(localStorage.getItem(LS.board)||'[]'); }catch(e){ board = []; }
-  if(!Array.isArray(board)) board = [];
+  var boardRaw = null;
+  try{ boardRaw = localStorage.getItem(LS.board); }catch(e){}
+  try{ board = boardRaw === null ? null : JSON.parse(boardRaw); }catch(e){ board = null; }
+  if(!Array.isArray(board)){
+    // 首次打开黑板：预置三条「功能教程」便签（用户可自行删除，不固定）；删光后不再生成
+    board = BOARD_TUTORIAL.map(function(t, i){
+      return { id: seq++, text: t.text, color: t.color, ts: Date.now() };
+    });
+    boardColorIdx = board.length;
+    save();
+  }
   board.forEach(function(n){ if(typeof n.id !== 'number') n.id = seq++; if(typeof n.text !== 'string') n.text = ''; if(typeof n.color !== 'string') n.color = 'c0'; if(typeof n.ts !== 'number') n.ts = Date.now(); });
   if(!Array.isArray(worlds)) worlds = [];
   worlds.forEach(function(w){
@@ -1433,7 +1465,11 @@ function timeLabel(t){
 function renderConvList(){
   var list = $('convList');
   list.innerHTML = '';
-  var sorted = convs.slice().sort(function(a,b){ return (b.lastActiveAt||0)-(a.lastActiveAt||0); });
+  var sorted = convs.slice().sort(function(a,b){
+    var ap = a.pinned ? 1 : 0, bp = b.pinned ? 1 : 0;
+    if(ap !== bp) return bp - ap;   // 置顶的排最前
+    return (b.lastActiveAt||0)-(a.lastActiveAt||0);
+  });
   sorted.forEach(function(cv){
     var item = document.createElement('div');
     item.className = 'conv-item' + (cv.id===activeId ? ' active' : '');
@@ -1451,16 +1487,31 @@ function renderConvList(){
         '<div class="conv-name">'+esc(cv.name)+'</div>' +
         '<div class="conv-preview">'+esc(preview)+'</div>' +
       '</div>' +
-      '<div class="conv-time">'+timeLabel(cv.lastActiveAt)+'</div>';
+      '<div class="conv-time">'+timeLabel(cv.lastActiveAt)+'</div>' +
+      '<button class="conv-pin'+(cv.pinned ? ' on' : '')+'" data-act="pin" title="'+(cv.pinned ? '取消置顶' : '置顶')+'">'+ICON_PIN+'</button>';
     list.appendChild(item);
   });
   renderChatHeader();
 }
 $('convList').addEventListener('click', function(e){
+  var pin = e.target.closest('[data-act="pin"]');
+  if(pin){
+    var item = pin.closest('.conv-item');
+    if(!item) return;
+    togglePin(Number(item.dataset.id));
+    return;
+  }
   var item = e.target.closest('.conv-item');
   if(!item) return;
   selectConv(Number(item.dataset.id));
 });
+function togglePin(id){
+  var cv = getConv(id);
+  if(!cv) return;
+  cv.pinned = !cv.pinned;
+  save(); renderConvList();
+  showToast(cv.pinned ? '已置顶「'+cv.name+'」' : '已取消「'+cv.name+'」的置顶');
+}
 function selectConv(id){
   if(!getConv(id)) return;
   stopAll();
@@ -1894,6 +1945,7 @@ function appendMsgEl(list, m){
   list.appendChild(wrap);
   msgEls[m.id] = wrap;
   setMsgText(m);
+  watchMsg(wrap);
 }
 function setMsgText(m){
   var wrap = msgEls[m.id];
@@ -1941,8 +1993,9 @@ function updateNarration(wrap, m, base){
       narrEl = document.createElement('div');
       narrEl.className = 'msg narr';
       narrEl.dataset.next = m.id;
-      narrEl.innerHTML = '<div class="narr-text"></div>';
+      narrEl.innerHTML = '<div class="narr-text"></div><div class="msg-actions"><button type="button" data-act="narr-copy">复制</button></div>';
       parent.insertBefore(narrEl, wrap);
+      watchMsg(narrEl);
     }
     narrEl.querySelector('.narr-text').textContent = narrText;
   } else if(narrEl){
@@ -2073,14 +2126,17 @@ function resetMsg(mid){
   if(m.status === 'streaming'){ showToast('生成中的消息不能重置'); return; }
   stopAll();
   if(m.speakerId === 'user'){
-    // 我的消息：原文放回输入框，方便改完重发
-    cv.history.splice(cv.history.indexOf(m), 1);
+    // 我的消息：从这条起截断（连同它及之后的内容删除），AI 跟随回复（含旁白）重新生成
+    cv.history.splice(cv.history.indexOf(m));
     cv.lastActiveAt = Date.now();
     save(); renderMsgs(); renderConvList();
-    var inp = $('input');
-    inp.value = (inp.value ? inp.value + '\n' : '') + m.text;
-    autoGrow(); inp.focus();
-    addNote('已把消息放回输入框，可修改后重新发送。');
+    var sel = replyTargets(cv, m.text);
+    if(sel.absent.length) addNote('「'+sel.absent.map(function(c){return c.name;}).join('、')+'」不在场，未响应。');
+    if(!sel.targets.length){ addNote('本轮没有选择任何在场 AI，也没有 @ 提到他们，未重新生成。'); return; }
+    if(missingKey(cv)){ addNote(keyNote(cv)); return; }
+    stopFlag = false;
+    setGenerating(true);
+    runSequence(sel.targets, cv);
     return;
   }
   var c = getChar(cv, m.speakerId);
@@ -2095,9 +2151,14 @@ function resetMsg(mid){
 $('msgList').addEventListener('click', function(e){
   var btn = e.target.closest('[data-act]');
   if(!btn) return;
+  var act = btn.getAttribute('data-act');
+  if(act === 'narr-copy'){
+    var narr = btn.closest('.msg.narr');
+    if(narr){ var nt = narr.querySelector('.narr-text'); if(nt) copyText(nt.textContent); }
+    return;
+  }
   var wrap = btn.closest('.msg[data-id]');
   if(!wrap) return;
-  var act = btn.getAttribute('data-act');
   var mid = Number(wrap.dataset.id);
   if(act === 'edit') enterEdit(mid);
   else if(act === 'edit-save') editSave(mid);
@@ -2105,6 +2166,22 @@ $('msgList').addEventListener('click', function(e){
   else if(act === 'copy') copyMsg(mid);
   else if(act === 'reset') resetMsg(mid);
 });
+
+/* ---------- 手机端：消息滚入屏幕（on-screen）时才显示操作栏 ---------- */
+var visObserver = null;
+var visObserved = (typeof WeakSet !== 'undefined') ? new WeakSet() : null;
+function watchMsg(el){
+  if(!el) return;
+  if(!('IntersectionObserver' in window)){ el.classList.add('on-screen'); return; }
+  if(visObserved && visObserved.has(el)) return;
+  if(visObserved) visObserved.add(el);
+  if(!visObserver){
+    visObserver = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ en.target.classList.toggle('on-screen', en.isIntersecting); });
+    }, { threshold: 0.15 });
+  }
+  visObserver.observe(el);
+}
 
 function addNote(text){
   var list = $('msgList');
@@ -2196,18 +2273,13 @@ function send(){
   }
   doSend(cv, text);
 }
-function doSend(cv, text){
-  $('input').value = ''; autoGrow();
-  cv.history.push({ id:seq++, speakerId:'user', speaker:'我', role:'user', text:text, status:'done' });
-  cv.lastActiveAt = Date.now();
-  save(); renderConvList(); renderMsgs(); updateSummaryBtn();
-
+function replyTargets(cv, text){
+  // 本轮会回复的成员：先按「点选先后」（谁先点谁先答），@ 提到但未点选的排在后面
   var targets = [], absent = [];
   cv.chars.forEach(function(c){
     if(!c.name) return;
     if(!c.present){ if(text.indexOf(c.name) !== -1) absent.push(c); return; }
   });
-  // 回复顺序：先按「点选先后」（谁先点谁先答），@ 提到但未点选的排在后面
   cv.selectedNext.forEach(function(id){
     var c = getChar(cv, id);
     if(c && c.present) targets.push(c);
@@ -2216,6 +2288,16 @@ function doSend(cv, text){
     if(c.name && c.present && cv.selectedNext.indexOf(c.id) === -1 && text.indexOf(c.name) !== -1) targets.push(c);
   });
   if(cv.randomOrder && targets.length > 1){ shuffle(targets); }
+  return { targets: targets, absent: absent };
+}
+function doSend(cv, text){
+  $('input').value = ''; autoGrow();
+  cv.history.push({ id:seq++, speakerId:'user', speaker:'我', role:'user', text:text, status:'done' });
+  cv.lastActiveAt = Date.now();
+  save(); renderConvList(); renderMsgs(); updateSummaryBtn();
+
+  var sel = replyTargets(cv, text);
+  var targets = sel.targets, absent = sel.absent;
   if(absent.length) addNote('「'+absent.map(function(c){return c.name;}).join('、')+'」不在场，未响应。');
   if(!targets.length){
     addNote('本轮没有选择任何在场 AI，也没有 @ 提到他们，未调用 API。');
