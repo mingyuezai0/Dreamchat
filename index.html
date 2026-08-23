@@ -27,6 +27,7 @@
   .rail-dot{width:10px; height:10px; border-radius:50%; background:#c3cad6; margin-bottom:12px;}
   .rail-dot.on{background:#22c55e;}
   .rail-btn{width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--muted);}
+  .rail-btn svg{width:22px; height:22px;}
   .rail-btn:hover{background:#dfe3ee; color:var(--text);}
 
   /* ---------- 会话列表 ---------- */
@@ -324,6 +325,7 @@
     .rail-logo{width:38px; height:38px; margin-bottom:10px;}
     .rail-logo svg{width:38px; height:38px;}
     .rail-btn{width:40px; height:40px; border-radius:11px; font-size:20px;}
+    .rail-btn svg{width:19px; height:19px;}
     .conv-panel{position:absolute; top:0; bottom:0; left:52px; right:0; z-index:30; width:auto; min-width:0; border-right:none;}
     body.chat-open .conv-panel{display:none;}
     body.chat-open .rail{display:none;}
@@ -534,11 +536,11 @@
     </div>
     <div class="rail-grow"></div>
     <div class="rail-dot" id="keyDot" title="全局 API Key 是否已配置"></div>
-    <button id="btnMarket" class="rail-btn" title="集市（暂未开放）">🛍️</button>
-    <button id="btnCards" class="rail-btn" title="角色卡库">🃏</button>
-    <button id="btnWorlds" class="rail-btn" title="世界书库">📖</button>
-    <button id="btnAbout" class="rail-btn" title="关于">ℹ️</button>
-    <button id="btnSettings" class="rail-btn" title="全局设置（模型配置 / 界面设置）">⚙</button>
+    <button id="btnMarket" class="rail-btn" title="集市（暂未开放）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/></svg></button>
+    <button id="btnCards" class="rail-btn" title="角色卡库"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10h2"/><path d="M16 14h2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><circle cx="9" cy="11" r="2"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg></button>
+    <button id="btnWorlds" class="rail-btn" title="世界书库"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16"/><path d="M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg></button>
+    <button id="btnAbout" class="rail-btn" title="关于"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></button>
+    <button id="btnSettings" class="rail-btn" title="全局设置（模型配置 / 界面设置）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
   </nav>
 
   <aside class="conv-panel">
@@ -1011,8 +1013,12 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.1.4';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.1.5';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.1.5', date:'2026-08-23', title:'主页图标换新', items:[
+    '主页功能栏（集市 / 角色卡 / 世界书 / 关于 / 设置）的图标从表情包统一换成描线风格的线性图标',
+    '新图标自动跟随主题与选中状态变色，手机端同步适配'
+  ]},
   { v:'0.1.4', date:'2026-08-23', title:'导出命名 · 集市 · 关于面板', items:[
     '导出文件名统一规则：角色卡「梦语-角色卡-角色名」/ 世界书「梦语-世界书-世界书名」/ 记忆转移「梦语-记忆-群聊或故事名」',
     '主页功能栏新增「集市」入口（暂未开放）',
