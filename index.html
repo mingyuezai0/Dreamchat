@@ -205,6 +205,16 @@
   .key-row input{flex:1;}
   .key-row button{width:54px; font-size:12px; color:var(--muted); border:1px solid var(--border); border-radius:10px;}
   .hint-text{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.5;}
+  .kw-box{display:flex; flex-direction:column; gap:10px; margin-top:6px;}
+  .kw-row{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:#fafbfd;}
+  html[data-theme="dark"] .kw-row{background:#1b1f28;}
+  html[data-theme="scroll"] .kw-row{background:#f7f0dc;}
+  .kw-head{display:flex; gap:8px; align-items:center;}
+  .kw-head input{flex:1; min-width:0;}
+  .kw-del{flex-shrink:0; width:28px; height:28px; border-radius:8px; color:var(--muted); font-size:13px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center;}
+  .kw-del:hover{color:var(--danger); border-color:var(--danger); background:#fdecec;}
+  .kw-row .kw-detail{margin-top:8px; background:var(--bg); color:var(--text);}
+  .kw-empty{margin:2px 0 0;}
 
   .tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;}
   .tabs button{font-size:13px; padding:6px 14px; border-radius:9px; color:var(--muted); background:#f2f4f8;}
@@ -840,6 +850,10 @@
       </div>
       <label>世界观设定</label>
       <textarea id="gsWorld" rows="6" placeholder="例如：这里是赛博朋克都市「新东京」，AI 和人类共同生活……"></textarea>
+      <label>世界观关键词</label>
+      <div id="gsKeywords" class="kw-box"></div>
+      <button id="gsKwAdd" class="btn-add" style="margin:10px 0 0;">＋ 添加关键词</button>
+      <p class="hint-text">防止对话太久后遗忘关键事件：某关键词被提及时，所有成员都会查看它的详情进行回忆，再按剧情需要选择性作出反应。关键词详情不会被「总结」压缩。</p>
       <button id="gsImportWorld" class="btn-ghost" style="width:100%; margin-top:12px;">从已有世界书导入</button>
       <p class="hint-text">所有 AI 成员都会遵守这段世界观，并在言行中体现它。</p>
     </div>
@@ -867,7 +881,7 @@
 
     <!-- 记忆转移 -->
     <div class="gs-pane hidden" data-pane="transfer">
-      <p class="hint-text">把本群的对话记录、成员人设与记忆、AI 人数、世界观、玩家设定、群名头像、总结内容等全部设定打包成一份文件，导出下载到本地。<b>出于安全考虑，本群单独设置的 API Key 不会包含在备份里</b>。要载入别人的备份，请在主页点「＋」→「导入记忆」。</p>
+      <p class="hint-text">把本群的对话记录、成员人设与记忆、AI 人数、世界观与世界观关键词、成员关键词、玩家设定、群名头像、总结内容等全部设定打包成一份文件，导出下载到本地。<b>出于安全考虑，本群单独设置的 API Key 不会包含在备份里</b>。要载入别人的备份，请在主页点「＋」→「导入记忆」。</p>
       <label class="switch-row" style="margin-bottom:8px;">导出本群</label>
       <button class="btn-primary" id="gsExport">⬇ 导出备份文件</button>
       <p class="hint-text" id="gsTransferMsg"></p>
@@ -959,6 +973,10 @@
     <textarea id="emPersona" rows="4" placeholder="描述这个人物的性格、说话风格、知识背景等。这段设定只属于该人物，不会与其他人物混用。"></textarea>
     <label>记忆</label>
     <textarea id="emMemory" rows="3" placeholder="TA 记住的事情。开启「成员自动记忆」后会不断自动更新；你也可以手动写。"></textarea>
+    <label>关键词</label>
+    <div id="emKeywords" class="kw-box"></div>
+    <button id="emKwAdd" class="btn-add" style="margin:10px 0 0;">＋ 添加关键词</button>
+    <p class="hint-text">当有人提到某个关键词时，这个成员会先查看关键词详情，再按剧情需要选择性作出反应。关键词详情不会被「总结」压缩。</p>
     <div id="emNpcMemBox" class="hidden">
       <label>已扮演角色的记忆（按角色分开记）</label>
       <div id="emNpcMems"></div>
@@ -1001,6 +1019,10 @@
       <label>世界设定</label>
       <textarea id="libWorld" rows="6" placeholder="这个世界观的整体设定，导入到群的世界观后，所有 AI 成员都会遵守。"></textarea>
     </div>
+    <label>关键词</label>
+    <div id="libKeywords" class="kw-box"></div>
+    <button id="libKwAdd" class="btn-add" style="margin:10px 0 0;">＋ 添加关键词</button>
+    <p class="hint-text">角色卡的关键词随卡片导入群成员时一起带入；世界书的关键词随导入一起填入世界观。关键词详情不会被「总结」压缩。</p>
     <div class="modal-actions">
       <button class="btn-danger hidden" id="libDel" style="margin-right:auto;">删除</button>
       <button class="btn-ghost" id="libCancel">取消</button>
@@ -1096,8 +1118,15 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.2.2';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.2.3';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.2.3', date:'2026-08-24', title:'关键词 · 防遗忘', items:[
+    'AI 角色与世界观都能单独添加「关键词」：每个关键词可点击添加并编写详情，角色卡与世界书里也能编辑',
+    '有人提到某角色的关键词时，该角色会先查看关键词详情，再按剧情需要选择性作出反应',
+    '有人提到某世界观关键词时，所有成员都会查看关键词详情进行回忆，再按剧情需要选择性反应，防止对话太久后遗忘关键事件',
+    '角色卡 / 世界书的关键词随导入一起带入群成员 / 世界观；记忆转移备份会完整带上关键词及其详情',
+    '关键词可删除但需要确认；关键词详情不会被「总结」压缩'
+  ]},
   { v:'0.2.2', date:'2026-08-23', title:'群接口按 Key 门控', items:[
     '群设置 / 故事设置里的「官方接口网站 / 模型名称」不再单独生效：只有本群填了 API Key 时，它们才随 Key 一起对本群生效；本群 Key 留空则完全用全局设置（Key、接口、模型都用全局的）',
     '本群填 Key 时自动去除首尾空格，纯空格等同没填、回退全局 Key'
@@ -1395,9 +1424,11 @@ function load(){
     if(!cv.npcMem || typeof cv.npcMem !== 'object' || Array.isArray(cv.npcMem)) cv.npcMem = {};
     if(typeof cv.npcLastRole !== 'string') cv.npcLastRole = null;
     if(typeof cv.compressMem !== 'boolean') cv.compressMem = false;
+    cv.worldKeywords = normalizeKw(cv.worldKeywords);
     cv.chars.forEach(function(c){
       if(typeof c.present==='undefined') c.present = true;
       if(typeof c.memory!=='string') c.memory = '';
+      c.keywords = normalizeKw(c.keywords);
       assignId(c);
     });
     var uc = 0;
@@ -1416,6 +1447,7 @@ function load(){
     if(!c.avatar || typeof c.avatar !== 'object' || !c.avatar.mode) c.avatar = defaultAvatar();
     if(typeof c.persona !== 'string') c.persona = '';
     if(typeof c.memory !== 'string') c.memory = '';
+    c.keywords = normalizeKw(c.keywords);
     assignId(c);
   });
   try{ worlds = JSON.parse(localStorage.getItem(LS.worlds)||'[]'); }catch(e){ worlds = []; }
@@ -1441,6 +1473,7 @@ function load(){
     if(typeof w.name !== 'string' || !w.name) w.name = '未命名';
     if(!w.avatar || typeof w.avatar !== 'object' || !w.avatar.mode) w.avatar = defaultAvatar();
     if(typeof w.world !== 'string') w.world = '';
+    w.keywords = normalizeKw(w.keywords);
     assignId(w);
   });
 
@@ -2379,6 +2412,22 @@ function runSequence(targets, cv){
   }
   next();
 }
+/* 关键词提示注入：最近对话里提到某个关键词时，把它的详情追加进该角色的系统提示。
+   角色的关键词只给该角色看；世界观关键词则每个角色都能看到（全体回忆），并按剧情需要选择性反应。 */
+function kwBlockFor(c, cv, ctx){
+  var text = '';
+  ctx.forEach(function(m){ text += (m.text || '') + '\n'; });
+  var lines = [];
+  (c.keywords || []).forEach(function(k){
+    if(k && k.key && text.indexOf(k.key) !== -1) lines.push('「'+k.key+'」：' + (k.detail || '（无详情）'));
+  });
+  (cv.worldKeywords || []).forEach(function(k){
+    if(k && k.key && text.indexOf(k.key) !== -1) lines.push('世界观关键词「'+k.key+'」：' + (k.detail || '（无详情）'));
+  });
+  if(!lines.length) return '';
+  return '\n\n【有人提到了关键词 —— 先查看下面这些关键词的详情，再按剧情需要决定是否回忆起并作出反应；不要生硬地把详情整段念出来】\n' +
+    lines.map(function(l){ return '· ' + l; }).join('\n');
+}
 function buildMessages(c, cv){
   var present = cv.chars.filter(function(x){ return x.id !== c.id && x.present; });
   var others = present.map(function(x){ return x.name; }).join('、');
@@ -2424,8 +2473,10 @@ function buildMessages(c, cv){
       '5. 回复要自然、简洁，像真人聊天一样。' +
       (cv.maxReplyLen > 0 ? '\n6. 每条回复控制在 ' + cv.maxReplyLen + ' 字以内：内容要完整，用「。」等标点收尾，宁精炼不要写超、不要被截断。' : '');
   }
-  var msgs = [{ role:'system', content:sys }];
   var ctx = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-40);
+  var kwBlock = kwBlockFor(c, cv, ctx);
+  if(kwBlock) sys += kwBlock;
+  var msgs = [{ role:'system', content:sys }];
   ctx.forEach(function(m){
     if(m.speakerId === 'user') msgs.push({ role:'user', content:'我：'+m.text });
     else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
@@ -2789,7 +2840,8 @@ function importBackup(file){
       if(!conv.npcMem || typeof conv.npcMem !== 'object' || Array.isArray(conv.npcMem)) conv.npcMem = {};
       if(typeof conv.npcLastRole !== 'string') conv.npcLastRole = null;
       if(typeof conv.compressMem !== 'boolean') conv.compressMem = false;
-      conv.chars.forEach(function(c){ if(typeof c.name !== 'string' || !c.name) c.name = 'AI'; if(typeof c.present === 'undefined') c.present = true; if(typeof c.memory !== 'string') c.memory = ''; });
+      conv.worldKeywords = normalizeKw(conv.worldKeywords);
+      conv.chars.forEach(function(c){ if(typeof c.name !== 'string' || !c.name) c.name = 'AI'; if(typeof c.present === 'undefined') c.present = true; if(typeof c.memory !== 'string') c.memory = ''; c.keywords = normalizeKw(c.keywords); });
       ensureNpc(conv);   // 故事自动带上固定 NPC 角色
     }catch(e){
       alert('载入失败：' + e.message);
@@ -3104,6 +3156,8 @@ function openLibEdit(mode, id){
   } else {
     $('libWorld').value = item ? (item.world || '') : '';
   }
+  libKwDraft = kwDraftFrom(item ? item.keywords : null);
+  renderKwBox($('libKeywords'), libKwDraft);
   $('libDel').classList.toggle('hidden', !item);
   $('libModal').classList.remove('hidden');
 }
@@ -3115,18 +3169,18 @@ function saveLib(){
   var avatar = { mode:libAvatarDraft.mode, value:libAvatarDraft.value };
   if(libMode === 'card'){
     if(libId == null){
-      cards.push({ id:seq++, name:name, avatar:avatar, persona:$('libPersona').value.trim(), memory:'' });
+      cards.push({ id:seq++, name:name, avatar:avatar, persona:$('libPersona').value.trim(), memory:'', keywords:kwDraftCommit(libKwDraft) });
     } else {
       var c = getCard(libId); if(!c){ closeLib(); return; }
-      c.name = name; c.avatar = avatar; c.persona = $('libPersona').value.trim(); c.memory = '';
+      c.name = name; c.avatar = avatar; c.persona = $('libPersona').value.trim(); c.memory = ''; c.keywords = kwDraftCommit(libKwDraft);
     }
     save(); renderCardPanel();
   } else {
     if(libId == null){
-      worlds.push({ id:seq++, name:name, avatar:avatar, world:$('libWorld').value.trim() });
+      worlds.push({ id:seq++, name:name, avatar:avatar, world:$('libWorld').value.trim(), keywords:kwDraftCommit(libKwDraft) });
     } else {
       var w = getWorld(libId); if(!w){ closeLib(); return; }
-      w.name = name; w.avatar = avatar; w.world = $('libWorld').value.trim();
+      w.name = name; w.avatar = avatar; w.world = $('libWorld').value.trim(); w.keywords = kwDraftCommit(libKwDraft);
     }
     save(); renderWorldPanel();
   }
@@ -3188,7 +3242,7 @@ $('cardPickList').addEventListener('click', function(e){
   if(cv.chars.length >= MAX_MEMBERS){ alert('最多 '+MAX_MEMBERS+' 个 AI 人物'); return; }
   var card = getCard(Number(it.dataset.id));
   if(!card) return;
-  var c = { id:seq++, name:card.name, avatar:JSON.parse(JSON.stringify(card.avatar)), persona:card.persona||'', present:true, memory:'' };
+  var c = { id:seq++, name:card.name, avatar:JSON.parse(JSON.stringify(card.avatar)), persona:card.persona||'', present:true, memory:'', keywords:kwDraftFrom(card.keywords) };
   cv.chars.push(c);
   save(); renderGroupMembers(); renderChips(); renderConvList();
   closeCardPick();
@@ -3216,6 +3270,8 @@ $('worldPickList').addEventListener('click', function(e){
   var w = getWorld(Number(it.dataset.id));
   if(!w) return;
   $('gsWorld').value = w.world || '';
+  gsKwDraft = kwDraftFrom(w.keywords);
+  renderKwBox($('gsKeywords'), gsKwDraft);
   gsAvatarDraft = { mode:w.avatar.mode, value:w.avatar.value };
   setGsAvatarTab((gsAvatarDraft.mode === 'upload' || gsAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
   if(gsAvatarDraft.mode === 'svg'){ var _i = ANIME_AVS.indexOf(gsAvatarDraft.value); if(_i >= 0) selectGsEmoji(_i); }
@@ -3238,6 +3294,8 @@ function openGroupSettings(tab){
   $('gsConvName').textContent = cv.name;
   $('gsName').value = cv.name;
   $('gsWorld').value = cv.world || '';
+  gsKwDraft = kwDraftFrom(cv.worldKeywords);
+  renderKwBox($('gsKeywords'), gsKwDraft);
   $('gsPlayer').value = cv.player || '';
   $('gsApiKey').value = cv.apiKey || '';
   $('gsApiBase').value = cv.apiBase || '';
@@ -3265,6 +3323,7 @@ function saveGroupSettings(){
   var nm = $('gsName').value.trim();
   if(nm) cv.name = nm.slice(0,20);
   cv.world = $('gsWorld').value.trim();
+  cv.worldKeywords = kwDraftCommit(gsKwDraft);
   cv.player = $('gsPlayer').value.trim();
   cv.apiKey = $('gsApiKey').value.trim();
   cv.apiBase = $('gsApiBase').value.trim();
@@ -3418,6 +3477,73 @@ function buildNpcMems(c){
     box.appendChild(row);
   });
 }
+/* ---------- 关键词编辑（成员 / 世界观 / 角色卡 / 世界书 通用） ---------- */
+var editKwDraft = [], gsKwDraft = [], libKwDraft = [];
+function kwRowHtml(k){
+  return '<div class="kw-row">' +
+    '<div class="kw-head">' +
+      '<input class="kw-key" maxlength="30" placeholder="关键词，如：红宝石戒指" value="'+esc(k.key||'')+'">' +
+      '<button class="kw-del" title="删除这个关键词">✕</button>' +
+    '</div>' +
+    '<textarea class="kw-detail" rows="2" placeholder="详情：有人提到这个关键词时，会看到这段内容…">'+esc(k.detail||'')+'</textarea>' +
+  '</div>';
+}
+function renderKwBox(box, list){
+  box.innerHTML = list.length
+    ? list.map(kwRowHtml).join('')
+    : '<p class="hint-text kw-empty">还没有关键词。添加关键词后，它被提及时 AI 会先查看详情，再按剧情需要选择性反应。</p>';
+}
+function bindKwEditor(box, getList, addBtn){
+  box.addEventListener('click', function(e){
+    var del = e.target.closest('.kw-del');
+    if(!del) return;
+    var row = del.closest('.kw-row');
+    if(!row) return;
+    var list = getList();
+    var rows = box.querySelectorAll('.kw-row');
+    var i = Array.prototype.indexOf.call(rows, row);
+    if(i < 0 || !list[i]) return;
+    var nm = list[i].key || '（未命名）';
+    if(!confirm('确定删除关键词「'+nm+'」吗？')) return;
+    list.splice(i, 1);
+    renderKwBox(box, list);
+  });
+  box.addEventListener('input', function(e){
+    var t = e.target;
+    if(!t.classList) return;
+    var row = t.closest('.kw-row');
+    if(!row) return;
+    var list = getList();
+    var rows = box.querySelectorAll('.kw-row');
+    var i = Array.prototype.indexOf.call(rows, row);
+    if(i < 0 || !list[i]) return;
+    if(t.classList.contains('kw-key')) list[i].key = t.value.trim();
+    else if(t.classList.contains('kw-detail')) list[i].detail = t.value;
+  });
+  addBtn.addEventListener('click', function(){
+    var list = getList();
+    list.push({ id:seq++, key:'', detail:'' });
+    renderKwBox(box, list);
+    var rows = box.querySelectorAll('.kw-row');
+    if(rows.length){ var k = rows[rows.length-1].querySelector('.kw-key'); if(k) k.focus(); }
+  });
+}
+function kwDraftFrom(list){
+  return (list || []).map(function(k){ return { id:k.id, key:k.key||'', detail:k.detail||'' }; });
+}
+function kwDraftCommit(list){
+  return list.filter(function(k){ return !!(k.key && k.key.trim()); });
+}
+function normalizeKw(list){
+  if(!Array.isArray(list)) return [];
+  list.forEach(function(k){
+    if(!k || typeof k !== 'object') return;
+    if(typeof k.key !== 'string') k.key = '';
+    if(typeof k.detail !== 'string') k.detail = '';
+    if(typeof k.id !== 'number') k.id = seq++;
+  });
+  return list.filter(function(k){ return k && typeof k === 'object'; });
+}
 function openEdit(c){
   editCharId = c.id;
   var npc = !!c.isNpc;
@@ -3425,6 +3551,8 @@ function openEdit(c){
   $('emName').disabled = npc;   // 固定 NPC 名字不可改
   $('emPersona').value = c.persona || '';
   $('emMemory').value = c.memory || '';
+  editKwDraft = kwDraftFrom(c.keywords);
+  renderKwBox($('emKeywords'), editKwDraft);
   $('emPresent').checked = !!c.present;
   $('emPresent').disabled = npc;  // 固定 NPC 始终在场
   var npcBox = $('emNpcMemBox');
@@ -3474,11 +3602,13 @@ $('emSave').addEventListener('click', function(){
       if(val) cv.npcMem[role] = val.slice(0,1200);
       else if(cv.npcMem[role]) delete cv.npcMem[role];
     }
+    c.keywords = kwDraftCommit(editKwDraft);
     name = c.name;
   } else {
     c.name = name;
     c.persona = $('emPersona').value.trim();
     c.memory = $('emMemory').value.trim();
+    c.keywords = kwDraftCommit(editKwDraft);
     c.present = $('emPresent').checked;
     if(avatarDraft.mode === 'url' && !avatarDraft.value) avatarDraft.mode = 'emoji';
     c.avatar = { mode:avatarDraft.mode, value:avatarDraft.value };
@@ -3489,6 +3619,10 @@ $('emSave').addEventListener('click', function(){
   addNote('已更新「'+name+'」的资料。');
 });
 $('emCancel').addEventListener('click', closeEdit);
+/* 绑定三个关键词编辑器（成员 / 世界观 / 角色卡·世界书） */
+bindKwEditor($('emKeywords'), function(){ return editKwDraft; }, $('emKwAdd'));
+bindKwEditor($('gsKeywords'), function(){ return gsKwDraft; }, $('gsKwAdd'));
+bindKwEditor($('libKeywords'), function(){ return libKwDraft; }, $('libKwAdd'));
 
 /* ---------- 全局设置 ---------- */
 function applyTheme(theme){
