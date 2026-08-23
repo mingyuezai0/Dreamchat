@@ -858,7 +858,11 @@
         <input type="password" id="gsApiKey" placeholder="留空则用全局 Key" autocomplete="off">
         <button id="gsApiToggle" title="显示 / 隐藏">显示</button>
       </div>
-      <p class="hint-text">给这个群单独用一个 API Key；留空则使用左下角全局设置里的 Key。</p>
+      <label>官方接口网站（可选）</label>
+      <input type="text" id="gsApiBase" placeholder="如 https://api.deepseek.com/v1，留空用全局" autocomplete="off">
+      <label>模型名称（可选）</label>
+      <input type="text" id="gsModel" placeholder="如 deepseek-v4-flash，留空用全局" autocomplete="off">
+      <p class="hint-text">三项都可单独填，给这个群覆盖全局设置：Key、接口地址、模型名称都留空时才用全局设置。</p>
     </div>
 
     <!-- 记忆转移 -->
@@ -1092,8 +1096,13 @@ var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.4
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.2.0';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.2.1';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.2.1', date:'2026-08-23', title:'群级接口三件套 · 库操作不打扰', items:[
+    '「群设置 → API」更完善：除了 API Key，还能单独填官方接口网站与模型名称，三项都可留空回退全局设置',
+    '每个群 / 故事的接口地址、模型名、Key 独立生效：发送、记忆提炼、总结、记忆压缩、费用估算都用本群自己的配置',
+    '导出 / 导入 / 保存 / 删除「角色卡 · 世界书」不再往聊天消息里弹提示，操作更安静'
+  ]},
   { v:'0.2.0', date:'2026-08-23', title:'NPC只当路人 · 总结压记忆 · 神态不改橙', items:[
     '黑板的描述文案已精简，删去多余提示语',
     '三条「功能教程」便签改为对还没有收到过的用户（含老用户）也补贴一次；拼在已有便签后面，删掉后不再出现',
@@ -1370,6 +1379,8 @@ function load(){
     if(typeof cv.world !== 'string') cv.world = '';
     if(typeof cv.player !== 'string') cv.player = '';
     if(typeof cv.apiKey !== 'string') cv.apiKey = '';
+    if(typeof cv.apiBase !== 'string') cv.apiBase = '';
+    if(typeof cv.model !== 'string') cv.model = '';
     if(typeof cv.autoMemory !== 'boolean') cv.autoMemory = true;
     if(typeof cv.summary !== 'string') cv.summary = '';
     if(typeof cv.summaryTs !== 'number') cv.summaryTs = 0;
@@ -1446,7 +1457,11 @@ function avatarHtml(c){
   if(a.mode==='svg' && a.value) return '<span class="av-svg">'+a.value+'</span>';
   return '<span>'+esc(a.value||'🤖')+'</span>';
 }
-function groupKey(cv){ return cv.apiKey || settings.apiKey; }
+function groupKey(cv){ return (cv && cv.apiKey) || settings.apiKey; }
+/* 本群单独填写的接口地址；没填则用全局地址 */
+function groupBase(cv){ return (cv && cv.apiBase && cv.apiBase.trim()) || settings.apiBase; }
+/* 本群单独填写的模型名称；没填则用全局模型 */
+function groupModel(cv){ return (cv && cv.model && cv.model.trim()) || settings.model; }
 /* 没有有效 Key（空或纯空格）时返回 true（各接口都需要 Key） */
 function missingKey(cv){
   var k = groupKey(cv);
@@ -1456,9 +1471,9 @@ function missingKey(cv){
 function keyNote(cv){
   return '还没有配置 API Key：请在 ⚙ 全局设置「API Key」里填写，或在本'+kindLabel(cv)+'「⚙ '+settingsLabel(cv)+' → API」里单独填写。';
 }
-function apiUrl(){ return settings.apiBase + '/chat/completions'; }
+function apiUrl(cv){ return groupBase(cv) + '/chat/completions'; }
 /* 是否官方 DeepSeek 接口（深度思考 / 费用估算仅对它生效） */
-function isDeepseek(){ return String(settings.apiBase || '').indexOf('api.deepseek.com') !== -1; }
+function isDeepseek(cv){ return String(groupBase(cv) || '').indexOf('api.deepseek.com') !== -1; }
 function stopAll(){
   stopFlag = true;
   Object.keys(activeCtrls).forEach(function(k){ try{ activeCtrls[k].abort(); }catch(e){} });
@@ -1713,9 +1728,9 @@ function openCost(){
   var rows = '<div class="cost-row"><span>消息条数</span><b>'+n+'</b></div>';
   rows += '<div class="cost-row"><span>估算输入</span><b>≈ '+fmtTokens(Math.max(1,inChars))+' tokens</b></div>';
   rows += '<div class="cost-row"><span>估算输出</span><b>≈ '+fmtTokens(Math.max(0,outChars))+' tokens</b></div>';
-  rows += '<div class="cost-row"><span>当前模型</span><b>'+esc(settings.model || '—')+'</b></div>';
-  if(isDeepseek()){
-    var p = PRICES[settings.model] || PRICES['deepseek-v4-flash'];
+  rows += '<div class="cost-row"><span>当前模型</span><b>'+esc(groupModel(cv) || '—')+'</b></div>';
+  if(isDeepseek(cv)){
+    var p = PRICES[groupModel(cv)] || PRICES['deepseek-v4-flash'];
     var cost = (Math.max(1,inChars)/1e6)*p.in + (Math.max(0,outChars)/1e6)*p.out;
     var costStr = cost >= 0.0001 ? '$'+cost.toFixed(4).replace(/0+$/,'').replace(/\.$/,'') : '<$0.0001';
     rows += '<div class="cost-row"><span>估算费用</span><b>≈ '+costStr+'</b></div>';
@@ -2438,8 +2453,8 @@ function generateReply(c, cv){
   var ctrl = new AbortController();
   activeCtrls[c.id] = ctrl;
 
-  var body = { model:settings.model, messages:msgs, stream:true };
-  if(isDeepseek()){
+  var body = { model:groupModel(cv), messages:msgs, stream:true };
+  if(isDeepseek(cv)){
     if(settings.thinking){ body.thinking = { type:'enabled' }; }
     else { body.thinking = { type:'disabled' }; body.temperature = 0.9; }
   } else {
@@ -2449,7 +2464,7 @@ function generateReply(c, cv){
   var hdrs = { 'Content-Type':'application/json' };
   var gk = groupKey(cv);
   if(gk && gk.trim()) hdrs['Authorization'] = 'Bearer '+gk;   // 无 Key 时不带 Authorization（避免发空的 Bearer token）
-  return fetch(apiUrl(), {
+  return fetch(apiUrl(cv), {
     method:'POST',
     headers: hdrs,
     body: JSON.stringify(body),
@@ -2540,12 +2555,12 @@ function updateMemory(c, cv){
     else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
   msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。' });
-  var ub = { model: settings.model, messages:msgs, stream:false, temperature:0, max_tokens:500 };
-  if(isDeepseek()) ub.thinking = { type:'disabled' };
+  var ub = { model: groupModel(cv), messages:msgs, stream:false, temperature:0, max_tokens:500 };
+  if(isDeepseek(cv)) ub.thinking = { type:'disabled' };
   var uh = { 'Content-Type':'application/json' };
   var ugk = groupKey(cv);
   if(ugk && ugk.trim()) uh['Authorization'] = 'Bearer '+ugk;
-  fetch(apiUrl(), {
+  fetch(apiUrl(cv), {
     method:'POST',
     headers: uh,
     body: JSON.stringify(ub)
@@ -2755,6 +2770,8 @@ function importBackup(file){
       if(typeof conv.world !== 'string') conv.world = '';
       if(typeof conv.player !== 'string') conv.player = '';
       if(typeof conv.apiKey !== 'string') conv.apiKey = '';   // 备份不含 apiKey，回退用全局 Key
+      if(typeof conv.apiBase !== 'string') conv.apiBase = ''; // 接口地址 / 模型名非密钥，随备份一起还原
+      if(typeof conv.model !== 'string') conv.model = '';
       if(typeof conv.autoMemory !== 'boolean') conv.autoMemory = true;
       if(typeof conv.summary !== 'string') conv.summary = '';
       if(typeof conv.summaryTs !== 'number') conv.summaryTs = 0;
@@ -2909,7 +2926,7 @@ function wireGrid(id, kind){
         if(confirm('确定删除'+(kind==='card'?'角色卡':'世界书')+'「'+nm+'」吗？')){
           if(kind==='card'){ cards = cards.filter(function(x){ return x.id!==itemId; }); renderCardPanel(); }
           else { worlds = worlds.filter(function(x){ return x.id!==itemId; }); renderWorldPanel(); }
-          save(); addNote('已删除。');
+          save();
         }
       }
       return;
@@ -2995,12 +3012,10 @@ function downloadFile(name, obj){
 function exportCard(card){
   downloadFile('梦语-角色卡-' + (card.name||'未命名').replace(/[\\/:*?"<>|]/g,'_') + '.json',
     { __mengyu_card__:true, version:1, app:'梦语', card: JSON.parse(JSON.stringify(card)) });
-  addNote('已导出角色卡「'+card.name+'」。');
 }
 function exportWorld(w){
   downloadFile('梦语-世界书-' + (w.name||'未命名').replace(/[\\/:*?"<>|]/g,'_') + '.json',
     { __mengyu_world__:true, version:1, app:'梦语', world: JSON.parse(JSON.stringify(w)) });
-  addNote('已导出世界书「'+w.name+'」。');
 }
 function importLibFile(file, kind){
   var reader = new FileReader();
@@ -3018,7 +3033,6 @@ function importLibFile(file, kind){
         c.id = seq++;
         cards.push(c);
         save(); renderCardPanel(); showPanelView('cards');
-        addNote('已导入角色卡「'+c.name+'」。');
       } else {
         if(!data || data.__mengyu_world__ !== true || !data.world) throw new Error('不是有效的「世界书」备份文件。');
         var w = data.world;
@@ -3028,7 +3042,6 @@ function importLibFile(file, kind){
         w.id = seq++;
         worlds.push(w);
         save(); renderWorldPanel(); showPanelView('worlds');
-        addNote('已导入世界书「'+w.name+'」。');
       }
     }catch(e){
       alert('导入失败：' + e.message);
@@ -3101,7 +3114,7 @@ function saveLib(){
       var c = getCard(libId); if(!c){ closeLib(); return; }
       c.name = name; c.avatar = avatar; c.persona = $('libPersona').value.trim(); c.memory = '';
     }
-    save(); renderCardPanel(); addNote('角色卡「'+name+'」已保存。');
+    save(); renderCardPanel();
   } else {
     if(libId == null){
       worlds.push({ id:seq++, name:name, avatar:avatar, world:$('libWorld').value.trim() });
@@ -3109,7 +3122,7 @@ function saveLib(){
       var w = getWorld(libId); if(!w){ closeLib(); return; }
       w.name = name; w.avatar = avatar; w.world = $('libWorld').value.trim();
     }
-    save(); renderWorldPanel(); addNote('世界书「'+name+'」已保存。');
+    save(); renderWorldPanel();
   }
   closeLib();
 }
@@ -3120,7 +3133,7 @@ function deleteLib(){
   if(!confirm('确定删除'+label+'「'+nm+'」吗？')) return;
   if(libMode === 'card'){ cards = cards.filter(function(x){ return x.id!==libId; }); renderCardPanel(); }
   else { worlds = worlds.filter(function(x){ return x.id!==libId; }); renderWorldPanel(); }
-  save(); closeLib(); addNote('已删除'+label+'「'+nm+'」。');
+  save(); closeLib();
 }
 $('libAvTabs').addEventListener('click', function(e){
   var b = e.target.closest('button[data-tab]');
@@ -3221,6 +3234,8 @@ function openGroupSettings(tab){
   $('gsWorld').value = cv.world || '';
   $('gsPlayer').value = cv.player || '';
   $('gsApiKey').value = cv.apiKey || '';
+  $('gsApiBase').value = cv.apiBase || '';
+  $('gsModel').value = cv.model || '';
   $('gsAutoMem').checked = !!cv.autoMemory;
   gsAvatarDraft = (cv.avatar && cv.avatar.mode) ? { mode:cv.avatar.mode, value:cv.avatar.value||'' } : defaultAvatar();
   setGsAvatarTab((gsAvatarDraft.mode === 'upload' || gsAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
@@ -3246,6 +3261,8 @@ function saveGroupSettings(){
   cv.world = $('gsWorld').value.trim();
   cv.player = $('gsPlayer').value.trim();
   cv.apiKey = $('gsApiKey').value.trim();
+  cv.apiBase = $('gsApiBase').value.trim();
+  cv.model = $('gsModel').value.trim();
   cv.autoMemory = $('gsAutoMem').checked;
   if((gsAvatarDraft.mode === 'url' || gsAvatarDraft.mode === 'upload') && !gsAvatarDraft.value) gsAvatarDraft = defaultAvatar();
   cv.avatar = { mode:gsAvatarDraft.mode, value:gsAvatarDraft.value };
@@ -3601,12 +3618,12 @@ function summarizeContext(cv){
   });
   parts.push('【对话记录】\n' + lines.join('\n'));
   msgs.push({ role:'user', content: parts.join('\n\n') + '\n\n请输出总结：' });
-  var sb = { model: settings.model, messages: msgs, stream:false, temperature:0.3, max_tokens:800 };
-  if(isDeepseek()) sb.thinking = { type:'disabled' };
+  var sb = { model: groupModel(cv), messages: msgs, stream:false, temperature:0.3, max_tokens:800 };
+  if(isDeepseek(cv)) sb.thinking = { type:'disabled' };
   var sh = { 'Content-Type':'application/json' };
   var sgk = groupKey(cv);
   if(sgk && sgk.trim()) sh['Authorization'] = 'Bearer '+sgk;
-  return fetch(apiUrl(), {
+  return fetch(apiUrl(cv), {
     method:'POST',
     headers: sh,
     body: JSON.stringify(sb)
@@ -3661,12 +3678,12 @@ function compressMemories(cv, summary){
         '2. 日常琐事一笔带过；不要编造总结里没有的内容。\n' +
         '3. 直接输出要点式内容，不要任何说明。' }];
       msgs.push({ role:'user', content:'请输出压缩后的记忆：' });
-      var b = { model: settings.model, messages: msgs, stream:false, temperature:0, max_tokens:600 };
-      if(isDeepseek()) b.thinking = { type:'disabled' };
+      var b = { model: groupModel(cv), messages: msgs, stream:false, temperature:0, max_tokens:600 };
+      if(isDeepseek(cv)) b.thinking = { type:'disabled' };
       var h = { 'Content-Type':'application/json' };
       var gk = groupKey(cv);
       if(gk && gk.trim()) h['Authorization'] = 'Bearer '+gk;
-      return fetch(apiUrl(), {
+      return fetch(apiUrl(cv), {
         method:'POST', headers:h, body:JSON.stringify(b)
       }).then(function(r){
         if(!r.ok) throw new Error('HTTP '+r.status);
