@@ -241,11 +241,11 @@
   #relSvg{width:100%; height:100%; display:block; touch-action:none; cursor:grab;}
   #relSvg.dragging{cursor:grabbing;}
   .rel-node{cursor:pointer;}
-  .rel-node circle{stroke-width:1.5;}
-  .rel-node-ring circle{fill:var(--panel); stroke:var(--border);}
+  .rel-node > circle{stroke-width:1.5;}   /* 直接子代才命中节点盘；头像内嵌 svg 里的 circle 不受影响（否则头像颜色会被主题变量覆盖） */
+  .rel-node-ring > circle{fill:var(--panel); stroke:var(--border);}
   .rel-node-ring.dim{opacity:.35;}
   .rel-node-ring.dim:hover{opacity:.7;}
-  .rel-node-center circle{fill:var(--accent); stroke:var(--accent-2);}
+  .rel-node-center > circle{fill:var(--accent); stroke:var(--accent-2);}
   .rel-node text{font-size:12px; text-anchor:middle; pointer-events:none; user-select:none; fill:var(--text);}
   .rel-node-ring text{fill:var(--text);}
   .rel-node-center text{fill:var(--accent); font-weight:700;}
@@ -254,8 +254,7 @@
   .rel-loading{position:absolute; top:12px; left:50%; transform:translateX(-50%); font-size:13px; color:var(--muted); z-index:2;}
   .rel-note{position:absolute; top:12px; left:50%; transform:translateX(-50%); font-size:12px; color:var(--muted); text-align:center; max-width:82%; line-height:1.5; z-index:2;}
   .rel-av{pointer-events:none;}
-  .rel-av-me{stroke:var(--text); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
-  .rel-node-center .rel-av-me{stroke:#fff;}
+  .rel-av-me{stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}   /* 「我」的头像固定在紫盘 + 白色描线人形，三种风格一致 */
   .rel-node-nm.rel-node-center text{fill:#fff; font-weight:700;}   /* 名字模式下中心文字在 accent 圆上必须白色（同类上两个类，不能用后代选择器） */
 
   .tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;}
@@ -284,6 +283,12 @@
   .avatar-preview{display:flex; align-items:center; justify-content:center; margin-top:12px;}
   .avatar-preview .char-avatar{width:56px; height:56px; font-size:28px;}
 
+  .role-box{display:flex; flex-direction:column; gap:6px; margin-bottom:4px;}
+  .role-opt{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px; cursor:pointer; background:var(--bg);}
+  .role-opt input{margin:0; accent-color:#7a5cf0; flex-shrink:0;}
+  .role-opt small{font-weight:400; color:var(--muted); font-size:12px;}
+  .role-opt:has(input:checked){border-color:var(--accent); background:rgba(79,110,247,.06);}
+
   .member-list{border-top:1px solid var(--border); max-height:300px; overflow-y:auto;}
   .member-row{display:flex; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px solid #f0f2f7;}
   .char-avatar{width:38px; height:38px; border-radius:50%; overflow:hidden; flex-shrink:0; background:#eef1fb; display:flex; align-items:center; justify-content:center; font-size:20px;}
@@ -291,14 +296,16 @@
   .char-info{flex:1; min-width:0;}
   .char-name{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .mem-badge{font-size:12px; vertical-align:middle; cursor:help;}
-  .npc-badge{font-size:11px; color:#7a5cf0; border:1px solid #d4ccf5; background:#f1edff; border-radius:6px; padding:0 5px; vertical-align:1px; white-space:nowrap;}
-  html[data-theme="dark"] .npc-badge{border-color:#4a4278; background:#26234a;}
-  html[data-theme="scroll"] .npc-badge{border-color:#cdbf93; background:#f1e6c8;}
-  .npc-note{font-size:12px; color:var(--muted); white-space:nowrap;}
-  .npc-mem-row{margin-bottom:10px;}
-  .npc-mem-role{font-size:12px; font-weight:600; color:var(--accent); margin-bottom:4px;}
-  .npc-mem-row textarea{width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:10px; font-size:13px; line-height:1.5; resize:vertical; background:var(--bg); color:var(--text); box-sizing:border-box;}
-  .char-persona{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px;}
+  .char-role{font-size:11px; font-weight:600; border-radius:6px; padding:0 5px; white-space:nowrap; display:inline-block; margin-top:1px;}
+  .char-role-main{color:#7a5cf0; border:1px solid #d4ccf5; background:#f1edff;}
+  .char-role-minor{color:var(--muted); border:1px solid #dfe3ec; background:#f0f2f7;}
+  .char-role-extra{color:var(--muted); border:1px solid #e4e8ef; background:#f6f7fa;}
+  html[data-theme="dark"] .char-role-main{border-color:#4a4278; background:#26234a;}
+  html[data-theme="dark"] .char-role-minor{border-color:#2a2f3a; background:#1b1e26;}
+  html[data-theme="dark"] .char-role-extra{border-color:#2a2f3a; background:#181b22;}
+  html[data-theme="scroll"] .char-role-main{border-color:#cdbf93; background:#f1e6c8;}
+  html[data-theme="scroll"] .char-role-minor{border-color:#d8c6a0; background:#f3e7c7;}
+  html[data-theme="scroll"] .char-role-extra{border-color:#d8c6a0; background:#f0e2c2;}
   .char-actions{display:flex;}
   .char-actions .icon-btn{margin-left:2px;}
   .modal .btn-add{margin:14px 0; width:100%; padding:11px; border-radius:12px; border:1.5px dashed #cdd4e2; color:var(--accent); font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px;}
@@ -737,7 +744,7 @@
             </svg>
           </div>
           <div class="about-name">梦语 <span class="about-ver" id="aboutVer"></span></div>
-          <p class="about-intro">梦语是一款连接各家大模型接口的多 AI 人物群聊软件，纯浏览器本地运行：和最多 8 位 AI角色在「群聊」聊天，或写下「故事」让它们一起演剧情，记录保存在本机。</p>
+          <p class="about-intro">梦语是一款连接各家大模型接口的多 AI 人物群聊软件，纯浏览器本地运行：和多位 AI 角色在「群聊」聊天，或写下「故事」让它们一起演剧情，记录保存在本机。</p>
           <div class="about-links">
             <button class="about-btn" id="aboutGithub" title="GitHub 仓库"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>GitHub</button>
             <button class="about-btn" id="aboutBili" title="哔哩哔哩主页"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z"/></svg>哔哩哔哩</button>
@@ -979,7 +986,7 @@
     </div>
     <label>总结内容</label>
     <textarea id="sumContent" rows="7" readonly placeholder="点击「手动总结」，或在「自动总结」里选一个阈值后，压缩出来的总结会写在这里。压缩后较早的消息会被移除，但总结会随每次对话注入给 AI，关键信息不会丢失。"></textarea>
-    <label class="switch-row" style="margin-top:10px;">同时压缩角色记忆（重要事件保留更多细节）
+    <label class="switch-row" style="margin-top:10px;">同时压缩角色记忆（主要角色保留更多细节）
       <span class="switch"><input type="checkbox" id="sumCompressMem"><span></span></span>
     </label>
     <p class="hint-text" id="sumHint"></p>
@@ -1029,10 +1036,13 @@
     <div id="emKeywords" class="kw-box"></div>
     <button id="emKwAdd" class="btn-add" style="margin:10px 0 0;">＋ 添加关键词</button>
     <p class="hint-text">当有人提到某个关键词时，这个成员会先查看关键词详情，再按剧情需要选择性作出反应。关键词详情不会被「总结」压缩。</p>
-    <div id="emNpcMemBox" class="hidden">
-      <label>已扮演角色的记忆（按角色分开记）</label>
-      <div id="emNpcMems"></div>
+    <label>角色类型</label>
+    <div class="role-box">
+      <label class="role-opt"><input type="radio" name="emRole" value="main"><span>主要角色</span><small>最多 10 个 · 记忆保留更多细节</small></label>
+      <label class="role-opt"><input type="radio" name="emRole" value="minor"><span>次要角色</span><small>最多 20 个 · 保留关键信息</small></label>
+      <label class="role-opt"><input type="radio" name="emRole" value="extra"><span>路人角色</span><small>无上限 · 按剧情需要保留</small></label>
     </div>
+    <p class="hint-text" id="emRoleHint"></p>
     <label class="switch-row">在场（被选入或提及时会回复）
       <span class="switch"><input type="checkbox" id="emPresent"><span></span></span>
     </label>
@@ -1182,11 +1192,17 @@
 var LS = { set:'ds_settings', convs:'ds_convs', chars:'ds_chars', hist:'ds_history', cards:'ds_cards', worlds:'ds_worlds', board:'ds_board', boardTut:'ds_board_tut' };
 var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
-var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.2.9';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.2.10';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.2.10', date:'2026-08-24', title:'角色分级标记 · 移除NPC与人数上限 · 关系图头像修复', items:[
+    '修复关系图：圆圈里的头像颜色不再跟随背景 / 风格变化（默认 / 暗夜 / 卷轴三种风格下头像颜色都固定）',
+    '移除「NPC角色」功能，群聊 / 故事不再有角色数量上限，可自由添加成员',
+    '群设置 AI 成员列表不再显示人物简介',
+    '新增角色分级标记：编辑成员时可标记为「主要角色」（最多 10 个，记忆保留更多细节）/「次要角色」（最多 20 个，保留关键信息）/「路人角色」（无上限，按剧情需要保留），记忆提炼与压缩都会按级别保留不同详略',
+    '角色分级标记随记忆转移备份一并导出与还原'
+  ]},
   { v:'0.2.9', date:'2026-08-24', title:'关系图升级 · 大窗口 · 双显示 · 收录路人', items:[
     '「关系」改为大窗口显示（桌面居中窗口、手机近全屏），点击窗口外的遮罩即可关闭',
     '关系图支持两种显示方式：圆圈里显示角色头像 + 名字在下方，或圆圈里直接显示角色名字；可在关系窗口里切换、选择会记住，三种风格都保证可读',
@@ -1358,13 +1374,10 @@ var ICON_LEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 var ICON_REL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';   // 关系（三个圆点 + 连线）
 var ICON_REL_TYPE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>';   // 切换为名字显示（Aa）
 var ICON_REL_AV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';   // 切换为头像显示（人物）
-var ICON_ME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="rel-av-me" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle class="rel-av-me" cx="12" cy="7" r="4"/></svg>';   // 关系图「我」的头像（描线人物）
+var ICON_ME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="12" fill="#7a5cf0"/><path class="rel-av-me" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle class="rel-av-me" cx="12" cy="7" r="4"/></svg>';   // 关系图「我」的头像：紫盘 + 白色描线人形（三种风格固定，不随主题变色）
 var ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14"/><path d="M5 14l1-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4l1 3z"/></svg>';
 var AV_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';   // 群聊默认头像：两个人形（描边）
 var AV_STORY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v13"/><path d="M3 18a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/><path d="M17.5 3.5l3.5 3.5"/><path d="M14.5 6.5l3 3"/></svg>';   // 故事默认头像：一本书 + 一支笔（描边）
-var NPC_NAME = 'NPC角色';
-var NPC_ROLE_AVS = ANIME_AVS;  // 路人头像池（复用二次元头像），按角色名散列取
-
 var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null, hideChipAvatar:false, relMode:'avatar' };
 var convs = [];
 var activeId = null;
@@ -1377,6 +1390,14 @@ function defaultAvatar(){ return { mode:'svg', value:ANIME_AVS[0] }; }
 var avatarDraft = defaultAvatar();
 var gsAvatarDraft = defaultAvatar();
 var libAvatarDraft = defaultAvatar();
+/* ---------- 角色分级（主要 / 次要 / 路人） ---------- */
+function roleOf(c){ var r = c && c.role; return (r==='main'||r==='minor'||r==='extra') ? r : 'minor'; }
+function roleCap(c){ var r = roleOf(c); return r==='main' ? 2000 : r==='extra' ? 600 : 1200; }   // 该角色记忆保留上限（字符）
+function roleTok(c){ var r = roleOf(c); return r==='main' ? 800 : r==='extra' ? 300 : 500; }    // 该角色记忆生成 max_tokens
+function roleInstr(c){ var r = roleOf(c);
+  return r==='main' ? '这个角色是「主要角色」：重要事件、关键台词、人物关系、玩家的重要互动都要尽量详细地保留，细节越丰富越好。'
+    : r==='extra' ? '这个角色是「路人角色」：只保留对剧情有实际影响的信息，其余日常内容可以不记。'
+    : '这个角色是「次要角色」：只保留关键信息——经历的主要事件、重要的台词与人物关系，用简洁的要点记录。'; }
 /* ---------- 关系图状态 ---------- */
 var relState = { open:false, center:'我', nodes:[], edges:[], view:{tx:0,ty:0,k:1}, anim:null, drag:false, dragFrom:null, pinch:null, pointers:{}, analyzing:false };
 var REL_K_MIN = 0.5, REL_K_MAX = 2.5;
@@ -1390,10 +1411,10 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 7;
+var BOARD_TUT_VERSION = 8;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词；开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「编辑 / 复制 / 重置」。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 故事自带一位「NPC角色」：剧情需要路人时它会自己登场（路人名不会和已设定成员重名），编辑里能看它按角色分开的记忆。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「编辑 / 复制 / 重置」。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
   { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
@@ -1438,70 +1459,23 @@ function assignId(o){
   else if(o.id >= seq){ seq = o.id + 1; }
 }
 
-/* ---------- 故事固定 NPC 角色 ---------- */
-function makeNpc(){
-  return { name:NPC_NAME, avatar:defaultAvatar(), isNpc:true, present:true, memory:'',
-    persona:'你是「NPC角色」，一个专门扮演路人/临时角色的固定 NPC。每当剧情需要路人登场（服务员、老板、小贩、村民、路人甲、敌人……），你就扮演那个角色并临时改用自己的名字出场；没有需要登场的人时，就安静地不抢戏。' };
-}
-function npcChar(cv){ if(!cv) return null; for(var i=0;i<cv.chars.length;i++){ if(cv.chars[i].isNpc) return cv.chars[i]; } return null; }
-function ensureNpc(cv){
-  if(!cv || cv.mode !== 'story' || npcChar(cv)) return;
-  var n = makeNpc(); assignId(n); cv.chars.push(n);
-}
+/* ---------- 路人 / 提到过的角色头像（NPC 功能移除后保留：关系图收录的角色、旧消息的 npcRole 仍用它） ---------- */
 function npcRoleAvatar(name){
   var s = 0;
   for(var i=0;i<name.length;i++) s = (s*31 + name.charCodeAt(i)) % 997;
-  return { mode:'svg', value: NPC_ROLE_AVS[Math.abs(s) % NPC_ROLE_AVS.length] };
+  return { mode:'svg', value: ANIME_AVS[Math.abs(s) % ANIME_AVS.length] };
 }
 function msgLabel(m){ return (m && m.npcRole) ? m.npcRole : (m ? m.speaker : ''); }
-function npcSys(cv, c){
-  var mem = cv.npcMem || {};
-  var keys = Object.keys(mem).filter(function(k){ return mem[k] && String(mem[k]).trim(); });
-  var memTxt = keys.length ? keys.map(function(k){ return k+'：'+(mem[k]||''); }).join('\n') : '（暂无，你是第一次登场）';
-  // 已经设定好的故事角色名：路人绝不能重名，也不能替他们发言
-  var taken = (cv.chars||[]).filter(function(x){ return !x.isNpc; }).map(function(x){ return x.name; });
-  var takenTxt = taken.length ? taken.map(function(n){ return '「'+n+'」'; }).join('、') : '（故事里没有其它设定角色）';
-  return '你是「NPC角色」，一个专门扮演路人/临时角色的固定 NPC。每当剧情需要路人登场时（服务员、老板、小贩、村民、路人甲、敌人……视剧情需要而定），你就扮演那个角色，临时改用自己的名字出场发言。\n\n' +
-    '【世界观 · 故事发生的世界】\n' + (cv.world || '（本故事未设定世界观，视为现实世界即可）') + '\n\n' +
-    '【玩家设定 · 故事里的人类「我」】\n' + (cv.player || '（未设定，把「我」当作普通角色即可）') + '\n\n' +
-    '【你已扮演过的角色的记忆（按角色分开）】\n' + memTxt + '\n\n' +
-    '回复规则（务必遵守）：\n' +
-    '1. 需要路人登场时，把第一行写成「角色名：内容」，角色名是你扮演的路人的名字，例如：服务员：欢迎光临。\n' +
-    '2. 接着自然描写神态、动作与台词，台词用中文引号“ ”包起来，可以分多行。神态、动作的主语用你扮演的路人角色名，不要用「我」；台词里说话时可以自称「我」，不受此限制。\n' +
-    '3. 如果当前剧情不需要路人登场，就以「NPC角色：……」（简单回应或一句氛围）结束本轮，不要强行造出路人。\n' +
-    '4. 绝不能使用以下已经设定的角色名：' + takenTxt + '。路人必须用这些名字之外的新名字（如「服务员」「张大叔」），也不要替这些角色发言。\n' +
-    '5. 只使用与你当前扮演角色相符的记忆，回忆与当前角色相关的旧事时自然带出。' +
-    (cv.maxReplyLen > 0 ? '\n6. 整条回复控制在 ' + cv.maxReplyLen + ' 字以内（含神态、台词）：内容要完整，用「。」等标点收尾，宁精炼不要写超、不要被截断。' : '');
-}
 function finalizeMsg(cv, msg){
-  // 固定 NPC：解析回复开头的「角色名：」，把名字/头像/记忆切到对应角色上
-  var npc = npcChar(cv);
-  if(npc && msg.speakerId === npc.id){
-    var t = msg.text;
-    var m = t.match(/^([^\n：:\s]{1,8})[：:]\s*/);
-    if(m){
-      var role = m[1].trim();
-      // 只当路人/临时角色：跳过关键词；也绝不能冒充已在场的成员身份（名字已被设定好的角色）
-      var memberNames = (cv.chars||[]).filter(function(x){ return !x.isNpc; }).map(function(x){ return x.name; });
-      if(role && role !== NPC_NAME && memberNames.indexOf(role) === -1 && !/^(旁白|叙述|神态|动作|台词|我)$/.test(role)){
-        msg.npcRole = role;
-        msg.text = t.slice(m[0].length);
-        cv.npcLastRole = role;
-      } else if(role && memberNames.indexOf(role) !== -1){
-        // 模型误用了已设定成员的名字：剥掉这个名字前缀，以「NPC角色」的身份保留内容，不再冒充该成员
-        msg.text = t.slice(m[0].length);
-      }
-    }
-  }
-  msg.text = cleanNamePrefix(msg.npcRole || msg.speaker, msg.text);
+  msg.text = cleanNamePrefix(msg.speaker, msg.text);
 }
 function newConv(name, chars, history){
   chars = chars || JSON.parse(JSON.stringify(DEFAULT_CHARS));
   history = history || [];
-  chars.forEach(function(c){ if(typeof c.present==='undefined') c.present = true; if(typeof c.memory!=='string') c.memory=''; assignId(c); });
+  chars.forEach(function(c){ if(typeof c.present==='undefined') c.present = true; if(typeof c.memory!=='string') c.memory=''; if(['main','minor','extra'].indexOf(c.role)===-1) c.role='minor'; assignId(c); });
   history.forEach(assignId);
   var now = Date.now();
-  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', player:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, npcMem:{}, npcLastRole:null, relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
+  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', player:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
 }
 function load(){
   try{ settings = Object.assign({apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE}, JSON.parse(localStorage.getItem(LS.set)||'{}')); }catch(e){}
@@ -1542,15 +1516,15 @@ function load(){
     if(cv.mode !== 'story') cv.mode = 'chat';
     if(typeof cv.maxReplyLen !== 'number' || isNaN(cv.maxReplyLen) || cv.maxReplyLen < 0) cv.maxReplyLen = (cv.mode === 'story' ? STORY_MAXLEN : CHAT_MAXLEN);
     if(!cv.avatar || typeof cv.avatar !== 'object' || !cv.avatar.mode) cv.avatar = null;
-    if(!cv.npcMem || typeof cv.npcMem !== 'object' || Array.isArray(cv.npcMem)) cv.npcMem = {};
-    if(typeof cv.npcLastRole !== 'string') cv.npcLastRole = null;
     if(typeof cv.compressMem !== 'boolean') cv.compressMem = false;
     if(!Array.isArray(cv.relations)) cv.relations = [];
     if(typeof cv.relationsTs !== 'number') cv.relationsTs = 0;
     cv.worldKeywords = normalizeKw(cv.worldKeywords);
+    cv.chars = cv.chars.filter(function(c){ return !c.isNpc; });   // 移除历史故事里的固定 NPC 角色
     cv.chars.forEach(function(c){
       if(typeof c.present==='undefined') c.present = true;
       if(typeof c.memory!=='string') c.memory = '';
+      if(['main','minor','extra'].indexOf(c.role)===-1) c.role = 'minor';
       c.keywords = normalizeKw(c.keywords);
       assignId(c);
     });
@@ -1559,7 +1533,6 @@ function load(){
     cv.chars.forEach(function(c){ if(typeof c.lastMemAt !== 'number') c.lastMemAt = uc; });
     cv.history.forEach(assignId);
     assignId(cv);
-    ensureNpc(cv);   // 故事自动带上固定 NPC 角色
   });
   try{ localStorage.removeItem(LS.chars); localStorage.removeItem(LS.hist); }catch(e){}
 
@@ -1784,7 +1757,6 @@ function doNewStory(){
   var cv = newConv('故事'+(n+1));
   cv.mode = 'story';
   cv.maxReplyLen = STORY_MAXLEN;
-  ensureNpc(cv);   // 固定 NPC 角色
   convs.push(cv);
   activeId = cv.id;
   save(); renderConvList(); renderMsgs(); renderChips(); renderChatHeader();
@@ -2121,7 +2093,7 @@ function renderChatHeader(){
   $('headerAvatar').className = 'header-avatar' + (cv.mode === 'story' ? ' story' : '');
   $('headerAvatar').innerHTML = convAvatarInner(cv);
   var present = cv.chars.filter(function(c){ return c.present; });
-  $('headerSub').textContent = '成员 '+cv.chars.length+'/'+MAX_MEMBERS+' · 在场：' + (present.length ? present.map(function(c){return c.name;}).join('、') : '（无）');
+  $('headerSub').textContent = '成员 '+cv.chars.length+' · 在场：' + (present.length ? present.map(function(c){return c.name;}).join('、') : '（无）');
   updateSummaryBtn();
   $('btnGroupSettings').innerHTML = ICON_GEAR + settingsLabel(cv);
   $('btnGroupSettings').title = (cv.mode === 'story' ? '本故事设置' : '本群设置') + '：AI成员 / 世界观 / 玩家设定 / API / 记忆转移 / 清空·删除';
@@ -2579,9 +2551,7 @@ function buildMessages(c, cv){
   var isStory = cv.mode === 'story';
   var allowNarr = false;   // 旁白按概率出现，不能每轮都有
   var sys;
-  if(isStory && c.isNpc){
-    sys = npcSys(cv, c);
-  } else if(isStory){
+  if(isStory){
     allowNarr = Math.random() < 0.5;
     sys =
       '你正在故事「'+cv.name+'」里扮演「'+c.name+'」，和大家一起推动剧情。\n\n' +
@@ -2738,26 +2708,17 @@ function updateMemory(c, cv){
   var uc = 0;
   for(var i=0;i<cv.history.length;i++){ if(cv.history[i].speakerId === 'user') uc++; }
   if(uc - (c.lastMemAt||0) < 8) return;   // 节流：约每 8 条用户发言提炼一次
-  var sys, target;
-  if(c.isNpc){
-    var role = cv.npcLastRole;
-    if(!role) return;   // NPC 还没扮演过具体角色：不积累通用记忆
-    var cur = (cv.npcMem || {})[role] || '';
-    sys = '你是「NPC角色」，正在扮演「'+role+'」。你作为「'+role+'」当前的记忆：\n' + cur + '\n\n更早对话总结：\n' + (cv.summary || '（暂无）');
-    target = role;
-  } else {
-    sys = '你是「'+c.name+'」，你的人设：\n' + (c.persona||'（无）') +
-      '\n\n你当前的记忆：\n' + (c.memory || '（暂无）') +
-      '\n\n更早对话总结：\n' + (cv.summary || '（暂无）');
-  }
+  var sys = '你是「'+c.name+'」，你的人设：\n' + (c.persona||'（无）') +
+    '\n\n你当前的记忆：\n' + (c.memory || '（暂无）') +
+    '\n\n更早对话总结：\n' + (cv.summary || '（暂无）');
   var msgs = [{ role:'system', content:sys }];
   var ctx = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-24);
   ctx.forEach(function(m){
     if(m.speakerId === 'user') msgs.push({ role:'user', content:'我：'+m.text });
     else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
-  msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。' });
-  var ub = { model: groupModel(cv), messages:msgs, stream:false, temperature:0, max_tokens:500 };
+  msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。\n'+roleInstr(c) });
+  var ub = { model: groupModel(cv), messages:msgs, stream:false, temperature:0, max_tokens:roleTok(c) };
   if(isDeepseek(cv)) ub.thinking = { type:'disabled' };
   var uh = { 'Content-Type':'application/json' };
   var ugk = groupKey(cv);
@@ -2769,8 +2730,7 @@ function updateMemory(c, cv){
   }).then(function(r){ return r.json(); }).then(function(j){
     var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
     if(typeof content === 'string' && content.trim()){
-      if(c.isNpc){ if(!cv.npcMem) cv.npcMem = {}; cv.npcMem[target] = content.trim().slice(0,1200); }
-      else c.memory = content.trim().slice(0,1200);
+      c.memory = content.trim().slice(0, roleCap(c));
       c.lastMemAt = uc;
       save();
     }
@@ -2812,38 +2772,27 @@ function renderGroupMembers(){
   list.innerHTML = '';
   if(!cv) return;
   cv.chars.forEach(function(c){
+    var role = roleOf(c);
+    var roleTag = '<span class="char-role char-role-'+role+'">'+({main:'主要角色',minor:'次要角色',extra:'路人角色'})[role]+'</span>';
     var row = document.createElement('div');
     row.className = 'member-row';
     row.dataset.id = c.id;
-    if(c.isNpc){
-      row.innerHTML =
-        '<div class="char-avatar">'+avatarHtml(c)+'</div>' +
-        '<div class="char-info">' +
-          '<div class="char-name">'+esc(c.name)+' <span class="npc-badge" title="固定角色：剧情需要路人登场时，它自动扮演那个路人">固定 NPC</span></div>' +
-          '<div class="char-persona">'+esc((c.persona||'').replace(/\s+/g,' ').slice(0,20))+'</div>' +
-        '</div>' +
-        '<div class="npc-note" title="名字 / 头像 / 记忆按扮演的角色分开记">路人自动登场</div>' +
-        '<div class="char-actions">' +
-          '<button class="icon-btn" data-act="edit" title="编辑（含已扮演角色的记忆）">✎</button>' +
-        '</div>';
-    } else {
-      row.innerHTML =
-        '<div class="char-avatar">'+avatarHtml(c)+'</div>' +
-        '<div class="char-info">' +
-          '<div class="char-name">'+esc(c.name)+(c.memory ? ' <span class="mem-badge" title="记忆：'+esc(c.memory.slice(0,80))+'">🧠</span>' : '')+'</div>' +
-          '<div class="char-persona">'+esc((c.persona||'').replace(/\s+/g,' ').slice(0,20))+'</div>' +
-        '</div>' +
-        '<label class="switch" title="在场 / 离场"><input type="checkbox" data-act="presence"'+(c.present?' checked':'')+'><span></span></label>' +
-        '<div class="char-actions">' +
-          '<button class="icon-btn" data-act="edit" title="编辑（含记忆）">✎</button>' +
-          '<button class="icon-btn danger" data-act="del" title="删除">🗑</button>' +
-        '</div>';
-    }
+    row.innerHTML =
+      '<div class="char-avatar">'+avatarHtml(c)+'</div>' +
+      '<div class="char-info">' +
+        '<div class="char-name">'+esc(c.name)+(c.memory ? ' <span class="mem-badge" title="记忆：'+esc(c.memory.slice(0,80))+'">🧠</span>' : '')+'</div>' +
+        roleTag +
+      '</div>' +
+      '<label class="switch" title="在场 / 离场"><input type="checkbox" data-act="presence"'+(c.present?' checked':'')+'><span></span></label>' +
+      '<div class="char-actions">' +
+        '<button class="icon-btn" data-act="edit" title="编辑（含记忆）">✎</button>' +
+        '<button class="icon-btn danger" data-act="del" title="删除">🗑</button>' +
+      '</div>';
     list.appendChild(row);
   });
   var add = $('gsAddChar');
-  add.disabled = cv.chars.length >= MAX_MEMBERS;
-  add.innerHTML = add.disabled ? '最多 '+MAX_MEMBERS+' 个 AI 人物' : ICON_PLUS + ' 添加 AI 人物';
+  add.disabled = false;
+  add.innerHTML = ICON_PLUS + ' 添加 AI 人物';
 }
 function setGsAvatarTab(tab){
   var btns = document.querySelectorAll('#gsAvTabs button');
@@ -2982,14 +2931,12 @@ function importBackup(file){
       if(typeof conv.maxReplyLen !== 'number' || isNaN(conv.maxReplyLen) || conv.maxReplyLen < 0) conv.maxReplyLen = (conv.mode === 'story' ? STORY_MAXLEN : CHAT_MAXLEN);
       if(typeof conv.randomOrder !== 'boolean') conv.randomOrder = false;
       if(!conv.avatar || typeof conv.avatar !== 'object' || !conv.avatar.mode) conv.avatar = null;
-      if(!conv.npcMem || typeof conv.npcMem !== 'object' || Array.isArray(conv.npcMem)) conv.npcMem = {};
-      if(typeof conv.npcLastRole !== 'string') conv.npcLastRole = null;
       if(typeof conv.compressMem !== 'boolean') conv.compressMem = false;
       if(!Array.isArray(conv.relations)) conv.relations = [];
       if(typeof conv.relationsTs !== 'number') conv.relationsTs = 0;
       conv.worldKeywords = normalizeKw(conv.worldKeywords);
-      conv.chars.forEach(function(c){ if(typeof c.name !== 'string' || !c.name) c.name = 'AI'; if(typeof c.present === 'undefined') c.present = true; if(typeof c.memory !== 'string') c.memory = ''; c.keywords = normalizeKw(c.keywords); });
-      ensureNpc(conv);   // 故事自动带上固定 NPC 角色
+      conv.chars.forEach(function(c){ if(typeof c.name !== 'string' || !c.name) c.name = 'AI'; if(typeof c.present === 'undefined') c.present = true; if(typeof c.memory !== 'string') c.memory = ''; c.keywords = normalizeKw(c.keywords); if(['main','minor','extra'].indexOf(c.role) === -1) c.role = 'minor'; });
+      conv.chars = conv.chars.filter(function(c){ return !c.isNpc; });   // 移除历史故事里的固定 NPC 角色
     }catch(e){
       alert('载入失败：' + e.message);
       return;
@@ -3386,10 +3333,9 @@ $('cardPickList').addEventListener('click', function(e){
   if(!it) return;
   var cv = current();
   if(!cv) return;
-  if(cv.chars.length >= MAX_MEMBERS){ alert('最多 '+MAX_MEMBERS+' 个 AI 人物'); return; }
   var card = getCard(Number(it.dataset.id));
   if(!card) return;
-  var c = { id:seq++, name:card.name, avatar:JSON.parse(JSON.stringify(card.avatar)), persona:card.persona||'', present:true, memory:'', keywords:kwDraftFrom(card.keywords) };
+  var c = { id:seq++, name:card.name, avatar:JSON.parse(JSON.stringify(card.avatar)), persona:card.persona||'', present:true, memory:'', role:'minor', keywords:kwDraftFrom(card.keywords) };
   cv.chars.push(c);
   save(); renderGroupMembers(); renderChips(); renderConvList();
   closeCardPick();
@@ -3522,9 +3468,9 @@ function deleteChar(c){
 }
 $('gsAddChar').addEventListener('click', function(){
   var cv = current();
-  if(!cv || cv.chars.length >= MAX_MEMBERS) return;
+  if(!cv) return;
   var idx = cv.chars.length;
-  var c = { id:seq++, name:AUTO_NAMES[idx]||('AI '+(idx+1)), avatar:{mode:'svg', value:ANIME_AVS[idx % ANIME_AVS.length]}, persona:DEFAULT_PERSONA, present:true, memory:'' };
+  var c = { id:seq++, name:AUTO_NAMES[idx]||('AI '+(idx+1)), avatar:{mode:'svg', value:ANIME_AVS[idx % ANIME_AVS.length]}, persona:DEFAULT_PERSONA, present:true, memory:'', role:'minor' };
   cv.chars.push(c);
   save(); renderGroupMembers(); renderChips(); renderConvList();
   openEdit(c);
@@ -3599,30 +3545,6 @@ function fileToAvatar(file, cb){
     img.src = reader.result;
   };
   reader.readAsDataURL(file);
-}
-function buildNpcMems(c){
-  // 固定 NPC 的记忆按「扮演的角色」分开存：列出每个角色一行一个编辑框
-  var box = $('emNpcMems');
-  box.innerHTML = '';
-  var cv = current();
-  var mem = (cv && cv.npcMem) || {};
-  var roles = Object.keys(mem).filter(function(k){ return mem[k] && String(mem[k]).trim(); });
-  if(!roles.length){
-    var empty = document.createElement('p');
-    empty.className = 'muted';
-    empty.style.cssText = 'font-size:12px; margin:0 0 8px;';
-    empty.textContent = 'NPC 还没扮演过具体角色，暂无记忆。剧情需要路人登场、它用某角色名发言后，会按角色自动记在这里。';
-    box.appendChild(empty);
-    return;
-  }
-  roles.forEach(function(role){
-    var row = document.createElement('div');
-    row.className = 'npc-mem-row';
-    row.innerHTML = '<div class="npc-mem-role">'+esc(role)+'</div>' +
-      '<textarea data-npc-role="'+esc(role)+'" rows="3" placeholder="这个角色记住的事情，可手动修改…"></textarea>';
-    row.querySelector('textarea').value = mem[role] || '';
-    box.appendChild(row);
-  });
 }
 /* ---------- 关键词编辑（成员 / 世界观 / 角色卡 / 世界书 通用） ---------- */
 var editKwDraft = [], gsKwDraft = [], libKwDraft = [];
@@ -3713,20 +3635,24 @@ function normalizeKw(list){
   });
   return list.filter(function(k){ return k && typeof k === 'object'; });
 }
+function setRoleRadios(c){
+  var cv = current();
+  var counts = { main:0, minor:0, extra:0 };
+  if(cv && cv.chars){ cv.chars.forEach(function(x){ if(x.id !== c.id) counts[roleOf(x)]++; }); }
+  var radio = document.querySelector('input[name="emRole"][value="'+roleOf(c)+'"]');
+  if(radio) radio.checked = true;
+  var hint = $('emRoleHint');
+  if(hint) hint.textContent = '主要角色 '+counts.main+'/10 · 次要角色 '+counts.minor+'/20 · 路人角色 '+counts.extra+'（无上限）';
+}
 function openEdit(c){
   editCharId = c.id;
-  var npc = !!c.isNpc;
   $('emName').value = c.name || '';
-  $('emName').disabled = npc;   // 固定 NPC 名字不可改
   $('emPersona').value = c.persona || '';
   $('emMemory').value = c.memory || '';
   editKwDraft = kwDraftFrom(c.keywords);
   renderKwBox($('emKeywords'), editKwDraft);
   $('emPresent').checked = !!c.present;
-  $('emPresent').disabled = npc;  // 固定 NPC 始终在场
-  var npcBox = $('emNpcMemBox');
-  if(npc){ buildNpcMems(c); npcBox.classList.remove('hidden'); }
-  else npcBox.classList.add('hidden');
+  setRoleRadios(c);
   var mode = (c.avatar && c.avatar.mode) || 'svg';
   avatarDraft = { mode:mode, value:(c.avatar && c.avatar.value) || (mode==='svg' ? ANIME_AVS[0] : '') };
   setAvatarTab((mode === 'upload' || mode === 'url') ? 'upload' : 'emoji');
@@ -3760,28 +3686,21 @@ $('emSave').addEventListener('click', function(){
   if(!c) return;
   var name = $('emName').value.trim();
   if(!name){ alert('请填写姓名'); return; }
-  if(c.isNpc){
-    // 固定 NPC：名字 / 头像 / 在场固定不动，只改人设与各角色的记忆
-    c.persona = $('emPersona').value.trim();
-    if(!cv.npcMem) cv.npcMem = {};
-    var rows = document.querySelectorAll('#emNpcMems textarea[data-npc-role]');
-    for(var r=0;r<rows.length;r++){
-      var role = rows[r].dataset.npcRole;
-      var val = rows[r].value.trim();
-      if(val) cv.npcMem[role] = val.slice(0,1200);
-      else if(cv.npcMem[role]) delete cv.npcMem[role];
-    }
-    c.keywords = kwDraftCommit(editKwDraft);
-    name = c.name;
-  } else {
-    c.name = name;
-    c.persona = $('emPersona').value.trim();
-    c.memory = $('emMemory').value.trim();
-    c.keywords = kwDraftCommit(editKwDraft);
-    c.present = $('emPresent').checked;
-    if(avatarDraft.mode === 'url' && !avatarDraft.value) avatarDraft.mode = 'emoji';
-    c.avatar = { mode:avatarDraft.mode, value:avatarDraft.value };
+  var role = (document.querySelector('input[name="emRole"]:checked')||{}).value || 'minor';
+  if(role !== 'extra'){
+    var cnt = 0;
+    cv.chars.forEach(function(x){ if(x.id !== c.id && roleOf(x) === role) cnt++; });
+    var max = role === 'main' ? 10 : 20;
+    if(cnt >= max){ alert(role === 'main' ? '主要角色最多可标记 10 个' : '次要角色最多可标记 20 个'); return; }
   }
+  c.name = name;
+  c.persona = $('emPersona').value.trim();
+  c.memory = $('emMemory').value.trim();
+  c.keywords = kwDraftCommit(editKwDraft);
+  c.present = $('emPresent').checked;
+  c.role = role;
+  if(avatarDraft.mode === 'url' && !avatarDraft.value) avatarDraft.mode = 'emoji';
+  c.avatar = { mode:avatarDraft.mode, value:avatarDraft.value };
   save();
   renderGroupMembers(); renderChips(); renderConvList(); renderMsgs();
   closeEdit();
@@ -3961,18 +3880,11 @@ function applySummary(cv, content){
   addNote('已总结压缩上下文：移除 '+removed+' 条较早消息，总结已写入「总结内容」。');
   return removed;
 }
-/* 总结时可选：把每个成员的记忆也压缩一遍（合并最新总结）；重要事件比普通记忆保留更多细节 */
+/* 总结时可选：把每个成员的记忆也压缩一遍（合并最新总结）；主要角色保留更多细节 */
 function compressMemories(cv, summary){
   var jobs = [];
   (cv.chars||[]).forEach(function(c){
-    if(c.isNpc){
-      var nm = cv.npcMem || {};
-      Object.keys(nm).forEach(function(role){
-        if(nm[role] && String(nm[role]).trim()){
-          jobs.push({ sys:'你是「NPC角色」，正在扮演「'+role+'」。你作为「'+role+'」当前的记忆：\n'+(nm[role]||'')+'\n\n最新总结：\n'+(summary||'（暂无）'), npcRole:role });
-        }
-      });
-    } else if(c.memory && String(c.memory).trim()){
+    if(c.memory && String(c.memory).trim()){
       jobs.push({ sys:'你是「'+c.name+'」，你的人设：\n'+(c.persona||'（无）')+'\n\n你当前的记忆：\n'+(c.memory||'')+'\n\n最新总结：\n'+(summary||'（暂无）'), c:c });
     }
   });
@@ -3983,11 +3895,11 @@ function compressMemories(cv, summary){
     chain = chain.then(function(){
       var msgs = [{ role:'system', content: j.sys +
         '\n\n请把上面这段「已有记忆」与「最新总结」合并压缩成这份角色压缩后的新记忆。要求：\n' +
-        '1. 重要事件（关系到角色关系、冲突、承诺、玩家的重要决定等）要比普通记忆保留更多细节。\n' +
+        '1. '+roleInstr(j.c)+'\n' +
         '2. 日常琐事一笔带过；不要编造总结里没有的内容。\n' +
         '3. 直接输出要点式内容，不要任何说明。' }];
       msgs.push({ role:'user', content:'请输出压缩后的记忆：' });
-      var b = { model: groupModel(cv), messages: msgs, stream:false, temperature:0, max_tokens:600 };
+      var b = { model: groupModel(cv), messages: msgs, stream:false, temperature:0, max_tokens: roleTok(j.c) };
       if(isDeepseek(cv)) b.thinking = { type:'disabled' };
       var h = { 'Content-Type':'application/json' };
       var gk = groupKey(cv);
@@ -4000,8 +3912,7 @@ function compressMemories(cv, summary){
       }).then(function(j2){
         var content = j2.choices && j2.choices[0] && j2.choices[0].message && j2.choices[0].message.content;
         if(typeof content === 'string' && content.trim()){
-          if(j.npcRole){ if(!cv.npcMem) cv.npcMem = {}; cv.npcMem[j.npcRole] = content.trim().slice(0,1200); }
-          else if(j.c){ j.c.memory = content.trim().slice(0,1200); }
+          j.c.memory = content.trim().slice(0, roleCap(j.c));
           done++;
         }
       }).catch(function(){}); // 单条压缩失败不影响其它
@@ -4042,7 +3953,7 @@ $('sumCompressMem').addEventListener('change', function(){
   if(!cv) return;
   cv.compressMem = this.checked;
   save();
-  $('sumHint').textContent = this.checked ? '已开启：总结后会把各成员记忆也压缩一遍（重要事件保留更多细节）。' : '已关闭：总结时只压缩上下文，不压缩角色记忆。';
+  $('sumHint').textContent = this.checked ? '已开启：总结后会把各成员记忆也压缩一遍（主要角色保留更多细节）。' : '已关闭：总结时只压缩上下文，不压缩角色记忆。';
 });
 $('btnSumManual').addEventListener('click', doManualSummary);
 $('btnSumAuto').addEventListener('click', function(){
@@ -4081,7 +3992,7 @@ document.querySelectorAll('.modal-overlay').forEach(function(ov){
 function relNames(cv){
   var names = ['我'];
   (cv.chars || []).forEach(function(c){ if(c.name && names.indexOf(c.name) === -1) names.push(c.name); });
-  // 已设定角色之外，出现在关系里的名字（NPC 扮演过的 / 对话里提到过、被 AI 收录的角色）也上环
+  // 已设定角色之外，出现在关系里的名字（对话里提到过、被 AI 收录的路人角色）也上环
   (cv.relations || []).forEach(function(e){
     ['a','b'].forEach(function(k){ var n = e && e[k];
       if(typeof n === 'string' && n.trim() && names.indexOf(n) === -1) names.push(n.trim()); });
@@ -4146,7 +4057,7 @@ function relEdgesFor(center){
       if(!c.name || c.name === '我' || !byName[c.name]) return;
       push('我', c.name, stored[c.name] || '关系未知');
     });
-    // 「我」与 NPC/提到过的角色的已存关系
+    // 「我」与路人 / 提到过的角色的已存关系
     Object.keys(stored).forEach(function(far){
       if(far === '我' || isSet[far]) return;
       push('我', far, stored[far]);
@@ -4159,7 +4070,7 @@ function relEdgesFor(center){
     });
     push(center, '我', stored['我'] || '关系未知');
   } else {
-    // NPC/提到过的角色为中心：规则照旧，只显示已存关系
+    // 路人 / 提到过的角色为中心：规则照旧，只显示已存关系
     Object.keys(stored).forEach(function(far){ push(center, far, stored[far]); });
   }
   return out;
@@ -4199,7 +4110,7 @@ function renderRelGraph(){
       var cp = document.createElementNS(ns, 'clipPath');
       cp.setAttribute('id', id);
       var cc = document.createElementNS(ns, 'circle');
-      cc.setAttribute('cx', r - 1); cc.setAttribute('cy', r - 1); cc.setAttribute('r', r - 1);
+      cc.setAttribute('cx', r); cc.setAttribute('cy', r); cc.setAttribute('r', r);
       cp.appendChild(cc);
       d.appendChild(cp);
     });
@@ -4209,6 +4120,7 @@ function renderRelGraph(){
     g.setAttribute('class', 'rel-node ' + (n.name === relState.center ? 'rel-node-center' : 'rel-node-ring') + (nm ? ' rel-node-nm' : ''));
     g.setAttribute('data-name', n.name);
     var c = document.createElementNS(ns, 'circle');
+    if(!nm) c.style.stroke = 'none';   // 头像模式：头像盖满圆盘，去掉主题色描边环
     g.appendChild(c);
     var av = null;
     if(!nm){
@@ -4232,14 +4144,14 @@ function relAvatarOf(name){
       return defaultAvatar();
     }
   }
-  return npcRoleAvatar(name);   // NPC 扮演过的 / 对话里提到过的角色
+  return npcRoleAvatar(name);   // 对话里提到过、被收录的路人角色
 }
 function buildRelAvatar(name, r, clipIds){
   var ns = 'http://www.w3.org/2000/svg';
   var a = relAvatarOf(name);
   var g = document.createElementNS(ns, 'g');
   g.setAttribute('class', 'rel-av');
-  var size = 2 * (r - 1);
+  var size = 2 * r;   // 盖满整块圆盘（含边框），避免露出主题色
   if(a.mode === 'svg' && a.value){
     var s = document.createElementNS(ns, 'svg');
     s.setAttribute('width', size);
@@ -4294,7 +4206,7 @@ function updateRelGraph(){
       if(el.t.hasAttribute('dominant-baseline')) el.t.removeAttribute('dominant-baseline');
       if(el.t.hasAttribute('font-size')) el.t.removeAttribute('font-size');
     }
-    if(el.av) el.av.setAttribute('transform', 'translate(' + (p.x - (r - 1)) + ' ' + (p.y - (r - 1)) + ')');
+    if(el.av) el.av.setAttribute('transform', 'translate(' + (p.x - r) + ' ' + (p.y - r) + ')');
     var connected = relState.edges.some(function(e){ return e.a === n.name || e.b === n.name; });
     el.g.classList.toggle('dim', !isC && !connected);
   });
@@ -4383,14 +4295,11 @@ function closeRel(){
 function relCandidates(cv){
   var names = ['我'];
   (cv.chars || []).forEach(function(c){ if(c.name && names.indexOf(c.name) === -1) names.push(c.name); });
-  var mem = cv.npcMem || {};
-  Object.keys(mem).forEach(function(k){ if(mem[k] && String(mem[k]).trim() && names.indexOf(k) === -1) names.push(k); });   // NPC 扮演过的角色
   return names;
 }
 function relAccept(cv, name){
   if(name === '我') return true;
   for(var i = 0; i < (cv.chars || []).length; i++){ if(cv.chars[i].name === name) return true; }   // 已设定角色
-  if(cv.npcMem && cv.npcMem[name] && String(cv.npcMem[name]).trim()) return true;   // NPC 扮演过的角色
   if(name.length < 2 || name.length > 8) return false;   // 过短/过长：避免子串误报、防伪造长名
   if(/^(旁白|叙述|神态|动作|台词|我|玩家)$/.test(name)) return false;
   // 对话记录里确实提到过（名字必须来自原文，防模型发明新名字）
