@@ -48,6 +48,7 @@
   .conv-time{font-size:11px; color:#b6bcc9; flex-shrink:0; align-self:flex-start; margin-top:3px;}
 
   .icon-btn{width:30px; height:30px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:15px; color:var(--muted); flex-shrink:0;}
+  .icon-btn svg{width:16px; height:16px;}
   .icon-btn:hover{background:#f0f2f7; color:var(--text);}
   .icon-btn.danger:hover{background:#fdecec; color:var(--danger);}
   #btnNewConv{width:40px; height:40px; border-radius:11px; font-size:22px; font-weight:600;}
@@ -115,6 +116,7 @@
   /* ---------- 消息区右下角「＋」更多工具 ---------- */
   .fab{position:absolute; right:14px; bottom:100%; margin-bottom:10px; z-index:40; display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
   .fab-btn{width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; font-size:20px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 14px rgba(79,110,247,.35); transition:.15s;}
+  .fab-btn svg{width:20px; height:20px;}
   .fab-btn:hover{filter:brightness(1.08);}
   .fab-menu{background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:0 10px 28px rgba(31,36,48,.16); padding:6px; display:flex; flex-direction:column; gap:2px;}
   .fab-menu.hidden{display:none;}
@@ -220,10 +222,15 @@
   .char-info{flex:1; min-width:0;}
   .char-name{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .mem-badge{font-size:12px; vertical-align:middle; cursor:help;}
+  .npc-badge{font-size:11px; color:#7a5cf0; border:1px solid #d4ccf5; background:#f1edff; border-radius:6px; padding:0 5px; vertical-align:1px; white-space:nowrap;}
+  html[data-theme="dark"] .npc-badge{border-color:#4a4278; background:#26234a;}
+  html[data-theme="scroll"] .npc-badge{border-color:#cdbf93; background:#f1e6c8;}
+  .npc-note{font-size:12px; color:var(--muted); white-space:nowrap;}
   .char-persona{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px;}
   .char-actions{display:flex;}
   .char-actions .icon-btn{margin-left:2px;}
-  .modal .btn-add{margin:14px 0; width:100%; padding:11px; border-radius:12px; border:1.5px dashed #cdd4e2; color:var(--accent); font-size:14px; font-weight:600;}
+  .modal .btn-add{margin:14px 0; width:100%; padding:11px; border-radius:12px; border:1.5px dashed #cdd4e2; color:var(--accent); font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px;}
+  .modal .btn-add svg{width:14px; height:14px;}
   .modal .btn-add:hover:not(:disabled){background:#f0f3ff; border-color:var(--accent);}
   .modal .btn-add:disabled{color:#b6bcc9; border-color:#dfe3ec; cursor:not-allowed;}
 
@@ -233,8 +240,9 @@
   .btn-danger:disabled{opacity:.5; cursor:not-allowed;}
 
   .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:22px;}
-  .btn-primary{background:var(--accent); color:#fff; padding:9px 20px; border-radius:10px; font-size:14px; font-weight:600;}
+  .btn-primary{background:var(--accent); color:#fff; padding:9px 20px; border-radius:10px; font-size:14px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; gap:6px;}
   .btn-primary:hover{filter:brightness(1.05);}
+  .btn-primary svg{width:14px; height:14px;}
   .btn-ghost{background:#f2f4f8; color:#4a5266; padding:9px 20px; border-radius:10px; font-size:14px;}
   .btn-ghost:hover{background:#e8ebf1;}
 
@@ -264,6 +272,20 @@
   /* 宫格展示 */
   .lib-grid{flex:1; overflow-y:auto; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px; align-content:start;}
   .panel-empty{flex:1; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px;}
+  /* 黑板便签 */
+  .board-grid{flex:1; overflow-y:auto; padding:12px; display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; align-content:start;}
+  .board-note{position:relative; border-radius:10px; padding:14px 12px 10px; box-shadow:0 3px 10px rgba(31,36,48,.10); display:flex; flex-direction:column;}
+  .board-note.c0{background:#fff3b8;}
+  .board-note.c1{background:#d3e6ff;}
+  .board-note.c2{background:#d7f4d8;}
+  .board-note.c3{background:#ffdce7;}
+  .board-note textarea{width:100%; min-height:92px; background:transparent; border:none; outline:none; resize:vertical; font-size:14px; line-height:1.55; color:#3b3b3b; font-family:inherit;}
+  .board-note .note-ts{font-size:11px; color:rgba(0,0,0,.35); margin-top:4px;}
+  .board-note .note-del{position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:rgba(0,0,0,.4); opacity:0; transition:.15s;}
+  .board-note:hover .note-del{opacity:1;}
+  .board-note .note-del:hover{background:rgba(0,0,0,.12); color:rgba(0,0,0,.7);}
+  .board-note .note-del svg{width:13px; height:13px;}
+  .board-hint{font-size:12px; color:var(--muted); padding:0 14px 12px;}
   /* 关于面板 */
   .about-scroll{flex:1; overflow-y:auto; padding:12px 14px 22px;}
   .about-hero{display:flex; flex-direction:column; align-items:center; text-align:center; padding:10px 6px 16px; border-bottom:1px solid var(--border);}
@@ -536,6 +558,7 @@
     </div>
     <div class="rail-grow"></div>
     <div class="rail-dot" id="keyDot" title="全局 API Key 是否已配置"></div>
+    <button id="btnBoard" class="rail-btn" title="黑板（便签）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg></button>
     <button id="btnMarket" class="rail-btn" title="集市（暂未开放）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/></svg></button>
     <button id="btnCards" class="rail-btn" title="角色卡库"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10h2"/><path d="M16 14h2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><circle cx="9" cy="11" r="2"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg></button>
     <button id="btnWorlds" class="rail-btn" title="世界书库"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16"/><path d="M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg></button>
@@ -558,7 +581,7 @@
           梦语
         </span>
         <div class="newconv-wrap">
-          <button id="btnNewConv" class="icon-btn" title="新建对话">＋</button>
+          <button id="btnNewConv" class="icon-btn" title="新建对话"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
           <div id="newConvMenu" class="newconv-menu hidden">
             <button class="menu-item" data-act="new">新建聊天</button>
             <button class="menu-item" data-act="story">开始故事</button>
@@ -575,7 +598,7 @@
         <span class="panel-title">角色卡</span>
       </div>
       <div class="panel-actions">
-        <button class="btn-primary" id="btnAddCard">＋ 创建</button>
+        <button class="btn-primary" id="btnAddCard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>创建</button>
         <button class="btn-ghost" id="btnImportCard">⬆ 导入</button>
       </div>
       <div class="lib-grid" id="cardGrid"></div>
@@ -587,10 +610,22 @@
         <span class="panel-title">世界书</span>
       </div>
       <div class="panel-actions">
-        <button class="btn-primary" id="btnAddWorld">＋ 创建</button>
+        <button class="btn-primary" id="btnAddWorld"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>创建</button>
         <button class="btn-ghost" id="btnImportWorld">⬆ 导入</button>
       </div>
       <div class="lib-grid" id="worldGrid"></div>
+    </div>
+
+    <div id="boardView" class="panel-view hidden">
+      <div class="panel-header">
+        <button class="icon-btn" id="btnBackBoard" title="返回会话">←</button>
+        <span class="panel-title">黑板</span>
+      </div>
+      <div class="panel-actions">
+        <button class="btn-primary" id="btnAddNote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>添加便签</button>
+      </div>
+      <div class="board-grid" id="boardGrid"></div>
+      <p class="board-hint">就像贴便签一样，随便写点公告、提醒或灵感，每张便签会自动保存。</p>
     </div>
 
     <div id="aboutView" class="panel-view hidden">
@@ -676,7 +711,10 @@
           <button class="fab-item" data-act="cost">📊 费用</button>
           <button class="fab-item" data-act="len">📏 字数</button>
         </div>
-        <button id="btnMore" class="fab-btn" title="更多工具">＋</button>
+        <button id="btnMore" class="fab-btn" title="更多工具">
+          <svg id="morePlus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          <svg id="moreX" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
       </div>
     </div>
   </main>
@@ -716,6 +754,10 @@
         <button data-theme="scroll">卷轴风格</button>
       </div>
       <p class="hint-text">深色风格为黑夜模式，主色调为黑色；卷轴风格为略微泛黄、古朴的书籍质感。均只改变配色与风格，不影响界面布局与图标样式。</p>
+      <label class="switch-row">选择对话（隐藏下轮人物头像）
+        <span class="switch"><input type="checkbox" id="stHideChipAv"><span></span></span>
+      </label>
+      <p class="hint-text">开启后，聊天输入框上方的「下轮对话」人物选择条隐藏头像，只显示名字。</p>
     </div>
     <div class="modal-actions">
       <button class="btn-ghost" id="stCancel">取消</button>
@@ -1007,14 +1049,20 @@
 (function(){
 'use strict';
 
-var LS = { set:'ds_settings', convs:'ds_convs', chars:'ds_chars', hist:'ds_history', cards:'ds_cards', worlds:'ds_worlds' };
+var LS = { set:'ds_settings', convs:'ds_convs', chars:'ds_chars', hist:'ds_history', cards:'ds_cards', worlds:'ds_worlds', board:'ds_board' };
 var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var MAX_MEMBERS = 8;
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.1.5';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.1.6';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.1.6', date:'2026-08-23', title:'加号图标 · 界面设置 · NPC角色 · 黑板', items:[
+    '「＋ / ×」加号图标、新建 / 创建 / 添加按钮统一换成描线风格图标',
+    '界面设置新增「选择对话」开关：开启后「下轮对话」人物条隐藏头像，只显示名字',
+    '故事模式新增固定「NPC角色」：剧情需要路人登场时，它临时用自己的名字发言，头像与记忆按角色分开记忆',
+    '主页「集市」上方新增「黑板」：像便签一样自由书写公告 / 提醒 / 灵感，多张便签自动保存'
+  ]},
   { v:'0.1.5', date:'2026-08-23', title:'主页图标换新', items:[
     '主页功能栏（集市 / 角色卡 / 世界书 / 关于 / 设置）的图标从表情包统一换成描线风格的线性图标',
     '新图标自动跟随主题与选中状态变色，手机端同步适配'
@@ -1058,8 +1106,11 @@ var DEFAULT_CHARS = [
   { name:'小美', avatar:{mode:'emoji',value:'🦊'}, persona:'你是「小美」，一位温柔细心的生活顾问，说话体贴、乐于关心别人，常常给出实用的建议。', present:true, memory:'' },
   { name:'阿豪', avatar:{mode:'emoji',value:'🐼'}, persona:'你是「阿豪」，一位幽默开朗的运动达人，爱开玩笑，说话轻松活泼，总能活跃气氛。', present:true, memory:'' }
 ];
+var ICON_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
+var NPC_NAME = 'NPC角色';
+var NPC_ROLE_AVS = ['🧑','👨','👩','🧓','👵','👨🦱','👩🦰','🧑🦲','👱','👵'];  // 路人头像池，按角色名散列取
 
-var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null };
+var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null, hideChipAvatar:false };
 var convs = [];
 var activeId = null;
 var seq = 1;
@@ -1075,6 +1126,9 @@ var cmTimer = null;
 var cmAction = null;
 var cards = [];
 var worlds = [];
+var board = [];
+var boardColorIdx = 0;
+var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 var panelView = 'conv';
 var libMode = 'card';
 var libId = null;
@@ -1109,13 +1163,63 @@ function assignId(o){
   if(typeof o.id !== 'number' || !o.id){ o.id = seq++; }
   else if(o.id >= seq){ seq = o.id + 1; }
 }
+
+/* ---------- 故事固定 NPC 角色 ---------- */
+function makeNpc(){
+  return { name:NPC_NAME, avatar:{mode:'emoji',value:'🎭'}, isNpc:true, present:true, memory:'',
+    persona:'你是「NPC角色」，一个专门扮演路人/临时角色的固定 NPC。每当剧情需要路人登场（服务员、老板、小贩、村民、路人甲、敌人……），你就扮演那个角色并临时改用自己的名字出场；没有需要登场的人时，就安静地不抢戏。' };
+}
+function npcChar(cv){ if(!cv) return null; for(var i=0;i<cv.chars.length;i++){ if(cv.chars[i].isNpc) return cv.chars[i]; } return null; }
+function ensureNpc(cv){
+  if(!cv || cv.mode !== 'story' || npcChar(cv)) return;
+  var n = makeNpc(); assignId(n); cv.chars.push(n);
+}
+function npcRoleAvatar(name){
+  var s = 0;
+  for(var i=0;i<name.length;i++) s = (s*31 + name.charCodeAt(i)) % 997;
+  return { mode:'emoji', value: NPC_ROLE_AVS[Math.abs(s) % NPC_ROLE_AVS.length] };
+}
+function msgLabel(m){ return (m && m.npcRole) ? m.npcRole : (m ? m.speaker : ''); }
+function npcSys(cv, c){
+  var mem = cv.npcMem || {};
+  var keys = Object.keys(mem).filter(function(k){ return mem[k] && String(mem[k]).trim(); });
+  var memTxt = keys.length ? keys.map(function(k){ return k+'：'+(mem[k]||''); }).join('\n') : '（暂无，你是第一次登场）';
+  return '你是「NPC角色」，一个专门扮演路人/临时角色的固定 NPC。每当剧情需要路人登场时（服务员、老板、小贩、村民、路人甲、敌人……视剧情需要而定），你就扮演那个角色，临时改用自己的名字出场发言。\n\n' +
+    '【世界观 · 故事发生的世界】\n' + (cv.world || '（本故事未设定世界观，视为现实世界即可）') + '\n\n' +
+    '【玩家设定 · 故事里的人类「我」】\n' + (cv.player || '（未设定，把「我」当作普通角色即可）') + '\n\n' +
+    '【你已扮演过的角色的记忆（按角色分开）】\n' + memTxt + '\n\n' +
+    '回复规则（务必遵守）：\n' +
+    '1. 需要路人登场时，把第一行写成「角色名：内容」，角色名是你扮演的路人的名字，例如：服务员：欢迎光临。\n' +
+    '2. 接着自然描写神态、动作与台词，台词用中文引号“ ”包起来，可以分多行。\n' +
+    '3. 如果当前剧情不需要路人登场，就以「NPC角色：……」（简单回应或一句氛围）结束本轮，不要强行造出路人。\n' +
+    '4. 不要扮演已在场的其它成员或主角。\n' +
+    '5. 只使用与你当前扮演角色相符的记忆，回忆与当前角色相关的旧事时自然带出。' +
+    (cv.maxReplyLen > 0 ? '\n6. 整条回复控制在 ' + cv.maxReplyLen + ' 字以内（含神态、台词）：内容要完整，用「。」等标点收尾，宁精炼不要写超、不要被截断。' : '');
+}
+function finalizeMsg(cv, msg){
+  // 固定 NPC：解析回复开头的「角色名：」，把名字/头像/记忆切到对应角色上
+  var npc = npcChar(cv);
+  if(npc && msg.speakerId === npc.id){
+    var t = msg.text;
+    var m = t.match(/^([^\n：:\s]{1,8})[：:]\s*/);
+    if(m){
+      var role = m[1].trim();
+      if(role && role !== NPC_NAME && !/^(旁白|叙述|神态|动作|台词)$/.test(role)){
+        msg.npcRole = role;
+        msg.text = t.slice(m[0].length);
+        cv.npcLastRole = role;
+      }
+    }
+  }
+  msg.text = cleanNamePrefix(msg.npcRole || msg.speaker, msg.text);
+}
 function newConv(name, chars, history){
   chars = chars || JSON.parse(JSON.stringify(DEFAULT_CHARS));
   history = history || [];
   chars.forEach(function(c){ if(typeof c.present==='undefined') c.present = true; if(typeof c.memory!=='string') c.memory=''; assignId(c); });
   history.forEach(assignId);
   var now = Date.now();
-  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', player:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, createdAt:now, lastActiveAt:now };
+  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', player:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, npcMem:{}, npcLastRole:null, createdAt:now, lastActiveAt:now };
 }
 function load(){
   try{ settings = Object.assign({apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE}, JSON.parse(localStorage.getItem(LS.set)||'{}')); }catch(e){}
@@ -1124,6 +1228,7 @@ function load(){
   if(settings.theme !== 'dark' && settings.theme !== 'scroll') settings.theme = 'default';
   if(DICE_FACE_SETS.indexOf(settings.diceFaces) === -1) settings.diceFaces = DICE_DEFAULT_FACES;
   if(!Array.isArray(settings.diceLabels) || settings.diceLabels.length !== settings.diceFaces) settings.diceLabels = null;   // 长度不符则重建
+  if(typeof settings.hideChipAvatar !== 'boolean') settings.hideChipAvatar = false;
 
   try{ convs = JSON.parse(localStorage.getItem(LS.convs)||'null'); }catch(e){ convs = null; }
   if(!Array.isArray(convs) || !convs.length){
@@ -1151,6 +1256,8 @@ function load(){
     if(cv.mode !== 'story') cv.mode = 'chat';
     if(typeof cv.maxReplyLen !== 'number' || isNaN(cv.maxReplyLen) || cv.maxReplyLen < 0) cv.maxReplyLen = (cv.mode === 'story' ? STORY_MAXLEN : CHAT_MAXLEN);
     if(!cv.avatar || typeof cv.avatar !== 'object' || !cv.avatar.mode) cv.avatar = null;
+    if(!cv.npcMem || typeof cv.npcMem !== 'object' || Array.isArray(cv.npcMem)) cv.npcMem = {};
+    if(typeof cv.npcLastRole !== 'string') cv.npcLastRole = null;
     cv.chars.forEach(function(c){
       if(typeof c.present==='undefined') c.present = true;
       if(typeof c.memory!=='string') c.memory = '';
@@ -1161,6 +1268,7 @@ function load(){
     cv.chars.forEach(function(c){ if(typeof c.lastMemAt !== 'number') c.lastMemAt = uc; });
     cv.history.forEach(assignId);
     assignId(cv);
+    ensureNpc(cv);   // 故事自动带上固定 NPC 角色
   });
   try{ localStorage.removeItem(LS.chars); localStorage.removeItem(LS.hist); }catch(e){}
 
@@ -1174,6 +1282,9 @@ function load(){
     assignId(c);
   });
   try{ worlds = JSON.parse(localStorage.getItem(LS.worlds)||'[]'); }catch(e){ worlds = []; }
+  try{ board = JSON.parse(localStorage.getItem(LS.board)||'[]'); }catch(e){ board = []; }
+  if(!Array.isArray(board)) board = [];
+  board.forEach(function(n){ if(typeof n.id !== 'number') n.id = seq++; if(typeof n.text !== 'string') n.text = ''; if(typeof n.color !== 'string') n.color = 'c0'; if(typeof n.ts !== 'number') n.ts = Date.now(); });
   if(!Array.isArray(worlds)) worlds = [];
   worlds.forEach(function(w){
     if(typeof w.name !== 'string' || !w.name) w.name = '未命名';
@@ -1190,6 +1301,7 @@ function save(){
   try{ localStorage.setItem(LS.convs, JSON.stringify(convs)); }catch(e){}
   try{ localStorage.setItem(LS.cards, JSON.stringify(cards)); }catch(e){}
   try{ localStorage.setItem(LS.worlds, JSON.stringify(worlds)); }catch(e){}
+  try{ localStorage.setItem(LS.board, JSON.stringify(board)); }catch(e){}
 }
 function avatarHtml(c){
   if(!c) return '<span>🤖</span>';
@@ -1317,6 +1429,7 @@ function doNewStory(){
   var cv = newConv('故事'+(n+1));
   cv.mode = 'story';
   cv.maxReplyLen = STORY_MAXLEN;
+  ensureNpc(cv);   // 固定 NPC 角色
   convs.push(cv);
   activeId = cv.id;
   save(); renderConvList(); renderMsgs(); renderChips(); renderChatHeader();
@@ -1330,13 +1443,18 @@ function closeFabMenu(){
   var fm = $('fabMenu');
   if(!fm || fm.classList.contains('hidden')) return;
   fm.classList.add('hidden');
-  $('btnMore').textContent = '＋';
+  setFabIcon(false);
+}
+function setFabIcon(open){
+  // open=true 表示菜单展开中（显示 ×），false 收起（显示 ＋）
+  $('morePlus').classList.toggle('hidden', open);
+  $('moreX').classList.toggle('hidden', !open);
 }
 $('btnMore').addEventListener('click', function(e){
   e.stopPropagation();
   var fm = $('fabMenu');
-  var open = fm.classList.toggle('hidden');
-  this.textContent = open ? '＋' : '×';
+  var nowHidden = fm.classList.toggle('hidden');   // 展开中(未 hidden) → 收起
+  setFabIcon(!nowHidden);
 });
 $('fabMenu').addEventListener('click', function(e){
   var b = e.target.closest('.fab-item');
@@ -1373,7 +1491,7 @@ function renderSearchResults(kw){
   var hits = [];
   (cv.history||[]).forEach(function(m){
     if(m.status === 'streaming') return;
-    if(((m.speaker || '') + ' ' + (m.text || '')).toLowerCase().indexOf(lk) !== -1) hits.push(m);
+    if(((msgLabel(m) || '') + ' ' + (m.text || '')).toLowerCase().indexOf(lk) !== -1) hits.push(m);
   });
   var shown = hits.slice(0, 50);
   meta.textContent = '共 ' + hits.length + ' 条' + (hits.length > 50 ? '，仅显示前 50 条' : '');
@@ -1384,8 +1502,10 @@ function renderSearchResults(kw){
     it.dataset.id = m.id;
     var avHtml = m.speakerId === 'user'
       ? '<div class="search-av">我</div>'
-      : '<div class="search-av">'+avatarHtml(getChar(cv, m.speakerId))+'</div>';
-    it.innerHTML = avHtml + '<div class="search-main"><div class="search-who">'+esc(m.speakerId === 'user' ? '我' : (m.speaker || '？'))+'</div><div class="search-txt">'+esc(m.text || '')+'</div></div>';
+      : (m.npcRole
+          ? '<div class="search-av">'+avatarHtml({ avatar: npcRoleAvatar(m.npcRole) })+'</div>'
+          : '<div class="search-av">'+avatarHtml(getChar(cv, m.speakerId))+'</div>');
+    it.innerHTML = avHtml + '<div class="search-main"><div class="search-who">'+esc(m.speakerId === 'user' ? '我' : (msgLabel(m) || '？'))+'</div><div class="search-txt">'+esc(m.text || '')+'</div></div>';
     list.appendChild(it);
   });
 }
@@ -1663,8 +1783,9 @@ function appendMsgEl(list, m){
   wrap.dataset.id = m.id;
   var av;
   if(m.speakerId === 'user'){ av = '<div class="avatar">我</div>'; }
+  else if(m.npcRole){ av = '<div class="avatar">'+avatarHtml({ avatar: npcRoleAvatar(m.npcRole) })+'</div>'; }
   else { av = '<div class="avatar">'+avatarHtml(getChar(cv, m.speakerId))+'</div>'; }
-  var nameHtml = (m.speakerId === 'user') ? '' : '<div class="name">'+esc(m.speaker)+'</div>';
+  var nameHtml = (m.speakerId === 'user') ? '' : '<div class="name">'+esc(msgLabel(m))+'</div>';
   wrap.innerHTML =
     av +
     '<div class="bubble">' + nameHtml +
@@ -1680,6 +1801,15 @@ function setMsgText(m){
   if(!wrap) return;
   var textEl = wrap.querySelector('.text');
   var cv = current();
+  // NPC 扮演的路人角色在生成结束才解析出来：此时把名字和头像切到对应角色
+  if(m.speakerId !== 'user'){
+    var nameEl = wrap.querySelector('.name');
+    if(nameEl && nameEl.textContent !== msgLabel(m)) nameEl.textContent = msgLabel(m);
+    if(m.npcRole){
+      var avEl = wrap.querySelector('.avatar');
+      if(avEl) avEl.innerHTML = avatarHtml({ avatar: npcRoleAvatar(m.npcRole) });
+    }
+  }
   var base = (m.speakerId === 'user') ? m.text : cleanNamePrefix(m.speaker, m.text);
   if(cv && cv.mode === 'story' && m.speakerId !== 'user') textEl.innerHTML = storyHtml(storyBodyText(base));
   else textEl.textContent = base;
@@ -1789,7 +1919,7 @@ function renderChips(){
     chip.dataset.id = c.id;
     chip.title = selected && !cv.randomOrder ? (c.name+'（第 '+(idx+1)+' 个回复）') : c.name;
     var order = (!cv.randomOrder && selected) ? '<span class="chip-order">'+(idx+1)+'</span>' : '';
-    chip.innerHTML = '<span class="chip-av">'+avatarHtml(c)+'</span><span class="chip-name">'+esc(c.name)+'</span>'+order;
+    chip.innerHTML = (settings.hideChipAvatar ? '' : '<span class="chip-av">'+avatarHtml(c)+'</span>')+'<span class="chip-name">'+esc(c.name)+'</span>'+order;
     chip.addEventListener('click', function(){ toggleChip(c.id); });
     box.appendChild(chip);
   });
@@ -1893,7 +2023,9 @@ function buildMessages(c, cv){
   var isStory = cv.mode === 'story';
   var allowNarr = false;   // 旁白按概率出现，不能每轮都有
   var sys;
-  if(isStory){
+  if(isStory && c.isNpc){
+    sys = npcSys(cv, c);
+  } else if(isStory){
     allowNarr = Math.random() < 0.5;
     sys =
       '你正在故事「'+cv.name+'」里扮演「'+c.name+'」，和大家一起推动剧情。\n\n' +
@@ -1934,7 +2066,7 @@ function buildMessages(c, cv){
   var ctx = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-40);
   ctx.forEach(function(m){
     if(m.speakerId === 'user') msgs.push({ role:'user', content:'我：'+m.text });
-    else msgs.push({ role:'assistant', content:m.speaker+'：'+m.text });
+    else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
   if(isStory) msgs.push({ role:'user', content: allowNarr
     ? '请以「'+c.name+'」的身份，用「旁白(按需) / 神态 / 台词」的格式接着剧情自然回复。只输出你的回复。'
@@ -2027,12 +2159,12 @@ function generateReply(c, cv){
     return pump();
   }).then(function(){
     msg.status = 'done';
-    msg.text = cleanNamePrefix(msg.speaker, msg.text);
+    finalizeMsg(cv, msg);
   }).catch(function(err){
     if(/^HTTP 401/.test(err.message || '')) err.message += '。所选接口需要有效的 API Key：请到 ⚙ 全局设置「API Key」里核对（要与「接口地址」对应服务一致）。';
     if(err.name === 'AbortError'){ msg.text += (msg.text ? '\n' : '') + '（已停止生成）'; }
     else { msg.text += (msg.text ? '\n' : '') + '（出错了：'+err.message+'）'; }
-    msg.text = cleanNamePrefix(msg.speaker, msg.text);
+    finalizeMsg(cv, msg);
     msg.status = 'error';
   }).finally(function(){
     delete activeCtrls[c.id];
@@ -2048,15 +2180,23 @@ function updateMemory(c, cv){
   var uc = 0;
   for(var i=0;i<cv.history.length;i++){ if(cv.history[i].speakerId === 'user') uc++; }
   if(uc - (c.lastMemAt||0) < 8) return;   // 节流：约每 8 条用户发言提炼一次
-  var sys =
-    '你是「'+c.name+'」，你的人设：\n' + (c.persona||'（无）') +
-    '\n\n你当前的记忆：\n' + (c.memory || '（暂无）') +
-    '\n\n更早对话总结：\n' + (cv.summary || '（暂无）');
+  var sys, target;
+  if(c.isNpc){
+    var role = cv.npcLastRole;
+    if(!role) return;   // NPC 还没扮演过具体角色：不积累通用记忆
+    var cur = (cv.npcMem || {})[role] || '';
+    sys = '你是「NPC角色」，正在扮演「'+role+'」。你作为「'+role+'」当前的记忆：\n' + cur + '\n\n更早对话总结：\n' + (cv.summary || '（暂无）');
+    target = role;
+  } else {
+    sys = '你是「'+c.name+'」，你的人设：\n' + (c.persona||'（无）') +
+      '\n\n你当前的记忆：\n' + (c.memory || '（暂无）') +
+      '\n\n更早对话总结：\n' + (cv.summary || '（暂无）');
+  }
   var msgs = [{ role:'system', content:sys }];
   var ctx = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-24);
   ctx.forEach(function(m){
     if(m.speakerId === 'user') msgs.push({ role:'user', content:'我：'+m.text });
-    else msgs.push({ role:'assistant', content:m.speaker+'：'+m.text });
+    else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
   msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。' });
   var ub = { model: settings.model, messages:msgs, stream:false, temperature:0, max_tokens:500 };
@@ -2071,7 +2211,8 @@ function updateMemory(c, cv){
   }).then(function(r){ return r.json(); }).then(function(j){
     var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
     if(typeof content === 'string' && content.trim()){
-      c.memory = content.trim().slice(0,1200);
+      if(c.isNpc){ if(!cv.npcMem) cv.npcMem = {}; cv.npcMem[target] = content.trim().slice(0,1200); }
+      else c.memory = content.trim().slice(0,1200);
       c.lastMemAt = uc;
       save();
     }
@@ -2116,22 +2257,32 @@ function renderGroupMembers(){
     var row = document.createElement('div');
     row.className = 'member-row';
     row.dataset.id = c.id;
-    row.innerHTML =
-      '<div class="char-avatar">'+avatarHtml(c)+'</div>' +
-      '<div class="char-info">' +
-        '<div class="char-name">'+esc(c.name)+(c.memory ? ' <span class="mem-badge" title="记忆：'+esc(c.memory.slice(0,80))+'">🧠</span>' : '')+'</div>' +
-        '<div class="char-persona">'+esc((c.persona||'').replace(/\s+/g,' ').slice(0,20))+'</div>' +
-      '</div>' +
-      '<label class="switch" title="在场 / 离场"><input type="checkbox" data-act="presence"'+(c.present?' checked':'')+'><span></span></label>' +
-      '<div class="char-actions">' +
-        '<button class="icon-btn" data-act="edit" title="编辑（含记忆）">✎</button>' +
-        '<button class="icon-btn danger" data-act="del" title="删除">🗑</button>' +
-      '</div>';
+    if(c.isNpc){
+      row.innerHTML =
+        '<div class="char-avatar">'+avatarHtml(c)+'</div>' +
+        '<div class="char-info">' +
+          '<div class="char-name">'+esc(c.name)+' <span class="npc-badge" title="固定角色：剧情需要路人登场时，它自动扮演那个路人">固定 NPC</span></div>' +
+          '<div class="char-persona">'+esc((c.persona||'').replace(/\s+/g,' ').slice(0,20))+'</div>' +
+        '</div>' +
+        '<div class="npc-note" title="名字 / 头像 / 记忆按扮演的角色分开记">路人自动登场</div>';
+    } else {
+      row.innerHTML =
+        '<div class="char-avatar">'+avatarHtml(c)+'</div>' +
+        '<div class="char-info">' +
+          '<div class="char-name">'+esc(c.name)+(c.memory ? ' <span class="mem-badge" title="记忆：'+esc(c.memory.slice(0,80))+'">🧠</span>' : '')+'</div>' +
+          '<div class="char-persona">'+esc((c.persona||'').replace(/\s+/g,' ').slice(0,20))+'</div>' +
+        '</div>' +
+        '<label class="switch" title="在场 / 离场"><input type="checkbox" data-act="presence"'+(c.present?' checked':'')+'><span></span></label>' +
+        '<div class="char-actions">' +
+          '<button class="icon-btn" data-act="edit" title="编辑（含记忆）">✎</button>' +
+          '<button class="icon-btn danger" data-act="del" title="删除">🗑</button>' +
+        '</div>';
+    }
     list.appendChild(row);
   });
   var add = $('gsAddChar');
   add.disabled = cv.chars.length >= MAX_MEMBERS;
-  add.textContent = cv.chars.length >= MAX_MEMBERS ? '最多 '+MAX_MEMBERS+' 个 AI 人物' : '+ 添加 AI 人物';
+  add.innerHTML = add.disabled ? '最多 '+MAX_MEMBERS+' 个 AI 人物' : ICON_PLUS + ' 添加 AI 人物';
 }
 function setGsAvatarTab(tab){
   var btns = document.querySelectorAll('#gsAvTabs button');
@@ -2267,7 +2418,10 @@ function importBackup(file){
       if(typeof conv.maxReplyLen !== 'number' || isNaN(conv.maxReplyLen) || conv.maxReplyLen < 0) conv.maxReplyLen = (conv.mode === 'story' ? STORY_MAXLEN : CHAT_MAXLEN);
       if(typeof conv.randomOrder !== 'boolean') conv.randomOrder = false;
       if(!conv.avatar || typeof conv.avatar !== 'object' || !conv.avatar.mode) conv.avatar = null;
+      if(!conv.npcMem || typeof conv.npcMem !== 'object' || Array.isArray(conv.npcMem)) conv.npcMem = {};
+      if(typeof conv.npcLastRole !== 'string') conv.npcLastRole = null;
       conv.chars.forEach(function(c){ if(typeof c.name !== 'string' || !c.name) c.name = 'AI'; if(typeof c.present === 'undefined') c.present = true; if(typeof c.memory !== 'string') c.memory = ''; });
+      ensureNpc(conv);   // 故事自动带上固定 NPC 角色
     }catch(e){
       alert('载入失败：' + e.message);
       return;
@@ -2300,23 +2454,29 @@ function showPanelView(v){
   $('convView').classList.toggle('hidden', v!=='conv');
   $('cardView').classList.toggle('hidden', v!=='cards');
   $('worldView').classList.toggle('hidden', v!=='worlds');
+  $('boardView').classList.toggle('hidden', v!=='board');
   $('aboutView').classList.toggle('hidden', v!=='about');
   $('logView').classList.toggle('hidden', v!=='log');
   $('btnCards').classList.toggle('on', v==='cards');
   $('btnWorlds').classList.toggle('on', v==='worlds');
+  $('btnBoard').classList.toggle('on', v==='board');
   $('btnAbout').classList.toggle('on', v==='about');
   if(v==='cards') renderCardPanel();
   if(v==='worlds') renderWorldPanel();
+  if(v==='board') renderBoard();
 }
 function enterMobilePanel(){ if(window.innerWidth <= 780) document.body.classList.remove('chat-open'); }
 $('btnMarket').addEventListener('click', function(){ showToast('集市暂未开放，敬请期待'); });
+$('btnBoard').addEventListener('click', function(){ enterMobilePanel(); showPanelView('board'); });
 $('btnCards').addEventListener('click', function(){ enterMobilePanel(); showPanelView('cards'); });
 $('btnWorlds').addEventListener('click', function(){ enterMobilePanel(); showPanelView('worlds'); });
 $('btnAbout').addEventListener('click', function(){ enterMobilePanel(); showPanelView('about'); });
 document.querySelector('.rail-logo').addEventListener('click', function(){ enterMobilePanel(); showPanelView('conv'); });
 $('btnBackPanel').addEventListener('click', function(){ showPanelView('conv'); });
 $('btnBackWorld').addEventListener('click', function(){ showPanelView('conv'); });
+$('btnBackBoard').addEventListener('click', function(){ showPanelView('conv'); });
 $('btnBackAbout').addEventListener('click', function(){ showPanelView('conv'); });
+$('btnAddNote').addEventListener('click', addBoardNote);
 $('aboutGithub').addEventListener('click', function(){ window.open('https://github.com/mingyuezai0/Dreamchat','_blank'); });
 $('aboutBili').addEventListener('click', function(){ window.open('https://space.bilibili.com/498726578','_blank'); });
 $('aboutQQ').addEventListener('click', function(){ showToast('QQ群暂未开放，敬请期待'); });
@@ -2413,6 +2573,67 @@ function wireGrid(id, kind){
 }
 wireGrid('cardGrid', 'card');
 wireGrid('worldGrid', 'world');
+
+/* ---------- 黑板便签 ---------- */
+function fmtBoardTs(t){
+  if(!t) return '';
+  var d = new Date(t);
+  var p = function(n){ return (n<10?'0':'')+n; };
+  return (d.getMonth()+1)+'/'+d.getDate()+' '+p(d.getHours())+':'+p(d.getMinutes());
+}
+function boardIdx(id){ for(var i=0;i<board.length;i++){ if(board[i].id===id) return i; } return -1; }
+function renderBoard(){
+  var g = $('boardGrid');
+  if(!g) return;
+  g.innerHTML = '';
+  if(!board.length){ g.innerHTML = '<div class="lib-empty">黑板还是空的。<br>点上方「添加便签」贴第一张吧。</div>'; return; }
+  board.forEach(function(n){
+    var t = document.createElement('div');
+    t.className = 'board-note ' + (BOARD_COLORS.indexOf(n.color)>=0 ? n.color : 'c0');
+    t.dataset.id = n.id;
+    t.innerHTML =
+      '<button class="note-del" title="删除便签"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>' +
+      '<textarea placeholder="写点什么…"></textarea>' +
+      '<div class="note-ts">'+fmtBoardTs(n.ts)+'</div>';
+    t.querySelector('textarea').value = n.text || '';
+    g.appendChild(t);
+  });
+}
+function addBoardNote(){
+  var n = { id: seq++, text:'', color: BOARD_COLORS[boardColorIdx % BOARD_COLORS.length], ts: Date.now() };
+  boardColorIdx++;
+  board.push(n);
+  save();
+  renderBoard();
+  var cards = $('boardGrid').querySelectorAll('.board-note');
+  var last = cards[cards.length-1];
+  if(last) last.querySelector('textarea').focus();
+}
+function delBoardNote(id){
+  var i = boardIdx(id);
+  if(i < 0) return;
+  if(!confirm('确定删除这张便签吗？')) return;
+  board.splice(i,1);
+  save();
+  renderBoard();
+}
+(function wireBoardGrid(){
+  var g = $('boardGrid');
+  g.addEventListener('input', function(e){
+    var ta = e.target.closest('textarea');
+    if(!ta) return;
+    var card = ta.closest('.board-note');
+    var i = boardIdx(Number(card.dataset.id));
+    if(i < 0) return;
+    board[i].text = ta.value;
+    save();
+  });
+  g.addEventListener('click', function(e){
+    var del = e.target.closest('.note-del');
+    if(!del) return;
+    delBoardNote(Number(del.closest('.board-note').dataset.id));
+  });
+})();
 
 function downloadFile(name, obj){
   var blob = new Blob([JSON.stringify(obj)], { type:'application/json' });
@@ -2875,6 +3096,7 @@ function openSettings(){
   $('stKey').value = settings.apiKey;
   $('stModelText').value = settings.model;
   $('stThinking').checked = !!settings.thinking;
+  $('stHideChipAv').checked = !!settings.hideChipAvatar;
   applyTheme(settings.theme);
   setStTab('model');
   syncThemeBtns(settings.theme);
@@ -2899,10 +3121,11 @@ $('stSave').addEventListener('click', function(){
   settings.model = $('stModelText').value.trim();
   if(!settings.model){ alert('请填写模型名称'); return; }
   settings.thinking = $('stThinking').checked;
+  settings.hideChipAvatar = $('stHideChipAv').checked;
   var sel = document.querySelector('#stThemeOpts button.on');
   var th = sel && sel.dataset.theme;
   settings.theme = (th === 'dark' || th === 'scroll') ? th : 'default';
-  save(); renderChatHeader();
+  save(); renderChatHeader(); renderChips();
   closeSettings();
   showToast('全局设置已保存');
 });
