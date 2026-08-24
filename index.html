@@ -89,13 +89,12 @@
   .bubble .text.streaming::after{content:'▍'; animation:blink 1s step-start infinite; color:var(--accent);}
   @keyframes blink{50%{opacity:0;}}
   .bubble .status{font-size:12px; color:var(--accent); margin-top:4px; padding:0 4px;}
-  .msg-actions{display:flex; align-items:center; gap:1px; margin-top:2px; padding:0 2px; opacity:0; transition:opacity .15s;}
+  .msg-actions{display:flex; align-items:center; gap:1px; justify-content:space-between; margin-top:2px; padding:0 2px; opacity:0; transition:opacity .15s;}
   .msg:hover .msg-actions{opacity:1;}
   .msg.user .msg-actions{justify-content:flex-end;}
   .msg-actions button{font-size:11px; color:var(--muted); background:transparent; border:none; padding:3px 7px; border-radius:6px;}
   .msg-actions button:hover{background:#eef0f5; color:var(--text);}
-  .msg-count{font-size:11px; color:var(--muted); margin-top:3px; padding:0 4px; align-self:flex-end; opacity:0; transition:opacity .15s;}   /* 消息字数角标：右下角 */
-  .msg:hover .msg-count{opacity:1;}
+  .msg-count{font-size:11px; color:var(--muted); padding:0 4px; white-space:nowrap;}   /* 消息字数：随操作栏同一排靠右（桌面悬停 / 手机滚入屏幕时随操作栏一起显示） */
   .bubble .edit-box{width:100%; min-height:60px; background:var(--panel); color:var(--text); border:1px solid var(--accent); border-radius:8px; padding:8px 10px; font-size:14px; line-height:1.6; resize:vertical;}
   .msg.note{justify-content:center;}
   .msg.note .note-text{background:#e8ebf2; color:var(--muted); font-size:12px; padding:5px 14px; border-radius:20px;}
@@ -447,12 +446,11 @@
     .msg-actions{opacity:0;}                     /* 手机端操作栏默认隐藏：消息滚入屏幕（on-screen）时显示 */
     .msg.on-screen .msg-actions{opacity:1;}
     .msg-actions button{padding:5px 10px; font-size:12px;}
-    .msg-count{opacity:0;}                       /* 字数角标同样只在消息滚入屏幕时显示 */
-    .msg.on-screen .msg-count{opacity:1;}
-    .msg-count{margin-top:4px; font-size:12px;}
+    .msg-count{font-size:12px;}                  /* 字数角标随操作栏一起在消息滚入屏幕时显示 */
     #btnSummary{flex-direction:column; gap:2px; line-height:1.25; padding:5px 9px; font-size:12px; white-space:nowrap;}   /* 手机端总结按钮：两行、更窄更高 */
     .chat-header h2{white-space:nowrap; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; max-width:100%;}   /* 群名/故事名超长从左往右滚动，不再换行 */
     .chat-header h2::-webkit-scrollbar{display:none;}
+    .header-avatar{display:none;}                /* 手机端聊天界面不显示左上角群头像，群名/成员数左移占位 */
     .bubble .edit-box{min-height:56px;}
     #relView{padding:0;}
     .rel-window{width:100vw; height:100vh; border-radius:0; border:none; box-shadow:none;}
@@ -1232,8 +1230,13 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.3.2';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.3.3';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.3.3', date:'2026-08-25', title:'消息界面精简 · 手机端更清爽', items:[
+    '聊天顶部不再显示「在场：…」成员提示，只保留成员数量，界面更简洁',
+    '手机端聊天界面不再显示左上角的群头像，群名与成员数向左占位，界面更清爽',
+    '每条消息的字数角标移到操作栏（删除 / 编辑 / 复制 / 重置）同一排的右下角，节省空间；自己发送的消息不显示字数'
+  ]},
   { v:'0.3.2', date:'2026-08-25', title:'消息删除 · 字数角标 · 手机标题横滚 · 删除回主页', items:[
     '每条消息新增「删除」：删除该条消息的同时，也会从所属角色当前记忆里移除这条消息的内容；按钮在「编辑 / 复制 / 重置」前面，样式一致，手机端同样在消息滚入屏幕时才显示',
     '每条消息右下角新增「字数」角标，显示该条消息的字数；手机端同样只在消息滚入屏幕时显示',
@@ -2150,8 +2153,7 @@ function renderChatHeader(){
   $('convName').textContent = cv.name;
   $('headerAvatar').className = 'header-avatar' + (cv.mode === 'story' ? ' story' : '');
   $('headerAvatar').innerHTML = convAvatarInner(cv);
-  var present = cv.chars.filter(function(c){ return c.present; });
-  $('headerSub').textContent = '成员 '+cv.chars.length+' · 在场：' + (present.length ? present.map(function(c){return c.name;}).join('、') : '（无）');
+  $('headerSub').textContent = '成员 '+cv.chars.length;   // v0.3.3：去掉「在场：…」提示，更简洁
   updateSummaryBtn();
   $('btnGroupSettings').innerHTML = ICON_GEAR + settingsLabel(cv);
   $('btnGroupSettings').title = (cv.mode === 'story' ? '本故事设置' : '本群设置') + '：AI成员 / 世界观 / 玩家设定 / API / 记忆转移 / 清空·删除';
@@ -2194,8 +2196,8 @@ function appendMsgEl(list, m){
         '<button type="button" data-act="edit">编辑</button>' +
         '<button type="button" data-act="copy">复制</button>' +
         '<button type="button" data-act="reset">重置</button>' +
+        (m.speakerId === 'user' ? '' : '<span class="msg-count"></span>') +   // 字数与操作栏同一排靠右下；自己的消息不显示
       '</div>' +
-      '<div class="msg-count"></div>' +
     '</div>';
   list.appendChild(wrap);
   msgEls[m.id] = wrap;
@@ -2306,12 +2308,13 @@ function restoreMsgView(wrap, mid){
     else wrap.querySelector('.bubble').appendChild(fresh);
   }
   var actions = wrap.querySelector('.msg-actions');
+  var m = mid ? findMsg(current(), mid) : null;
   actions.innerHTML =
     '<button type="button" data-act="del">删除</button>' +
     '<button type="button" data-act="edit">编辑</button>' +
     '<button type="button" data-act="copy">复制</button>' +
-    '<button type="button" data-act="reset">重置</button>';
-  var m = mid ? findMsg(current(), mid) : null;
+    '<button type="button" data-act="reset">重置</button>' +
+    (m && m.speakerId !== 'user' ? '<span class="msg-count"></span>' : '');
   if(m) setMsgText(m);
 }
 function enterEdit(mid){
