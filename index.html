@@ -640,9 +640,38 @@
   html[data-theme="scroll"] .len-custom input{background:#f7efda;}
   html[data-theme="scroll"] ::-webkit-scrollbar-thumb{background:#c9b58a;}
   html[data-theme="scroll"] ::-webkit-scrollbar-thumb:hover{background:#b7a276;}
+  /* ---------- 开屏页 ---------- */
+  /* 每次进入软件：白底居中显示「梦语」弯月 logo + 字标，短暂停留后淡出；配色/字体硬编码，不受 UI 风格（默认/暗夜/卷轴）影响 */
+  #splash{position:fixed; inset:0; z-index:999; background-color:#fff; display:flex; align-items:center; justify-content:center;
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,"Segoe UI",sans-serif;
+    transition:opacity .45s ease; pointer-events:auto;}
+  #splash.splash-out{opacity:0; pointer-events:none;}
+  #splash.splash-gone{display:none;}
+  .splash-inner{display:flex; flex-direction:column; align-items:center;}
+  .splash-logo{width:min(34vw,120px); height:min(34vw,120px); display:block;
+    filter:drop-shadow(0 6px 22px rgba(122,92,240,.30));
+    animation:splashIn .7s cubic-bezier(.22,1,.36,1) both;}
+  .splash-name{margin-top:min(4.5vw,26px); font-size:clamp(28px,7.5vw,42px); font-weight:700; letter-spacing:3px; color:#1f2430;
+    animation:splashName .7s .08s cubic-bezier(.22,1,.36,1) both;}
+  @keyframes splashIn{from{opacity:0; transform:scale(.88);} to{opacity:1; transform:scale(1);}}
+  @keyframes splashName{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+  @media (prefers-reduced-motion: reduce){ #splash{transition:none;} .splash-logo,.splash-name{animation:none;} }
 </style>
 </head>
 <body>
+<div id="splash" class="splash" aria-hidden="true">
+  <div class="splash-inner">
+    <svg class="splash-logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="splashLg" x1="6" y1="4" x2="42" y2="46" gradientUnits="userSpaceOnUse"><stop stop-color="#6b8cff"/><stop offset="1" stop-color="#7a5cf0"/></linearGradient>
+        <mask id="splashMask"><rect x="0" y="0" width="48" height="48" fill="#fff"/><circle cx="29" cy="29" r="14" fill="#000"/></mask>
+      </defs>
+      <rect x="3" y="3" width="42" height="42" rx="13" fill="url(#splashLg)"/>
+      <circle cx="24" cy="24" r="16" fill="#fff" mask="url(#splashMask)"/>
+    </svg>
+    <div class="splash-name">梦语</div>
+  </div>
+</div>
 <div class="app">
   <nav class="rail">
     <div class="rail-logo" title="梦语">
@@ -1194,8 +1223,13 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.2.10';   // 当前版本：每次更新 +0.0.1，x.x.9 后进到 x.(x+1).0
+var APP_VERSION = '0.3.0';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.3.0', date:'2026-08-24', title:'开屏页 · 版本号逢十进一', items:[
+    '新增开屏页：每次进入软件时，屏幕中央显示「梦语」弯月 logo 与名称（白底、双端适配），短暂停留后自动淡出进入主界面',
+    '开屏页的配色与字体固定不变，不受「界面设置」里的 UI 风格（默认 / 暗夜 / 卷轴）影响',
+    '版本号规则修正为逢十进一：0.2.9 之后为 0.3.0（此前 0.2.10 作为历史版本保留不变）'
+  ]},
   { v:'0.2.10', date:'2026-08-24', title:'角色分级标记 · 移除NPC与人数上限 · 关系图头像修复', items:[
     '修复关系图：圆圈里的头像颜色不再跟随背景 / 风格变化（默认 / 暗夜 / 卷轴三种风格下头像颜色都固定）',
     '移除「NPC角色」功能，群聊 / 故事不再有角色数量上限，可自由添加成员',
@@ -4511,6 +4545,13 @@ if(cv0 && !cv0.history.length){
   addNote('欢迎！在本群对话中：点选上方「下轮对话」里的人物，或直接在消息里 @某位在场 AI，TA 就会回复；多人时按顺序轮流发言。点右上角「⚙ 群设置」可配置成员 / 世界观 / 玩家设定 / 本群 API。');
 }
 if(!settings.apiKey) addNote('提示：请先点击左下角 ⚙ 设置，填入你的 API Key 与模型名称（全局）；也可在某个群的「群设置 → API」里单独填 Key。');
+/* 开屏页：每次进入都短暂显示「梦语」，随后淡出进入主界面 */
+(function(){
+  var sp = document.getElementById('splash');
+  if(!sp) return;
+  setTimeout(function(){ sp.classList.add('splash-out'); }, 950);
+  setTimeout(function(){ sp.classList.add('splash-gone'); }, 1450);
+})();
 })();
 </script>
 </body>
