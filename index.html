@@ -1223,8 +1223,13 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.3.0';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.3.1';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.3.1', date:'2026-08-24', title:'Electron 桌面版打包', items:[
+    '新增 Windows 桌面版：用 Electron 把网页版打包成可安装的 exe（NSIS 安装包）与单文件便携版，界面与网页版完全一致',
+    '打包工程位于 electron/ 目录：npm install 安装依赖，npm run dist 一键构建；主进程会把「关于」面板里的外部链接交给系统浏览器打开',
+    '应用自带品牌图标（弯月 logo），安装时可选安装目录并创建桌面 / 开始菜单快捷方式'
+  ]},
   { v:'0.3.0', date:'2026-08-24', title:'开屏页 · 版本号逢十进一', items:[
     '新增开屏页：每次进入软件时，屏幕中央显示「梦语」弯月 logo 与名称（白底、双端适配），短暂停留后自动淡出进入主界面',
     '开屏页的配色与字体固定不变，不受「界面设置」里的 UI 风格（默认 / 暗夜 / 卷轴）影响',

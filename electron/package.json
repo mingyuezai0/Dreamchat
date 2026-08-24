@@ -1,0 +1,64 @@
+{
+  "name": "dreamchat",
+  "productName": "梦语",
+  "version": "0.3.1",
+  "description": "梦语 —— 多 AI 群聊与故事写作桌面版（基于 DeepSeek API）",
+  "main": "main.js",
+  "author": "mingyuezai0",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "npm run copy && electron .",
+    "smoke": "npm run copy && electron .",
+    "copy": "node scripts/copy-html.js",
+    "dist": "npm run copy && electron-builder --win",
+    "dist:portable": "npm run copy && electron-builder --win portable",
+    "dist:nsis": "npm run copy && electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.mingyuezai0.dreamchat",
+    "productName": "梦语",
+    "copyright": "Copyright © 2026 mingyuezai0",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "app/**/*",
+      "main.js",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "梦语",
+      "uninstallDisplayName": "梦语"
+    },
+    "portable": {
+      "artifactName": "梦语-便携版-${version}.${ext}"
+    }
+  }
+}
