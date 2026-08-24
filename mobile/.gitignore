@@ -1,0 +1,9 @@
+node_modules/
+www/
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/local.properties
+android/app/src/main/assets/public/
+*.log

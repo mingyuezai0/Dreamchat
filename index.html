@@ -1223,8 +1223,13 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.3.1';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.3.2';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.3.2', date:'2026-08-24', title:'Android 手机版（Capacitor 打包）', items:[
+    '新增 Android 手机版：用 Capacitor 把网页版封装成原生 APK，界面与网页版一致，外部链接自动交给系统浏览器打开',
+    '打包工程位于 mobile/ 目录：npm install 安装依赖，npm run sync 同步网页资源；一键出 APK 走 D:\\Capacitor\\build-apk.bat（工具链 JDK / Android SDK / Gradle 在 D:\\Capacitor 下各自成文件夹存放）',
+    '手机版数据与桌面版、网页版互相隔离，首次运行需重新配置 API Key'
+  ]},
   { v:'0.3.1', date:'2026-08-24', title:'Electron 桌面版打包', items:[
     '新增 Windows 桌面版：用 Electron 把网页版打包成可安装的 exe（NSIS 安装包）与单文件便携版，界面与网页版完全一致',
     '打包工程位于 electron/ 目录：npm install 安装依赖，npm run dist 一键构建；主进程会把「关于」面板里的外部链接交给系统浏览器打开',
