@@ -36,7 +36,7 @@
 
 想装到**安卓手机**上用（出 APK 直接安装），仓库里的 `mobile/` 目录是现成的 Capacitor 打包工程：
 
-- **产物**：`mobile/android/app/build/outputs/apk/debug/app-debug.apk`，APK 里装的正是网页版同一份 `index.html`，界面一致，外部链接自动交给系统浏览器打开。
+- **产物**：`mobile/android/app/build/outputs/apk/debug/梦语-0.3.1.apk`（应用名「梦语」、弯月 logo 图标），APK 里装的正是网页版同一份 `index.html`，界面一致，外部链接自动交给系统浏览器打开。
 - **工具链**（一次性装好，统一放在 `D:\Capacitor\`，各自成文件夹）：
   - `jdk/` — JDK 21（Temurin）
   - `android-sdk/` — Android SDK（cmdline-tools + platform 36 + build-tools 35/36）
