@@ -73,6 +73,7 @@
   .text-btn{font-size:15px; color:var(--muted); padding:8px 14px; border-radius:10px; display:inline-flex; align-items:center; gap:6px;}
   .text-btn svg{width:16px; height:16px; flex-shrink:0;}
   .text-btn:hover{background:#eef0f5; color:var(--text);}
+  #btnSummary{gap:0;}   /* 桌面：总结与上下文数连排成单行，不加间距 */
 
   .msg-list{flex:1; overflow-y:auto; padding:20px 22px;}
   .msg{display:flex; gap:10px; margin-bottom:16px; max-width:780px; margin-left:auto; margin-right:auto;}
@@ -93,6 +94,8 @@
   .msg.user .msg-actions{justify-content:flex-end;}
   .msg-actions button{font-size:11px; color:var(--muted); background:transparent; border:none; padding:3px 7px; border-radius:6px;}
   .msg-actions button:hover{background:#eef0f5; color:var(--text);}
+  .msg-count{font-size:11px; color:var(--muted); margin-top:3px; padding:0 4px; align-self:flex-end; opacity:0; transition:opacity .15s;}   /* 消息字数角标：右下角 */
+  .msg:hover .msg-count{opacity:1;}
   .bubble .edit-box{width:100%; min-height:60px; background:var(--panel); color:var(--text); border:1px solid var(--accent); border-radius:8px; padding:8px 10px; font-size:14px; line-height:1.6; resize:vertical;}
   .msg.note{justify-content:center;}
   .msg.note .note-text{background:#e8ebf2; color:var(--muted); font-size:12px; padding:5px 14px; border-radius:20px;}
@@ -444,6 +447,12 @@
     .msg-actions{opacity:0;}                     /* 手机端操作栏默认隐藏：消息滚入屏幕（on-screen）时显示 */
     .msg.on-screen .msg-actions{opacity:1;}
     .msg-actions button{padding:5px 10px; font-size:12px;}
+    .msg-count{opacity:0;}                       /* 字数角标同样只在消息滚入屏幕时显示 */
+    .msg.on-screen .msg-count{opacity:1;}
+    .msg-count{margin-top:4px; font-size:12px;}
+    #btnSummary{flex-direction:column; gap:2px; line-height:1.25; padding:5px 9px; font-size:12px; white-space:nowrap;}   /* 手机端总结按钮：两行、更窄更高 */
+    .chat-header h2{white-space:nowrap; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; max-width:100%;}   /* 群名/故事名超长从左往右滚动，不再换行 */
+    .chat-header h2::-webkit-scrollbar{display:none;}
     .bubble .edit-box{min-height:56px;}
     #relView{padding:0;}
     .rel-window{width:100vw; height:100vh; border-radius:0; border:none; box-shadow:none;}
@@ -1223,8 +1232,15 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.3.1';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.3.2';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.3.2', date:'2026-08-25', title:'消息删除 · 字数角标 · 手机标题横滚 · 删除回主页', items:[
+    '每条消息新增「删除」：删除该条消息的同时，也会从所属角色当前记忆里移除这条消息的内容；按钮在「编辑 / 复制 / 重置」前面，样式一致，手机端同样在消息滚入屏幕时才显示',
+    '每条消息右下角新增「字数」角标，显示该条消息的字数；手机端同样只在消息滚入屏幕时显示',
+    '手机端聊天界面：群聊 / 故事名字超过一行宽度时改为从左往右横向滚动，不再换到第二排往下显示',
+    '手机端「总结」按钮改为两行显示：「总结」在上、「【上下文…k】」在下，仍是同一个按钮（更窄更高）；桌面端保持单行不变',
+    '删除群聊 / 故事后直接回到主页，不再自动跳到第一个群聊'
+  ]},
   { v:'0.3.1', date:'2026-08-24', title:'桌面版与安卓版打包', items:[
     '新增 Windows 桌面版：用 Electron 把网页版打包成可安装的 exe（NSIS 安装包）与单文件便携版，界面与网页版完全一致',
     '打包工程位于 electron/ 目录：npm install 安装依赖，npm run dist 一键构建；主进程会把「关于」面板里的外部链接交给系统浏览器打开',
@@ -1453,9 +1469,9 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 8;
+var BOARD_TUT_VERSION = 9;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「编辑 / 复制 / 重置」。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
   { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
   { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
 ];
@@ -1763,7 +1779,7 @@ function deleteConv(id){
   var last = convs.length === 1;
   convs = convs.filter(function(c){ return c.id !== id; });
   if(!convs.length){ activeId = null; }   // 删光最后一个：保持空，不自动新建
-  else if(activeId === id){ activeId = convs[0].id; }
+  else if(activeId === id){ activeId = null; if(window.innerWidth <= 780) document.body.classList.remove('chat-open'); }   // 删除后回到主页，不自动跳第一个群聊
   save(); renderConvList(); renderMsgs(); renderChips();
   closeGroupSettings();
   if(last) showToast('已删除'+kindLabel(cv)+'。');
@@ -2174,10 +2190,12 @@ function appendMsgEl(list, m){
       '<div class="text"></div>' +
       '<div class="status"></div>' +
       '<div class="msg-actions">' +
+        '<button type="button" data-act="del">删除</button>' +
         '<button type="button" data-act="edit">编辑</button>' +
         '<button type="button" data-act="copy">复制</button>' +
         '<button type="button" data-act="reset">重置</button>' +
       '</div>' +
+      '<div class="msg-count"></div>' +
     '</div>';
   list.appendChild(wrap);
   msgEls[m.id] = wrap;
@@ -2205,6 +2223,8 @@ function setMsgText(m){
   textEl.classList.toggle('streaming', m.status === 'streaming');
   var st = wrap.querySelector('.status');
   st.textContent = m.status === 'streaming' ? '正在输入…' : '';
+  var wc = wrap.querySelector('.msg-count');
+  if(wc) wc.textContent = textEl.textContent.length + '字';
 }
 function storyBodyText(text){
   // 去掉回复开头的一行「旁白：…」——旁白会单独成块（见 updateNarration）
@@ -2287,6 +2307,7 @@ function restoreMsgView(wrap, mid){
   }
   var actions = wrap.querySelector('.msg-actions');
   actions.innerHTML =
+    '<button type="button" data-act="del">删除</button>' +
     '<button type="button" data-act="edit">编辑</button>' +
     '<button type="button" data-act="copy">复制</button>' +
     '<button type="button" data-act="reset">重置</button>';
@@ -2388,6 +2409,36 @@ function resetMsg(mid){
   setGenerating(true);
   generateReply(c, cv).then(function(){ setGenerating(false); }, function(){ setGenerating(false); });
 }
+function delMsg(mid){
+  var cv = current();
+  if(!cv) return;
+  var m = findMsg(cv, mid);
+  if(!m) return;
+  if(m.status === 'streaming'){ showToast('生成中的消息不能删除'); return; }
+  stopAll();
+  // 该条消息的记忆也一并删除：从所属角色当前记忆里剥掉这条消息的内容（含「名字：内容」与去掉名字前缀的形态）
+  if(m.speakerId !== 'user'){
+    var c = getChar(cv, m.speakerId);
+    if(c && typeof c.memory === 'string' && m.text){
+      var frags = [m.text];
+      if(m.speaker && m.speaker !== '我') frags.push(m.speaker + '：' + m.text, m.speaker + ':' + m.text);
+      var base = cleanNamePrefix(m.speaker, m.text);
+      if(base && base !== m.text) frags.push(base);
+      var mem = c.memory;
+      for(var i=0;i<frags.length;i++){
+        var f = frags[i];
+        if(!f || f.length < 4) continue;   // 太短的片段不剥，避免误删记忆里的常用字
+        var idx;
+        while((idx = mem.indexOf(f)) !== -1){ mem = mem.slice(0, idx) + mem.slice(idx + f.length); }
+      }
+      mem = mem.replace(/\n{3,}/g, '\n\n').replace(/^\s+|\s+$/g, '');
+      if(mem !== c.memory) c.memory = mem;
+    }
+  }
+  cv.history.splice(cv.history.indexOf(m), 1);
+  cv.lastActiveAt = Date.now();
+  save(); renderMsgs(); renderConvList();
+}
 $('msgList').addEventListener('click', function(e){
   var btn = e.target.closest('[data-act]');
   if(!btn) return;
@@ -2400,7 +2451,8 @@ $('msgList').addEventListener('click', function(e){
   var wrap = btn.closest('.msg[data-id]');
   if(!wrap) return;
   var mid = Number(wrap.dataset.id);
-  if(act === 'edit') enterEdit(mid);
+  if(act === 'del') delMsg(mid);
+  else if(act === 'edit') enterEdit(mid);
   else if(act === 'edit-save') editSave(mid);
   else if(act === 'edit-cancel') editCancel(mid);
   else if(act === 'copy') copyMsg(mid);
@@ -3842,7 +3894,9 @@ function updateSummaryBtn(){
   var b = $('btnSummary');
   if(!b) return;
   var cv = current();
-  b.textContent = cv ? ('总结【上下文·' + fmtTokens(estimateContextTokens(cv)) + '】') : '总结';
+  b.innerHTML = cv
+    ? '<span>总结</span><span>【上下文·' + fmtTokens(estimateContextTokens(cv)) + '】</span>'
+    : '<span>总结</span>';
 }
 function openSummary(){
   var cv = current();
