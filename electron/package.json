@@ -1,7 +1,7 @@
 {
   "name": "dreamchat",
   "productName": "梦语",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "梦语 —— 多 AI 群聊与故事写作桌面版（基于 DeepSeek API）",
   "main": "main.js",
   "author": "mingyuezai0",

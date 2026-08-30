@@ -89,12 +89,12 @@
   .bubble .text.streaming::after{content:'▍'; animation:blink 1s step-start infinite; color:var(--accent);}
   @keyframes blink{50%{opacity:0;}}
   .bubble .status{font-size:12px; color:var(--accent); margin-top:4px; padding:0 4px;}
-  .msg-actions{display:flex; align-items:center; gap:1px; justify-content:space-between; margin-top:2px; padding:0 2px; opacity:0; transition:opacity .15s;}
+  .msg-actions{display:flex; align-items:center; gap:1px; margin-top:2px; padding:0 2px; opacity:0; transition:opacity .15s;}
   .msg:hover .msg-actions{opacity:1;}
   .msg.user .msg-actions{justify-content:flex-end;}
   .msg-actions button{font-size:11px; color:var(--muted); background:transparent; border:none; padding:3px 7px; border-radius:6px;}
   .msg-actions button:hover{background:#eef0f5; color:var(--text);}
-  .msg-count{font-size:11px; color:var(--muted); padding:0 4px; white-space:nowrap;}   /* 消息字数：随操作栏同一排靠右（桌面悬停 / 手机滚入屏幕时随操作栏一起显示） */
+  .msg-count{font-size:11px; color:var(--muted); margin-left:auto; padding:0 4px; white-space:nowrap;}   /* 消息字数：随操作栏同一排最右（桌面悬停 / 手机滚入屏幕时随操作栏一起显示） */
   .bubble .edit-box{width:100%; min-height:60px; background:var(--panel); color:var(--text); border:1px solid var(--accent); border-radius:8px; padding:8px 10px; font-size:14px; line-height:1.6; resize:vertical;}
   .msg.note{justify-content:center;}
   .msg.note .note-text{background:#e8ebf2; color:var(--muted); font-size:12px; padding:5px 14px; border-radius:20px;}
@@ -343,6 +343,20 @@
   .panel-title{font-size:16px; font-weight:700; flex:1;}
   .panel-actions{display:flex; gap:8px; padding:10px 14px 4px;}
   .panel-actions button{flex:1; padding:9px 0; font-size:13px;}
+
+  /* 酒馆 · 结识 */
+  .tavern-scroll{flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:14px;}
+  .tavern-hero{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:22px 18px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px;}
+  .tavern-cup{width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; display:flex; align-items:center; justify-content:center;}
+  .tavern-cup svg{width:28px; height:28px;}
+  .tavern-desc{font-size:13px; line-height:1.7; color:var(--muted); max-width:420px;}
+  .tavern-hero .btn-primary{width:100%; max-width:280px;}
+  #tavernResult .lib-card{display:flex; align-items:center; gap:12px; padding:12px;}
+  #tavernResult .lib-thumb{flex:none; width:56px; aspect-ratio:1/1; font-size:30px; border-radius:12px;}
+  #tavernResult .lib-thumb .av-svg{width:100%; height:100%; display:flex; align-items:center; justify-content:center;}
+  #tavernResult .lib-thumb .av-svg svg{width:100%; height:100%;}
+  .tavern-item-body{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
+  .tavern-item-body .lib-name{border:none; padding:0; text-align:left;}
 
   /* ＋ 下拉菜单 */
   .newconv-wrap{position:relative;}
@@ -694,7 +708,7 @@
     <div class="rail-grow"></div>
     <div class="rail-dot" id="keyDot" title="全局 API Key 是否已配置"></div>
     <button id="btnBoard" class="rail-btn" title="黑板（便签）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg></button>
-    <button id="btnMarket" class="rail-btn" title="集市（暂未开放）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/></svg></button>
+    <button id="btnTavern" class="rail-btn" title="酒馆（结识）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5z"/></svg></button>
     <button id="btnCards" class="rail-btn" title="角色卡库"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10h2"/><path d="M16 14h2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><circle cx="9" cy="11" r="2"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg></button>
     <button id="btnWorlds" class="rail-btn" title="世界书库"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16"/><path d="M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg></button>
     <button id="btnAbout" class="rail-btn" title="关于"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></button>
@@ -749,6 +763,22 @@
         <button class="btn-ghost" id="btnImportWorld">⬆ 导入</button>
       </div>
       <div class="lib-grid" id="worldGrid"></div>
+    </div>
+
+    <div id="tavernView" class="panel-view hidden">
+      <div class="panel-header">
+        <button class="icon-btn" id="btnBackTavern" title="返回会话">←</button>
+        <span class="panel-title">酒馆</span>
+      </div>
+      <div class="tavern-scroll">
+        <div class="tavern-hero">
+          <div class="tavern-cup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5z"/></svg></div>
+          <p class="tavern-desc">在这里「结识」一位新角色：点一下，AI 会随机创作一位角色与一部配套的世界书，直接存入你的角色卡库与世界书库，随时可以导入群聊 / 故事。</p>
+          <button class="btn-primary" id="btnMeet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>结识新角色</button>
+          <p class="hint-text" id="tavernHint"></p>
+        </div>
+        <div id="tavernResult" class="hidden"></div>
+      </div>
     </div>
 
     <div id="boardView" class="panel-view hidden">
@@ -1230,8 +1260,15 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.3.3';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.3.4';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.3.4', date:'2026-08-31', title:'编辑框保持原文大小 · 操作栏紧凑 · 关系图跟随剧情 · 关键词演化 · 酒馆结识', items:[
+    '编辑角色消息时，文本框保持原消息的大小，不再变小',
+    '桌面端消息操作栏（删除 / 编辑 / 复制 / 重置）不再被均匀拉开，按钮紧凑排列，字数角标仍靠最右；手机端不变',
+    '角色关系网不再卡在稀疏的几条线：提高分析输出上限、提示词更完整，且剧情明显推进后再次打开会自动重新分析，让关系网跟着剧情长出来',
+    '关键词详情会随剧情发展自动更新：例如关键词是「杀父之仇」，报了仇后详情会自动改成「已复仇，放下了心结」（记忆提炼时顺带完成）',
+    '「集市」更名为「酒馆」，新增「结识」：AI 一键生成一位新角色与配套世界书，直接存入角色卡库与世界书库'
+  ]},
   { v:'0.3.3', date:'2026-08-25', title:'消息界面精简 · 手机端更清爽', items:[
     '聊天顶部不再显示「在场：…」成员提示，只保留成员数量，界面更简洁',
     '手机端聊天界面不再显示左上角的群头像，群名与成员数向左占位，界面更清爽',
@@ -1472,11 +1509,11 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 9;
+var BOARD_TUT_VERSION = 10;
 var BOARD_TUTORIAL = [
   { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
   { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：集市 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 「酒馆」里可以「结识」：AI 一键生成角色卡 + 世界书，直接存入角色卡库与世界书库。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -2323,9 +2360,11 @@ function enterEdit(mid){
   var wrap = msgEls[mid];
   if(!wrap) return;
   var textEl = wrap.querySelector('.text');
+  var h = textEl ? textEl.offsetHeight : 0;   // 记录原文高度，让编辑框保持原消息大小不变
   var ta = document.createElement('textarea');
   ta.className = 'edit-box';
   ta.value = m.text;
+  if(h > 0) ta.style.minHeight = h + 'px';
   ta.placeholder = '改写这条消息的内容，保存后会被记忆…';
   textEl.parentNode.replaceChild(ta, textEl);
   var actions = wrap.querySelector('.msg-actions');
@@ -2807,15 +2846,17 @@ function updateMemory(c, cv){
   if(uc - (c.lastMemAt||0) < 8) return;   // 节流：约每 8 条用户发言提炼一次
   var sys = '你是「'+c.name+'」，你的人设：\n' + (c.persona||'（无）') +
     '\n\n你当前的记忆：\n' + (c.memory || '（暂无）') +
-    '\n\n更早对话总结：\n' + (cv.summary || '（暂无）');
+    '\n\n更早对话总结：\n' + (cv.summary || '（暂无）') +
+    '\n\n你的关键词：\n' + (c.keywords && c.keywords.length ? c.keywords.map(function(k){ return '· '+k.key+'：'+(k.detail||'（无详情）'); }).join('\n') : '（无）');
   var msgs = [{ role:'system', content:sys }];
   var ctx = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-24);
   ctx.forEach(function(m){
     if(m.speakerId === 'user') msgs.push({ role:'user', content:'我：'+m.text });
     else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
-  msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。\n'+roleInstr(c) });
-  var ub = { model: groupModel(cv), messages:msgs, stream:false, temperature:0, max_tokens:roleTok(c) };
+  msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。\n'+roleInstr(c) +
+    '\n\n另外，对照上面这段对话检查你的「关键词」：如果剧情发展让某个关键词的情况发生了变化（例如关键词是「杀父之仇」，现在已经报了仇，详情就应该更新成「已复仇，放下了心结」），就在记忆末尾单独输出关键词更新，格式为：\n【关键词更新】\n关键词名：更新后的详情\n……\n每个要更新的关键词占一行，关键词名必须与现有关键词完全一致；如果关键词详情没有变化，就什么都不要加。' });
+  var ub = { model: groupModel(cv), messages:msgs, stream:false, temperature:0, max_tokens:roleTok(c) + 160 };
   if(isDeepseek(cv)) ub.thinking = { type:'disabled' };
   var uh = { 'Content-Type':'application/json' };
   var ugk = groupKey(cv);
@@ -2827,7 +2868,22 @@ function updateMemory(c, cv){
   }).then(function(r){ return r.json(); }).then(function(j){
     var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
     if(typeof content === 'string' && content.trim()){
-      c.memory = content.trim().slice(0, roleCap(c));
+      var m2 = content.indexOf('【关键词更新】');   // 关键词详情随剧情更新：解析标记块写回 c.keywords
+      if(m2 >= 0){
+        var mem = content.slice(0, m2).trim();
+        if(mem) c.memory = mem.slice(0, roleCap(c));
+        content.slice(m2 + 7).split('\n').forEach(function(ln){
+          ln = ln.trim();
+          if(!ln) return;
+          var i = ln.indexOf('：');
+          if(i <= 0) i = ln.indexOf(':');
+          if(i <= 0) return;
+          var kk = ln.slice(0, i).trim(), dd = ln.slice(i + 1).trim();
+          (c.keywords || []).forEach(function(k){ if(k && k.key === kk) k.detail = dd; });
+        });
+      } else {
+        c.memory = content.trim().slice(0, roleCap(c));
+      }
       c.lastMemAt = uc;
       save();
     }
@@ -3066,19 +3122,24 @@ function showPanelView(v){
   $('convView').classList.toggle('hidden', v!=='conv');
   $('cardView').classList.toggle('hidden', v!=='cards');
   $('worldView').classList.toggle('hidden', v!=='worlds');
+  $('tavernView').classList.toggle('hidden', v!=='tavern');
   $('boardView').classList.toggle('hidden', v!=='board');
   $('aboutView').classList.toggle('hidden', v!=='about');
   $('logView').classList.toggle('hidden', v!=='log');
   $('btnCards').classList.toggle('on', v==='cards');
   $('btnWorlds').classList.toggle('on', v==='worlds');
+  $('btnTavern').classList.toggle('on', v==='tavern');
   $('btnBoard').classList.toggle('on', v==='board');
   $('btnAbout').classList.toggle('on', v==='about');
   if(v==='cards') renderCardPanel();
   if(v==='worlds') renderWorldPanel();
+  if(v==='tavern') renderTavern();
   if(v==='board') renderBoard();
 }
 function enterMobilePanel(){ if(window.innerWidth <= 780) document.body.classList.remove('chat-open'); }
-$('btnMarket').addEventListener('click', function(){ showToast('集市暂未开放，敬请期待'); });
+$('btnTavern').addEventListener('click', function(){ enterMobilePanel(); showPanelView('tavern'); });
+$('btnBackTavern').addEventListener('click', function(){ showPanelView('conv'); });
+$('btnMeet').addEventListener('click', function(){ meetChar(); });
 $('btnBoard').addEventListener('click', function(){ enterMobilePanel(); showPanelView('board'); });
 $('btnCards').addEventListener('click', function(){ enterMobilePanel(); showPanelView('cards'); });
 $('btnWorlds').addEventListener('click', function(){ enterMobilePanel(); showPanelView('worlds'); });
@@ -3159,6 +3220,91 @@ function renderWorldPanel(){
       '</div>';
     g.appendChild(t);
   });
+}
+/* ---------- 酒馆：结识新角色（AI 一键生成角色卡 + 世界书，直接存入库） ---------- */
+var meetBusy = false, lastMeet = null;
+function renderTavern(){
+  var h = $('tavernHint');
+  if(missingKey({})){ h.textContent = keyNote({}); }
+  else { h.textContent = ''; }
+  if(lastMeet) renderTavernResult(lastMeet.card, lastMeet.world);
+}
+function meetChar(){
+  if(meetBusy) return;
+  if(missingKey({})){ showToast('还没有配置 API Key：请先在 ⚙ 全局设置「API Key」里填写。'); return; }
+  meetBusy = true;
+  var btn = $('btnMeet');
+  btn.disabled = true;
+  var oldText = btn.innerHTML;
+  btn.innerHTML = '正在结识…';
+  var usedNames = [];
+  cards.forEach(function(c){ if(c.name && usedNames.indexOf(c.name) === -1) usedNames.push(c.name); });
+  var sys = '你是「梦语」的酒馆老板，负责为客人介绍新的 AI 角色。';
+  var instr = '请随机创作一位全新的、有魅力的 AI 角色，以及一部配套的小世界书。要求：\n' +
+    '1. 角色名 2-8 个字，不要与已有名字重复（已有：' + (usedNames.length ? usedNames.join('、') : '无') + '）。\n' +
+    '2. 人设 1-2 句话，说清楚性格与身份背景。\n' +
+    '3. 给出 1-3 个与该角色相关、容易随剧情发展而变化的关键词，每个关键词配一句详情（例如关键词「杀父之仇」，详情可以是「父亲被杀，誓要手刃仇人」）。\n' +
+    '4. 世界书与角色配套：书名 2-10 个字，内容 2-4 句描述该世界的环境、势力与氛围。\n' +
+    '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
+    '{"char":{"name":"角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]},"world":{"name":"书名","world":"世界观描述"}}';
+  var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
+  var body = { model: groupModel({}), messages:msgs, stream:false, temperature:0.9, max_tokens:900 };
+  if(isDeepseek({})) body.thinking = { type:'disabled' };
+  var hd = { 'Content-Type':'application/json' };
+  var gk = groupKey({});
+  if(gk && gk.trim()) hd['Authorization'] = 'Bearer ' + gk;
+  fetch(apiUrl({}), { method:'POST', headers:hd, body:JSON.stringify(body) })
+    .then(function(r){
+      if(!r.ok) return r.text().then(function(){ throw new Error('HTTP ' + r.status); }, function(){ throw new Error('HTTP ' + r.status); });
+      return r.json();
+    })
+    .then(function(j){
+      var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      if(typeof content !== 'string' || !content.trim()) throw new Error('empty');
+      var data = null;
+      try{ data = JSON.parse(content); }catch(e){}
+      if(!data || !data.char || !data.char.name || typeof data.char.name !== 'string' || !data.char.name.trim()) throw new Error('bad');
+      var ch = data.char, wd = data.world;
+      var kw = [];
+      (Array.isArray(ch.keywords) ? ch.keywords : []).forEach(function(k){
+        if(k && typeof k.key === 'string' && k.key.trim()) kw.push({ id:seq++, key:k.key, detail:(typeof k.detail === 'string' ? k.detail : '') });
+      });
+      var card = { id:seq++, name:ch.name.trim().slice(0,20), avatar:defaultAvatar(), persona:(typeof ch.persona === 'string' ? ch.persona : '').trim().slice(0,500), memory:'', keywords:kw };
+      cards.push(card);
+      var world = { id:seq++, name:((wd && wd.name ? String(wd.name) : ch.name.trim() + '的世界')).trim().slice(0,20), avatar:defaultAvatar(), world:(wd && typeof wd.world === 'string' ? wd.world : '').trim().slice(0,800), keywords:[] };
+      worlds.push(world);
+      save();
+      renderCardPanel(); renderWorldPanel();
+      lastMeet = { card:card, world:world };
+      renderTavernResult(card, world);
+      showToast('结识成功：「'+card.name+'」· 世界书《'+world.name+'》');
+    })
+    .catch(function(){ showToast('结识失败，请稍后再试'); })
+    .then(function(){
+      meetBusy = false;
+      btn.disabled = false;
+      btn.innerHTML = oldText;
+    });
+}
+function renderTavernResult(card, world){
+  var box = $('tavernResult');
+  box.classList.remove('hidden');
+  box.innerHTML =
+    '<div class="lib-card">' +
+      '<div class="lib-thumb">' + avatarHtml(card) + '</div>' +
+      '<div class="tavern-item-body">' +
+        '<div class="lib-name">'+esc(card.name)+'</div>' +
+        '<div class="hint-text">'+esc(card.persona || '')+'</div>' +
+        (card.keywords && card.keywords.length ? '<div class="hint-text">关键词：'+esc(card.keywords.map(function(k){ return k.key; }).join('、'))+'</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="lib-card">' +
+      '<div class="lib-thumb">' + avatarHtml(world) + '</div>' +
+      '<div class="tavern-item-body">' +
+        '<div class="lib-name">'+esc(world.name)+'</div>' +
+        '<div class="hint-text">'+esc(world.world || '')+'</div>' +
+      '</div>' +
+    '</div>';
 }
 function wireGrid(id, kind){
   $(id).addEventListener('click', function(e){
@@ -4377,7 +4523,12 @@ function openRel(){
   renderRelGraph();
   updateRelGraph();
   if(Array.isArray(cv.relations) && cv.relations.length){
-    return;   // 已有关系：直接展示
+    // 已有关系：如果剧情已明显推进（对话新增较多），自动重新分析，让关系网跟着剧情长出来，避免一直停在稀疏的几条线
+    var grew = (cv.history || []).length - (cv.relationsAt || 0);
+    if(grew < 30) return;
+    if(missingKey(cv)) return;
+    analyzeRelations(cv, true);
+    return;
   }
   if(missingKey(cv)){
     $('relNote').textContent = keyNote(cv);
@@ -4425,6 +4576,7 @@ function applyRelations(cv, edges){
   });
   cv.relations = out;
   cv.relationsTs = Date.now();
+  cv.relationsAt = (cv.history || []).length;   // 记录分析时的对话长度，剧情推进后再自动重析
   save();
   return out;
 }
@@ -4462,11 +4614,11 @@ function analyzeRelations(cv, auto){
   parts.push('【对话记录】\n' + (lines.length ? lines.join('\n') : '（暂无对话）'));
   var instr = '请从上面的记录里判断人物之间的关系。要求：\n' +
     '1. 「我」（用户）与每个已设定的角色之间都存在一条关系：能判断出具体关系就写具体关系名（如：好友、兄妹、敌人、恋人、师徒、同事等）；判断不出就写「关系未知」。\n' +
-    '2. 其他角色之间，只分析记录中确实体现出关系的人物（如：敌人、兄弟、师徒、恋人、同事、朋友、兄妹等）；没有交集或关系不明的人物之间不要输出关系。\n' +
+    '2. 其他角色之间，只要记录里两人有过任何交集（直接对话、合作、冲突、互相提到、共同行动等），就输出他们之间的关系（如：敌人、兄弟、师徒、恋人、同事、朋友、兄妹等）；主要角色之间有明显交集的重要关系尽量都连出来。确实没有任何交集、关系不明的人物之间才不要输出关系。\n' +
     '3. 人物名字可以从「' + names.join('、') + '」里选，不要发明新名字；另外，如果对话里提到过其他有明显戏份的角色（例如某场戏里的重要配角），也可以把名字写进关系（名字必须来自对话记录原文，长度不超过 8 个字）；但只露一面、几乎没剧情的路人不要写。每条关系包含两个不同的人物。\n' +
     '4. 只输出一个 JSON 数组，不要任何说明文字，格式为 [{"a":"角色A","b":"角色B","rel":"关系名"}]；没有关系就输出 []。';
   msgs.push({ role:'user', content: parts.join('\n\n') + '\n\n' + instr });
-  var rb = { model: groupModel(cv), messages: msgs, stream:false, temperature:0.3, max_tokens:500 };
+  var rb = { model: groupModel(cv), messages: msgs, stream:false, temperature:0.3, max_tokens:1200 };   // 关系较多时避免截断导致只画出少数几条
   if(isDeepseek(cv)) rb.thinking = { type:'disabled' };
   var rh = { 'Content-Type':'application/json' };
   var rgk = groupKey(cv);
