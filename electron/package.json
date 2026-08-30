@@ -23,6 +23,7 @@
     "appId": "com.mingyuezai0.dreamchat",
     "productName": "梦语",
     "copyright": "Copyright © 2026 mingyuezai0",
+    "electronDist": "node_modules/electron/dist",
     "directories": {
       "output": "dist",
       "buildResources": "build"

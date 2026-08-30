@@ -3,3 +3,5 @@ node_modules/
 dist/
 # 由 npm run copy 生成的副本（唯一来源是仓库根目录的 index.html）
 app/
+# 从系统缓存移入工程目录的 electron 发行包 zip（本地副本，勿提交）
+.cache/
