@@ -111,7 +111,7 @@
   /* ---------- 输入区 ---------- */
   .input-area{position:relative; background:rgba(255,255,255,.85); border-top:1px solid var(--border); padding:12px 22px 18px;}
   .input-inner{max-width:780px; margin:0 auto;}
-  .chip-row{display:flex; align-items:center; gap:8px; margin-bottom:8px; overflow-x:auto; padding:2px 2px 4px; scrollbar-width:none;}
+  .chip-row{display:flex; align-items:center; gap:8px; margin-bottom:8px; overflow-x:auto; padding:2px 2px 4px; scrollbar-width:none; position:relative;}
   .chip-row::-webkit-scrollbar{display:none;}
   .chip-label{font-size:12px; color:var(--muted); flex-shrink:0; font-weight:600;}
   .chip{display:inline-flex; align-items:center; gap:6px; padding:4px 11px 4px 4px; border-radius:20px; border:1px solid var(--border); background:#fff; font-size:12px; color:var(--muted); flex-shrink:0; transition:.15s;}
@@ -121,6 +121,22 @@
   .chip.on{background:#eef2ff; border-color:var(--accent); color:var(--accent); font-weight:600;}
   .chip-hint{font-size:11px; color:#b6bcc9; flex-shrink:0;}
   #chipBox{flex-shrink:0;}
+  /* 「下轮对话」展开面板：向上列出全部在场角色，越重要越靠前 */
+  .chip-expand-box{position:absolute; bottom:calc(100% + 8px); left:0; min-width:230px; max-width:min(320px,86vw); max-height:44vh; overflow-y:auto; background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 30px rgba(31,36,48,.16); padding:6px; z-index:60;}
+  .chip-expand-box.hidden{display:none;}
+  .chip-ex-row{display:flex; align-items:center; gap:8px; width:100%; padding:7px 8px; border-radius:9px; font-size:13px; color:var(--text); cursor:pointer;}
+  .chip-ex-row:hover{background:var(--main);}
+  .chip-ex-row .chip-av{width:24px; height:24px; border-radius:50%; overflow:hidden; background:#eef1fb; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .chip-ex-row .chip-av img{width:100%; height:100%; object-fit:cover;}
+  .chip-ex-row .chip-ex-name{font-weight:600; color:var(--text);}
+  .chip-ex-row .char-role{margin-left:auto; font-size:11px; flex-shrink:0;}
+  .chip-ex-row .chip-ex-check{margin-left:6px; font-size:13px; flex-shrink:0;}
+  .chip-ex-row.on{background:#eef2ff;}
+  body.dm .chip-row{display:none;}
+  /* 私聊「附件」：输入区上方的附件条 */
+  #attachBar{display:none; align-items:center; gap:8px; margin:0 0 8px; padding:6px 10px; background:var(--panel); border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--text);}
+  #attachBar .attach-x{margin-left:auto; cursor:pointer; color:var(--accent); font-weight:600; flex-shrink:0;}
+  .msg-attach{display:inline-block; margin-bottom:5px; padding:2px 8px; border:1px dashed var(--border); border-radius:8px; font-size:12px; opacity:.75; color:var(--text);}
   .hint{font-size:12px; color:var(--muted); margin-bottom:8px; padding:0 4px;}
   .input-row{display:flex; gap:10px; align-items:flex-end; background:#fff; border:1px solid var(--border); border-radius:16px; padding:8px 8px 8px 14px; box-shadow:0 2px 8px rgba(31,36,48,.05);}
   .input-row:focus-within{border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.15);}
@@ -459,6 +475,7 @@
     .header-actions .text-btn{font-size:13px; padding:6px 9px;}
     .hint{display:none;}
     .bubble{max-width:84%;}
+    .chip-expand-box{max-width:86vw; min-width:200px;}   /* 手机端展开面板更贴近屏幕 */
     .fab{right:12px; margin-bottom:8px;}
     .fab-item{min-height:42px; font-size:14px;}
     .fab-item svg{width:18px; height:18px;}
@@ -527,6 +544,10 @@
   html[data-theme="dark"] .chip .chip-av{background:#2a2f3a;}
   html[data-theme="dark"] .chip.on{background:#242d45; color:#8fa2ff;}
   html[data-theme="dark"] .chip-hint{color:#7d8495;}
+  html[data-theme="dark"] .chip-expand-box{background:#1b1e26;}
+  html[data-theme="dark"] .chip-ex-row.on{background:#242d45;}
+  html[data-theme="dark"] #attachBar{background:#1e222c;}
+  html[data-theme="dark"] .msg-attach{border-color:#3a4150;}
   html[data-theme="dark"] .input-row{background:#1e222c;}
   html[data-theme="dark"] .modal-overlay{background:rgba(0,0,0,.6);}
   html[data-theme="dark"] #relView{background:rgba(0,0,0,.6);}
@@ -619,6 +640,10 @@
   html[data-theme="scroll"] .chip .chip-av{background:#efe0ba;}
   html[data-theme="scroll"] .chip.on{background:#ecd9ae;}
   html[data-theme="scroll"] .chip-hint{color:#b7a276;}
+  html[data-theme="scroll"] .chip-expand-box{background:#f5ecd6;}
+  html[data-theme="scroll"] .chip-ex-row.on{background:#ecd9ae;}
+  html[data-theme="scroll"] #attachBar{background:#f7efda;}
+  html[data-theme="scroll"] .msg-attach{border-color:#d9c49a;}
   html[data-theme="scroll"] .input-row{background:#f9f0dc;}
   html[data-theme="scroll"] .modal-overlay{background:rgba(60,40,20,.5);}
   html[data-theme="scroll"] #relView{background:rgba(60,40,20,.5);}
@@ -740,8 +765,9 @@
         <div class="newconv-wrap">
           <button id="btnNewConv" class="icon-btn" title="新建对话"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
           <div id="newConvMenu" class="newconv-menu hidden">
-            <button class="menu-item" data-act="new">新建聊天</button>
-            <button class="menu-item" data-act="story">开始故事</button>
+            <button class="menu-item" data-act="new">新建群聊</button>
+            <button class="menu-item" data-act="dm">新建私聊</button>
+            <button class="menu-item" data-act="story">新建故事</button>
             <button class="menu-item" data-act="import">导入记忆</button>
           </div>
         </div>
@@ -873,9 +899,13 @@
           <span class="chip-label">下轮对话</span>
           <div id="chipBox" style="display:flex; gap:8px;"></div>
           <button id="btnRandom" class="chip" title="开启：多人回复顺序随机；关闭：按你点选人物的先后顺序回复（数字角标表示先后）">🎲 随机先后</button>
+          <button id="btnChipExpand" class="chip" title="展开所有在场角色（越重要越靠前）">⌄</button>
           <span class="chip-hint">点击选择 · 或在消息里 @ 某位在场 AI</span>
+          <div id="chipExpandBox" class="chip-expand-box hidden"></div>
         </div>
-        <div class="hint">Enter 发送 · Shift+Enter 换行 · 多人回复时会按顺序轮流发言</div>
+        <div id="attachBar"><span>📎</span><span id="attachName"></span><span id="attachX" class="attach-x">移除</span></div>
+        <input type="file" id="attachFile" accept=".txt,.md,.markdown,.csv,.json,.log,.xml,.html,.js,.py,.java,.go,.c,.cpp,.h,.css,.yml,.yaml,.ini,.sh,.bat" style="display:none;">
+        <div class="hint" id="inputHint">Enter 发送 · Shift+Enter 换行 · 多人回复时会按顺序轮流发言</div>
         <div class="input-row">
           <textarea id="input" placeholder="输入消息…"></textarea>
           <button id="btnSend" class="btn-send">发送</button>
@@ -888,6 +918,7 @@
           <button class="fab-item" data-act="cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>费用</button>
           <button class="fab-item" data-act="len"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>字数</button>
           <button class="fab-item" data-act="rel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>关系</button>
+          <button class="fab-item" data-act="attach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>附件</button>
         </div>
         <button id="btnMore" class="fab-btn" title="更多工具">
           <svg id="morePlus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -950,6 +981,7 @@
     <h3><span id="gsTitle">群设置</span> · <span id="gsConvName"></span></h3>
     <div class="tabs" id="gsTabs">
       <button data-tab="members" class="active">AI成员</button>
+      <button data-tab="agent" style="display:none;">智能体</button>
       <button data-tab="world">世界观</button>
       <button data-tab="player">玩家设定</button>
       <button data-tab="continue">续写剧情</button>
@@ -967,6 +999,39 @@
         <span class="switch"><input type="checkbox" id="gsAutoMem"><span></span></span>
       </label>
       <p class="hint-text">开启后，成员会每过一段时间把聊过的内容提炼进各自的「记忆」，下次对话能记住。每个成员的记忆可在 ✎ 编辑里查看和修改。</p>
+    </div>
+
+    <!-- 智能体（私聊：唯一一位 AI 的编辑） -->
+    <div class="gs-pane hidden" data-pane="agent">
+      <p class="hint-text" style="margin:2px 0 12px;">这是本私聊唯一的一位 AI，直接在这里修改 TA 的名字、头像、人设、关键词与记忆；保存后立即生效。</p>
+      <label>智能体名称</label>
+      <input type="text" id="dmName" maxlength="12" placeholder="例如：小智">
+      <label>头像</label>
+      <div class="avatar-editor">
+        <div class="tabs" id="dmAvTabs">
+          <button data-tab="emoji" class="active">二次元</button>
+          <button data-tab="upload">上传图片</button>
+        </div>
+        <div class="tabpane" data-pane="emoji">
+          <div class="emoji-grid" id="dmEmojiGrid"></div>
+        </div>
+        <div class="tabpane hidden" data-pane="upload">
+          <input type="file" id="dmAvFile" accept="image/*">
+        </div>
+        <div class="avatar-preview"><div class="char-avatar" id="dmAvPreview"></div></div>
+      </div>
+      <label>人设</label>
+      <textarea id="dmPersona" rows="4" placeholder="描述 TA 的性格、说话风格、知识背景等。这段设定只属于 TA，不会与其他人物混用。"></textarea>
+      <label>关键词</label>
+      <div id="dmKeywords" class="kw-box"></div>
+      <button id="dmKwAdd" class="btn-add" style="margin:10px 0 0;">＋ 添加关键词</button>
+      <p class="hint-text">当有人提到某个关键词时，TA 会先查看关键词详情，再按剧情需要选择性作出反应。关键词详情不会被「总结」压缩。</p>
+      <label>记忆</label>
+      <textarea id="dmMemory" rows="4" placeholder="TA 记住的事情。开启「成员自动记忆」后会不断自动更新；你也可以手动写。"></textarea>
+      <label class="switch-row">成员自动记忆
+        <span class="switch"><input type="checkbox" id="dmAutoMem"><span></span></span>
+      </label>
+      <p class="hint-text">开启后，TA 会每过一段时间把聊过的内容提炼进「记忆」，下次对话能记住。</p>
     </div>
 
     <!-- 世界观 -->
@@ -1019,6 +1084,9 @@
       <label>叙述视角</label>
       <label class="role-opt"><input type="radio" name="contPer" value="first" checked><span>第一人称</span><small>主角由你扮演，「玩家设定」即主角设定，AI 成员不含主角</small></label>
       <label class="role-opt"><input type="radio" name="contPer" value="third"><span>第三人称</span><small>主角作为 AI 成员生成，「玩家设定」留空待你自填</small></label>
+      <label>生成角色范围</label>
+      <label class="role-opt"><input type="radio" name="contScope" value="important" checked><span>生成重要角色</span><small>主要 1-3 · 次要 2-5 · 路人 ≤2，合计 ≤8，人设更精细</small></label>
+      <label class="role-opt"><input type="radio" name="contScope" value="all"><span>生成所有角色</span><small>按文本出现的角色全部生成，人数无上限，路人角色人设从简</small></label>
       <label>玩家设定精炼度（最低字数，第一人称时生效）</label>
       <input type="number" class="gs-num" id="contPlayerLen" value="150" min="30" max="500" autocomplete="off">
       <label>总结精炼度（剧情流程总结最低字数）</label>
@@ -1359,8 +1427,15 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.3.7';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.3.8';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.3.8', date:'2026-08-31', title:'私聊模式 · 角色展开 · 续写剧情角色范围 · 私聊附件', items:[
+    '新增「私聊」模式：主页「＋」→「新建私聊」，和一位 AI 一对一聊天；「新建聊天」「开始故事」改名为「新建群聊」「新建故事」',
+    '私聊设置改「私聊设置」：「AI成员」页签改为「智能体」，直接编辑那一位 AI 的名字、头像、人设、关键词与记忆',
+    '「选择下一轮对话」新增展开按钮：点开向上展开所有在场角色，按重要程度（主要→次要→路人）排序，人再多也能快速选',
+    '「续写剧情」新增「生成重要角色 / 生成所有角色」：重要角色合计 ≤8 位人设精细；所有角色按文本人数无上限生成（路人角色人设从简）',
+    '私聊消息区「＋」里「关系」改为「附件」：选一个文本文件随消息发给 AI 阅读'
+  ]},
   { v:'0.3.7', date:'2026-08-31', title:'世界书 UI 修正 · 提取/模仿带关键词 · 续写剧情视角与总结 · 角色卡提取/模仿', items:[
     '「世界书」页面的「提取」「模仿」按钮改为横长竖短的扁宽样式，与「创建」同尺寸，排在「创建 / 导入」下一排并列',
     '「提取」「模仿」生成的世界书会按剧情给出 1-3 个「关键词」（各带一句详情）',
@@ -1592,6 +1667,7 @@ var ICON_ME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 var ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14"/><path d="M5 14l1-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4l1 3z"/></svg>';
 var AV_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';   // 群聊默认头像：两个人形（描边）
 var AV_STORY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v13"/><path d="M3 18a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/><path d="M17.5 3.5l3.5 3.5"/><path d="M14.5 6.5l3 3"/></svg>';   // 故事默认头像：一本书 + 一支笔（描边）
+var AV_DM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';   // 私聊默认头像：单人描线人形
 var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null, hideChipAvatar:false, relMode:'avatar' };
 var convs = [];
 var activeId = null;
@@ -1604,6 +1680,8 @@ function defaultAvatar(){ return { mode:'svg', value:ANIME_AVS[0] }; }
 var avatarDraft = defaultAvatar();
 var gsAvatarDraft = defaultAvatar();
 var libAvatarDraft = defaultAvatar();
+var dmAvatarDraft = defaultAvatar();   // 私聊「智能体」头像草稿
+var dmKwDraft = [];
 /* ---------- 角色分级（主要 / 次要 / 路人） ---------- */
 function roleOf(c){ var r = c && c.role; return (r==='main'||r==='minor'||r==='extra') ? r : 'minor'; }
 function roleCap(c){ var r = roleOf(c); return r==='main' ? 2000 : r==='extra' ? 600 : 1200; }   // 该角色记忆保留上限（字符）
@@ -1625,11 +1703,12 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 13;
+var BOARD_TUT_VERSION = 14;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定，直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 「酒馆」里可以「结识」：AI 一键生成角色卡 + 世界书，直接存入角色卡库与世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定，直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事。\n· 「酒馆」里可以「结识」：AI 一键生成角色卡 + 世界书，直接存入角色卡库与世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
+  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、关键词与记忆。\n· 消息区右下角「＋」里有「附件」：选一个文本文件（txt / md 等），它会随消息一起发给 AI，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -1655,8 +1734,8 @@ function cleanNamePrefix(name, text){
 }
 function pad(n){ return n<10 ? '0'+n : ''+n; }
 function current(){ return getConv(activeId); }
-function kindLabel(cv){ return cv && cv.mode === 'story' ? '故事' : '群聊'; }
-function settingsLabel(cv){ return cv && cv.mode === 'story' ? '故事设置' : '群设置'; }
+function kindLabel(cv){ return cv && cv.mode === 'story' ? '故事' : (cv && cv.mode === 'dm' ? '私聊' : '群聊'); }
+function settingsLabel(cv){ return cv && cv.mode === 'story' ? '故事设置' : (cv && cv.mode === 'dm' ? '私聊设置' : '群设置'); }
 function getConv(id){
   for(var i=0;i<convs.length;i++){ if(convs[i].id===id) return convs[i]; }
   return null;
@@ -1727,7 +1806,7 @@ function load(){
     if(typeof cv.summary !== 'string') cv.summary = '';
     if(typeof cv.summaryTs !== 'number') cv.summaryTs = 0;
     if(typeof cv.autoSummary !== 'number') cv.autoSummary = 0;
-    if(cv.mode !== 'story') cv.mode = 'chat';
+    if(cv.mode !== 'story' && cv.mode !== 'dm') cv.mode = 'chat';
     if(typeof cv.maxReplyLen !== 'number' || isNaN(cv.maxReplyLen) || cv.maxReplyLen < 0) cv.maxReplyLen = (cv.mode === 'story' ? STORY_MAXLEN : CHAT_MAXLEN);
     if(!cv.avatar || typeof cv.avatar !== 'object' || !cv.avatar.mode) cv.avatar = null;
     if(typeof cv.compressMem !== 'boolean') cv.compressMem = false;
@@ -1786,6 +1865,13 @@ function load(){
         keep.push(n);
       });
       board = keep;
+      // 新增的教程槽位（比如新加的「私聊教程」）给老用户也补贴一次：拼在已有教程便签后面；
+      // 用户已删掉的旧槽位不补回；删光教程的用户（hasTut 为 false）不补贴。
+      var maxSlot = -1;
+      for(var _k=0;_k<tutSlots.length;_k++) if(tutSlots[_k] && tutSlots[_k].tut > maxSlot) maxSlot = tutSlots[_k].tut;
+      for(var _s=maxSlot+1;_s<BOARD_TUTORIAL.length;_s++){
+        board.push({ id: seq++, text: BOARD_TUTORIAL[_s].text, color: BOARD_TUTORIAL[_s].color, tut: _s, ts: Date.now() });
+      }
     } else if(tutMarker === null){
       // 首次打开：贴出三条教程便签
       for(var k=0;k<BOARD_TUTORIAL.length;k++){
@@ -1848,9 +1934,9 @@ function stopAll(){
 }
 
 /* ---------- 会话列表 ---------- */
-/* 群聊 / 故事未自带头像时的默认头像：群聊=双人形描边图标，故事=书和笔描边图标 */
+/* 群聊 / 故事 / 私聊未自带头像时的默认头像：群聊=双人形描边图标，故事=书和笔，私聊=单人描线 */
 function convDefaultAv(cv){
-  return { mode:'svg', value: (cv && cv.mode === 'story') ? AV_STORY : AV_CHAT };
+  return { mode:'svg', value: (cv && cv.mode === 'story') ? AV_STORY : (cv && cv.mode === 'dm') ? AV_DM : AV_CHAT };
 }
 function convAvatarInner(cv){
   if(cv.avatar && cv.avatar.value) return avatarHtml({avatar:cv.avatar});
@@ -1961,9 +2047,24 @@ $('newConvMenu').addEventListener('click', function(e){
   $('newConvMenu').classList.add('hidden');
   var act = b.dataset.act;
   if(act === 'new') doNewConv();
+  else if(act === 'dm') doNewDm();
   else if(act === 'story') doNewStory();
   else if(act === 'import') $('importMemFile').click();
 });
+function doNewDm(){
+  stopAll();
+  var n = 0;
+  convs.forEach(function(c){ if(c.mode === 'dm') n++; });
+  var ai = { id:seq++, name:AUTO_NAMES[Math.floor(Math.random()*AUTO_NAMES.length)], avatar:defaultAvatar(), persona:DEFAULT_PERSONA, present:true, memory:'', role:'minor' };
+  var cv = newConv('私聊 '+(n+1), [ai], null);
+  cv.mode = 'dm';
+  cv.selectedNext = [];
+  convs.push(cv);
+  activeId = cv.id;
+  save(); renderConvList(); renderMsgs(); renderChips(); renderChatHeader();
+  if(window.innerWidth <= 780) document.body.classList.add('chat-open');
+  addNote('已新建「'+cv.name+'」，和「'+ai.name+'」一对一私聊。右上角「⚙ 私聊设置」可修改智能体的名字 / 头像 / 人设 / 关键词 / 记忆；消息区「＋」里的「附件」可发文件给 TA 阅读。');
+}
 function doNewStory(){
   stopAll();
   var n = 0;
@@ -2007,6 +2108,7 @@ $('fabMenu').addEventListener('click', function(e){
   else if(act === 'cost') openCost();
   else if(act === 'len') openLen();
   else if(act === 'rel') openRel();
+  else if(act === 'attach') $('attachFile').click();
 });
 document.addEventListener('click', closeFabMenu);
 
@@ -2306,11 +2408,31 @@ function renderChatHeader(){
   $('convName').textContent = cv.name;
   $('headerAvatar').className = 'header-avatar' + (cv.mode === 'story' ? ' story' : '');
   $('headerAvatar').innerHTML = convAvatarInner(cv);
-  $('headerSub').textContent = '成员 '+cv.chars.length;   // v0.3.3：去掉「在场：…」提示，更简洁
+  $('headerSub').textContent = (cv.mode === 'dm') ? (cv.chars[0] ? cv.chars[0].name : '') : ('成员 '+cv.chars.length);   // 私聊显示智能体名，其余显示成员数（v0.3.3：去掉「在场：…」提示）
   updateSummaryBtn();
   $('btnGroupSettings').innerHTML = ICON_GEAR + settingsLabel(cv);
-  $('btnGroupSettings').title = (cv.mode === 'story' ? '本故事设置' : '本群设置') + '：AI成员 / 世界观 / 玩家设定 / API / 记忆转移 / 清空·删除';
+  applyModeUI(cv);
   $('keyDot').className = 'rail-dot' + (settings.apiKey ? ' on' : '');
+}
+/* 每会话 UI 切换：私聊隐藏「下轮对话」条、FAB「关系/附件」互换、提示语与设置标题随模式变化 */
+function applyModeUI(cv){
+  var dm = !!(cv && cv.mode === 'dm');
+  document.body.classList.toggle('dm', dm);
+  var relItem = document.querySelector('#fabMenu [data-act="rel"]');
+  var atItem = document.querySelector('#fabMenu [data-act="attach"]');
+  if(relItem) relItem.style.display = dm ? 'none' : '';
+  if(atItem) atItem.style.display = dm ? '' : 'none';
+  closeChipExpand();
+  if(dm){
+    $('inputHint').textContent = 'Enter 发送 · Shift+Enter 换行';
+    $('btnGroupSettings').title = '私聊设置：智能体 / 世界观 / 玩家设定 / API / 记忆转移 / 清空·删除';
+    if(dmAttach) showAttachBar(dmAttach.name, dmAttach.content.length, false);
+    else hideAttachBar();
+  } else {
+    $('inputHint').textContent = 'Enter 发送 · Shift+Enter 换行 · 多人回复时会按顺序轮流发言';
+    $('btnGroupSettings').title = (cv && cv.mode === 'story' ? '本故事设置' : '本群设置') + '：AI成员 / 世界观 / 玩家设定 / 续写剧情 / API / 记忆转移 / 清空·删除';
+    hideAttachBar();
+  }
 }
 
 /* ---------- 消息渲染 ---------- */
@@ -2322,7 +2444,7 @@ function renderMsgs(){
   if(!cv){
     var n = document.createElement('div');
     n.className = 'msg note';
-    n.innerHTML = '<div class="note-text">还没有会话，点上方「＋」新建聊天或开始故事吧。</div>';
+    n.innerHTML = '<div class="note-text">还没有会话，点上方「＋」新建群聊 / 新建私聊 / 新建故事吧。</div>';
     list.appendChild(n);
     return;
   }
@@ -2339,9 +2461,11 @@ function appendMsgEl(list, m){
   else if(m.npcRole){ av = '<div class="avatar">'+avatarHtml({ avatar: npcRoleAvatar(m.npcRole) })+'</div>'; }
   else { av = '<div class="avatar">'+avatarHtml(getChar(cv, m.speakerId))+'</div>'; }
   var nameHtml = (m.speakerId === 'user') ? '' : '<div class="name">'+esc(msgLabel(m))+'</div>';
+  var attachHtml = (m.attach && m.attach.name) ? '<div class="msg-attach">📎 '+esc(m.attach.name)+'</div>' : '';
   wrap.innerHTML =
     av +
     '<div class="bubble">' + nameHtml +
+      attachHtml +
       '<div class="text"></div>' +
       '<div class="status"></div>' +
       '<div class="msg-actions">' +
@@ -2698,6 +2822,69 @@ function toggleChip(id){
   save(); renderChips();
 }
 
+/* 「下轮对话」展开面板：向上列出全部在场角色，越重要越靠前 */
+function renderChipExpand(){
+  var cv = current();
+  var box = $('chipExpandBox');
+  box.innerHTML = '';
+  if(!cv) return;
+  var order = { main:0, minor:1, extra:2 };
+  var sorted = cv.chars.filter(function(c){ return c.present; }).slice().sort(function(a, b){
+    var r = order[roleOf(a)] - order[roleOf(b)];
+    return r !== 0 ? r : (a.id - b.id);
+  });
+  sorted.forEach(function(c){
+    var idx = cv.selectedNext.indexOf(c.id);
+    var sel = idx !== -1;
+    var row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'chip-ex-row' + (sel ? ' on' : '');
+    row.innerHTML =
+      '<span class="chip-av">'+avatarHtml(c)+'</span>' +
+      '<span class="chip-ex-name">'+esc(c.name)+'</span>' +
+      '<span class="char-role char-role-'+roleOf(c)+'">'+({main:'主要角色',minor:'次要角色',extra:'路人角色'})[roleOf(c)]+'</span>' +
+      '<span class="chip-ex-check">'+(sel ? '✓' : '')+'</span>';
+    row.addEventListener('click', function(){ toggleChip(c.id); renderChipExpand(); });
+    box.appendChild(row);
+  });
+}
+function closeChipExpand(){
+  var box = $('chipExpandBox');
+  if(box && !box.classList.contains('hidden')) box.classList.add('hidden');
+}
+$('btnChipExpand').addEventListener('click', function(e){
+  e.stopPropagation();
+  var box = $('chipExpandBox');
+  if(box.classList.contains('hidden')){ renderChipExpand(); box.classList.remove('hidden'); }
+  else box.classList.add('hidden');
+});
+$('chipExpandBox').addEventListener('click', function(e){ e.stopPropagation(); });   // 面板内点击不触发外层关闭
+document.addEventListener('click', closeChipExpand);
+
+/* ---------- 私聊「附件」：选文本文件随消息发给 AI 读取 ---------- */
+var dmAttach = null;
+var ATTACH_MAXLEN = 30000;
+function hideAttachBar(){ $('attachBar').style.display = 'none'; $('attachName').textContent = ''; }
+function showAttachBar(name, n, truncated){
+  $('attachName').textContent = '📎 ' + name + '（' + n + ' 字' + (truncated ? '，已截断' : '') + '）';
+  $('attachBar').style.display = 'flex';
+}
+$('attachFile').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    var content = String(reader.result || '');
+    var truncated = content.length > ATTACH_MAXLEN;
+    dmAttach = { name:f.name, content: content.slice(0, ATTACH_MAXLEN) };
+    showAttachBar(f.name, dmAttach.content.length, truncated);
+  };
+  reader.onerror = function(){ showToast('读取文件失败'); };
+  reader.readAsText(f);
+  this.value = '';
+});
+$('attachX').addEventListener('click', function(){ dmAttach = null; hideAttachBar(); });
+
 /* ---------- 发送 & 顺序回复 ---------- */
 function send(){
   if(generating) return;
@@ -2705,7 +2892,7 @@ function send(){
   if(!cv) return;
   if(missingKey(cv)){ addNote(keyNote(cv)); return; }
   var text = $('input').value.trim();
-  if(!text) return;
+  if(!text && !(cv.mode === 'dm' && dmAttach)) return;   // 私聊允许只发附件不写文字
   if(cv.autoSummary && estimateContextTokens(cv) >= cv.autoSummary && cv.history.length >= MIN_SUMMARY_MSGS){
     generating = true; setGenerating(true);
     addNote('上下文已达 '+fmtTokens(cv.autoSummary)+'，正在自动总结压缩…');
@@ -2727,6 +2914,12 @@ function send(){
   doSend(cv, text);
 }
 function replyTargets(cv, text){
+  // 私聊：唯一一位在场 AI 总会回复，无需点选 / @
+  if(cv.mode === 'dm'){
+    var me = null;
+    cv.chars.forEach(function(c){ if(c.present) me = c; });
+    return { targets: me ? [me] : [], absent: [] };
+  }
   // 本轮会回复的成员：先按「点选先后」（谁先点谁先答），@ 提到但未点选的排在后面
   var targets = [], absent = [];
   cv.chars.forEach(function(c){
@@ -2745,7 +2938,9 @@ function replyTargets(cv, text){
 }
 function doSend(cv, text){
   $('input').value = ''; autoGrow();
-  cv.history.push({ id:seq++, speakerId:'user', speaker:'我', role:'user', text:text, status:'done' });
+  var attach = (cv.mode === 'dm' && dmAttach) ? { name:dmAttach.name, content:dmAttach.content } : null;
+  cv.history.push({ id:seq++, speakerId:'user', speaker:'我', role:'user', text:text, attach:attach, status:'done' });
+  if(attach){ dmAttach = null; hideAttachBar(); }
   cv.lastActiveAt = Date.now();
   save(); renderConvList(); renderMsgs(); updateSummaryBtn();
 
@@ -2824,6 +3019,21 @@ function buildMessages(c, cv){
       '5. 消息里「名字：内容」代表那个人说的话，注意分辨说话人。\n' +
       '6. 回复要像小说一样自然推进剧情，简洁生动，别把设定念出来。' +
       (cv.maxReplyLen > 0 ? '\n7. 整条回复控制在 ' + cv.maxReplyLen + ' 字以内（含神态、台词、旁白）：内容要完整，用「。」等标点收尾，宁精炼不要写超、不要被截断。' : '');
+  } else if(cv.mode === 'dm'){
+    sys =
+      '你是「'+c.name+'」，正在和「我」一对一私聊。\n\n' +
+      '【世界观 · 本私聊的设定】\n' + (cv.world || '（未设定，视为现实世界即可）') + '\n\n' +
+      '【玩家设定 · 人类「我」】\n' + (cv.player || '（未设定，把「我」当作普通用户即可）') + '\n\n' +
+      '【你的人设，务必遵守】\n' + (c.persona || '（无特别设定）') + '\n\n' +
+      '【你的记忆（你知道的事）】\n' + (c.memory || '（暂无）') + '\n\n' +
+      '【更早对话总结（这是早前对话的压缩要点，当作既知事实）】\n' + (cv.summary || '（暂无）') + '\n\n' +
+      '对话规则：\n' +
+      '1. 你只能以「'+c.name+'」的身份和口吻说话，始终保持你的人设，并遵守本私聊设定。\n' +
+      '2. 这是你和我两个人的私聊，不需要替别人说话，也不要提到其它角色。\n' +
+      '3. 如果「我」发来了附件（文件内容会随消息附上），请仔细阅读并参考其中的内容再回复。\n' +
+      '4. 现在是你的回合，接着上面的对话自然回复；回应我刚刚说的话或提到的问题。\n' +
+      '5. 回复要自然、简洁，像真人聊天一样。' +
+      (cv.maxReplyLen > 0 ? '\n6. 每条回复控制在 ' + cv.maxReplyLen + ' 字以内：内容要完整，用「。」等标点收尾，宁精炼不要写超、不要被截断。' : '');
   } else {
     sys =
       '你是「'+c.name+'」，是「'+cv.name+'」群里的 AI 人物。\n\n' +
@@ -2845,7 +3055,11 @@ function buildMessages(c, cv){
   if(kwBlock) sys += kwBlock;
   var msgs = [{ role:'system', content:sys }];
   ctx.forEach(function(m){
-    if(m.speakerId === 'user') msgs.push({ role:'user', content:'我：'+m.text });
+    if(m.speakerId === 'user'){
+      var uc = '我：'+m.text;
+      if(m.attach && m.attach.name) uc += '\n\n【附件「'+m.attach.name+'」（用户提供的文件，请仔细阅读并参考其中的内容）】\n' + m.attach.content;
+      msgs.push({ role:'user', content:uc });
+    }
     else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
   if(isStory) msgs.push({ role:'user', content: allowNarr
@@ -3098,6 +3312,35 @@ function buildGsEmojiGrid(){
     g.appendChild(b);
   });
 }
+/* 私聊「智能体」头像编辑器（仅群设置弹窗内使用，作用域限定在 agent pane） */
+function setDmAvTab(tab){
+  var btns = document.querySelectorAll('[data-pane="agent"] #dmAvTabs button');
+  for(var i=0;i<btns.length;i++) btns[i].classList.toggle('active', btns[i].dataset.tab === tab);
+  var panes = document.querySelectorAll('[data-pane="agent"] .avatar-editor .tabpane');
+  for(var j=0;j<panes.length;j++) panes[j].classList.toggle('hidden', panes[j].dataset.pane !== tab);
+}
+function selectDmEmoji(i){
+  dmAvatarDraft = { mode:'svg', value:ANIME_AVS[i] };
+  var btns = $('dmEmojiGrid').querySelectorAll('button');
+  for(var k=0;k<btns.length;k++) btns[k].classList.toggle('selected', parseInt(btns[k].dataset.idx,10) === i);
+  updateDmPreview();
+}
+function updateDmPreview(){
+  $('dmAvPreview').innerHTML = avatarHtml({ avatar:dmAvatarDraft, name:'' });
+}
+function buildDmEmojiGrid(){
+  var g = $('dmEmojiGrid');
+  g.innerHTML = '';
+  ANIME_AVS.forEach(function(av, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.title = AV_NAMES[i];
+    b.dataset.idx = i;
+    b.innerHTML = '<span class="av-svg">'+av+'</span>';
+    b.addEventListener('click', function(){ selectDmEmoji(i); });
+    g.appendChild(b);
+  });
+}
 
 /* --- 危险操作：小窗口 5 秒确认 --- */
 function updateGsClearInfo(){
@@ -3203,7 +3446,7 @@ function importBackup(file){
       if(typeof conv.summary !== 'string') conv.summary = '';
       if(typeof conv.summaryTs !== 'number') conv.summaryTs = 0;
       if(typeof conv.autoSummary !== 'number') conv.autoSummary = 0;
-      if(conv.mode !== 'story') conv.mode = 'chat';
+      if(conv.mode !== 'story' && conv.mode !== 'dm') conv.mode = 'chat';
       if(typeof conv.maxReplyLen !== 'number' || isNaN(conv.maxReplyLen) || conv.maxReplyLen < 0) conv.maxReplyLen = (conv.mode === 'story' ? STORY_MAXLEN : CHAT_MAXLEN);
       if(typeof conv.randomOrder !== 'boolean') conv.randomOrder = false;
       if(!conv.avatar || typeof conv.avatar !== 'object' || !conv.avatar.mode) conv.avatar = null;
@@ -3802,16 +4045,24 @@ function runContinue(){
   var perText = per === 'third'
     ? '选择了第三人称：主角作为 AI 成员生成（与其它角色同等处理，放进 members），「玩家设定」输出为空字符串 ""，留给玩家自己填写。'
     : '选择了第一人称：主角由玩家扮演，不生成主角的 AI 成员角色卡（主角不要放进 members），「玩家设定」就是主角设定（至少 ' + playerLen + ' 字：身份、性格、经历、与成员的关系）。';
+  var scopeEl = document.querySelector('input[name="contScope"]:checked');
+  var scopeAll = scopeEl && scopeEl.value === 'all';
+  var scopeText = scopeAll
+    ? '选择了「生成所有角色」：把剧情中所有出现过的角色（无论戏份多少）都作为 AI 成员生成出来，人数不限、不要遗漏。每个成员给出：姓名（2-8 个字）、人设（主要 / 次要角色至少 ' + charLen + ' 字：身份、性格、目标、立场；路人角色 1-2 句话简述即可）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词 1-3 个（每个词配一句详情）。'
+    : '选择了「生成重要角色」：只挑出对剧情有影响的重要角色——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词 1-3 个（每个词配一句详情）。';
   var sys = '你是「梦语」的续写剧情助手，擅长从小说 / 剧情文本中分析人物、世界观与玩家身份，生成可直接用于续写的设定包。';
   var instr = '请阅读下面这段剧情文本，忠实于原文内容（不要编造原文没有的人物与设定），生成一份可直接用于续写的设定包：\n' +
-    '1. AI 成员：挑出对剧情有影响的重要角色作为 AI 成员，按重要程度判定角色分级——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词 1-3 个（每个词配一句详情，例如关键词「杀父之仇」，详情「父亲被杀，誓要手刃仇人」）。\n' +
+    '1. AI 成员：' + scopeText + '\n' +
     '2. 世界观：概括这段剧情的世界（至少 ' + worldLen + ' 字：背景时代、地理与势力、核心规则或力量体系、氛围基调），另给 1-3 个世界观关键词（各配一句详情）。\n' +
     '3. 叙述视角：' + perText + '\n' +
     '4. 剧情总结：把整段文本的剧情流程概括成一段总结（至少 ' + summaryLen + ' 字：按时间顺序梳理关键剧情走向、重要事件与伏笔悬念，供后续续写引用），输出到 "summary" 字段，让原剧情流程在续写时不会被遗忘。\n' +
     '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
     '{"members":[{"name":"角色名","role":"main|minor|extra","persona":"人设","memory":"记忆","keywords":[{"key":"关键词","detail":"详情"}]}],"world":{"world":"世界观描述","keywords":[{"key":"世界观关键词","detail":"详情"}]},"player":"玩家设定（第三人称时为空字符串）","summary":"剧情总结"}\n\n剧情文本：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
-  var body = { model: groupModel(cv), messages:msgs, stream:false, temperature:0.4, max_tokens:Math.min(8000, 2000 + charLen*6 + worldLen + playerLen + summaryLen) };
+  var maxTok = scopeAll
+    ? Math.min(32000, 8000 + charLen*6 + worldLen + playerLen + summaryLen)   // 所有角色：人物可能很多，放宽输出上限
+    : Math.min(8000, 2000 + charLen*6 + worldLen + playerLen + summaryLen);
+  var body = { model: groupModel(cv), messages:msgs, stream:false, temperature:0.4, max_tokens:maxTok };
   if(isDeepseek(cv)) body.thinking = { type:'disabled' };
   var hd = { 'Content-Type':'application/json' };
   var gk = groupKey(cv);
@@ -4065,6 +4316,14 @@ function openGroupSettings(tab){
   var cv = current();
   if(!cv) return;
   updateKindLabels(cv);
+  var isDm = cv.mode === 'dm';
+  // 页签切换：私聊显示「智能体」、隐藏「AI成员 / 续写剧情」；群聊 / 故事反之
+  var tMembers = document.querySelector('#gsTabs [data-tab="members"]');
+  var tAgent = document.querySelector('#gsTabs [data-tab="agent"]');
+  var tContinue = document.querySelector('#gsTabs [data-tab="continue"]');
+  if(tMembers) tMembers.style.display = isDm ? 'none' : '';
+  if(tAgent) tAgent.style.display = isDm ? '' : 'none';
+  if(tContinue) tContinue.style.display = isDm ? 'none' : '';
   $('gsConvName').textContent = cv.name;
   $('gsName').value = cv.name;
   $('gsWorld').value = cv.world || '';
@@ -4079,9 +4338,24 @@ function openGroupSettings(tab){
   setGsAvatarTab((gsAvatarDraft.mode === 'upload' || gsAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
   if(gsAvatarDraft.mode === 'svg'){ var _i = ANIME_AVS.indexOf(gsAvatarDraft.value); if(_i >= 0) selectGsEmoji(_i); }
   $('gsAvFile').value = '';
+  if(isDm){
+    // 填充「智能体」页签：名字 / 头像 / 人设 / 关键词 / 记忆
+    var ai = cv.chars && cv.chars[0];
+    $('dmName').value = ai ? (ai.name || '') : '';
+    $('dmPersona').value = ai ? (ai.persona || '') : '';
+    $('dmMemory').value = ai ? (ai.memory || '') : '';
+    dmKwDraft = kwDraftFrom(ai ? ai.keywords : []);
+    renderKwBox($('dmKeywords'), dmKwDraft);
+    dmAvatarDraft = (ai && ai.avatar && ai.avatar.mode) ? { mode:ai.avatar.mode, value:ai.avatar.value||'' } : defaultAvatar();
+    setDmAvTab((dmAvatarDraft.mode === 'upload' || dmAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
+    if(dmAvatarDraft.mode === 'svg'){ var _di = ANIME_AVS.indexOf(dmAvatarDraft.value); if(_di >= 0) selectDmEmoji(_di); }
+    $('dmAvFile').value = '';
+    $('dmAutoMem').checked = !!cv.autoMemory;
+    updateDmPreview();
+  }
   $('gsTransferMsg').textContent = '';
   updateGsPreview();
-  setGsMainTab(tab || 'members');
+  setGsMainTab(tab || (isDm ? 'agent' : 'members'));
   renderGroupMembers();
   resetConfirm();
   updateGsClearInfo();
@@ -4094,6 +4368,23 @@ function closeGroupSettings(){
 function saveGroupSettings(){
   var cv = current();
   if(!cv) return;
+  if(cv.mode === 'dm'){
+    // 「智能体」页签：写回唯一那位 AI
+    var ai = cv.chars && cv.chars[0];
+    if(ai){
+      var dmNm = $('dmName').value.trim();
+      if(!dmNm){ alert('请填写智能体名称'); return; }
+      ai.name = dmNm.slice(0,12);
+      ai.persona = $('dmPersona').value.trim();
+      ai.memory = $('dmMemory').value.trim();
+      ai.keywords = kwDraftCommit(dmKwDraft);
+      if((dmAvatarDraft.mode === 'url' || dmAvatarDraft.mode === 'upload') && !dmAvatarDraft.value) dmAvatarDraft = defaultAvatar();
+      ai.avatar = { mode:dmAvatarDraft.mode, value:dmAvatarDraft.value };
+    }
+    cv.autoMemory = $('dmAutoMem').checked;
+  } else {
+    cv.autoMemory = $('gsAutoMem').checked;
+  }
   var nm = $('gsName').value.trim();
   if(nm) cv.name = nm.slice(0,20);
   cv.world = $('gsWorld').value.trim();
@@ -4102,7 +4393,6 @@ function saveGroupSettings(){
   cv.apiKey = $('gsApiKey').value.trim();
   cv.apiBase = $('gsApiBase').value.trim();
   cv.model = $('gsModel').value.trim();
-  cv.autoMemory = $('gsAutoMem').checked;
   if((gsAvatarDraft.mode === 'url' || gsAvatarDraft.mode === 'upload') && !gsAvatarDraft.value) gsAvatarDraft = defaultAvatar();
   cv.avatar = { mode:gsAvatarDraft.mode, value:gsAvatarDraft.value };
   save(); renderConvList(); renderChatHeader(); renderMsgs(); renderChips();
@@ -4171,6 +4461,26 @@ $('gsAvFile').addEventListener('change', function(){
     else alert('图片读取失败，请换一张试试。');
   });
   this.value = '';
+});
+$('dmAvTabs').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-tab]');
+  if(!b) return;
+  setDmAvTab(b.dataset.tab);
+  if(b.dataset.tab === 'upload' && dmAvatarDraft.mode !== 'upload' && !dmAvatarDraft.value) dmAvatarDraft = { mode:'upload', value:'' };
+  updateDmPreview();
+});
+$('dmAvFile').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  fileToAvatar(f, function(dataUrl){
+    if(dataUrl){ dmAvatarDraft = { mode:'upload', value:dataUrl }; updateDmPreview(); }
+    else alert('图片读取失败，请换一张试试。');
+  });
+  this.value = '';
+});
+$('dmKwAdd').addEventListener('click', function(){
+  dmKwDraft.push({ id:seq++, key:'', detail:'' });
+  renderKwBox($('dmKeywords'), dmKwDraft);
 });
 $('gsApiToggle').addEventListener('click', function(){
   var k = $('gsApiKey');
@@ -5191,6 +5501,7 @@ load();
 applyTheme(settings.theme);
 buildEmojiGrid();
 buildGsEmojiGrid();
+buildDmEmojiGrid();
 buildLibEmojiGrid();
 $('aboutVer').textContent = 'v' + APP_VERSION;
 renderClList();
