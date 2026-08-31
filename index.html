@@ -345,8 +345,9 @@
   .panel-title{font-size:16px; font-weight:700; flex:1;}
   .panel-actions{display:flex; gap:8px; padding:10px 14px 4px;}
   .panel-actions button{flex:1; padding:9px 0; font-size:13px;}
+  .panel-actions button svg{width:14px; height:14px; flex-shrink:0;}
   .panel-actions.grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
-  .panel-actions.grid2 button{width:100%;}
+  .panel-actions.grid2 button{width:100%; min-height:36px;}
   .import-opts{display:flex; flex-direction:column; gap:8px;}
 
   /* 酒馆 · 结识 */
@@ -753,9 +754,11 @@
         <button class="icon-btn" id="btnBackPanel" title="返回会话">←</button>
         <span class="panel-title">角色卡</span>
       </div>
-      <div class="panel-actions">
+      <div class="panel-actions grid2">
         <button class="btn-primary" id="btnAddCard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>创建</button>
         <button class="btn-ghost" id="btnImportCard">⬆ 导入</button>
+        <button class="btn-ghost" id="btnExtractCard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>提取</button>
+        <button class="btn-ghost" id="btnMimicCard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>模仿</button>
       </div>
       <div class="lib-grid" id="cardGrid"></div>
     </div>
@@ -1013,9 +1016,14 @@
       <input type="number" class="gs-num" id="contCharLen" value="200" min="50" max="1000" autocomplete="off">
       <label>世界观设定精炼度（最低字数）</label>
       <input type="number" class="gs-num" id="contWorldLen" value="300" min="50" max="2000" autocomplete="off">
-      <label>玩家设定精炼度（最低字数）</label>
+      <label>叙述视角</label>
+      <label class="role-opt"><input type="radio" name="contPer" value="first" checked><span>第一人称</span><small>主角由你扮演，「玩家设定」即主角设定，AI 成员不含主角</small></label>
+      <label class="role-opt"><input type="radio" name="contPer" value="third"><span>第三人称</span><small>主角作为 AI 成员生成，「玩家设定」留空待你自填</small></label>
+      <label>玩家设定精炼度（最低字数，第一人称时生效）</label>
       <input type="number" class="gs-num" id="contPlayerLen" value="150" min="30" max="500" autocomplete="off">
-      <p class="hint-text" id="contHint">生成的内容会忠于原文，不会编造剧情里没有的人物与设定。生成成功后本会话立即生效，最后记得点「保存」保存其它设置。</p>
+      <label>总结精炼度（剧情流程总结最低字数）</label>
+      <input type="number" class="gs-num" id="contSummaryLen" value="200" min="50" max="1000" autocomplete="off">
+      <p class="hint-text" id="contHint">生成的内容会忠于原文，不会编造剧情里没有的人物与设定；剧情流程总结会写入会话「总结」，续写时不会遗忘原剧情走向。生成成功后本会话立即生效，最后记得点「保存」保存其它设置。</p>
       <div class="modal-actions"><button class="btn-primary" id="btnContGo">开始生成</button></div>
     </div>
 
@@ -1247,6 +1255,27 @@
   </div>
 </div>
 
+<!-- AI 提取 / 模仿角色卡 -->
+<div id="cardAiModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="cardAiTitle">提取角色</h3>
+    <div style="display:flex; align-items:center; margin:10px 0 6px;">
+      <button class="btn-ghost" id="btnCardAiPick">选择文件</button>
+      <span class="hint-text" id="cardAiFile" style="margin-left:10px;">未选择文件（支持 txt / md / markdown）</span>
+    </div>
+    <input type="file" id="cardAiFileInput" accept=".txt,.md,.markdown" style="display:none;">
+    <label>角色名（要提取 / 模仿的角色）</label>
+    <input type="text" id="cardAiName" placeholder="例如：林晚" autocomplete="off">
+    <label>精炼度（人设目标字数）</label>
+    <input type="number" class="gs-num" id="cardAiLen" value="200" min="50" max="2000" autocomplete="off">
+    <p class="hint-text" id="cardAiHint">从文本里找出该角色，生成包含人设与关键词的角色卡；如果文本里没有这个角色，会提示「该文本没有该角色」。提取忠于原著，模仿则按该角色风格原创一个新角色。</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btnCardAiCancel">取消</button>
+      <button class="btn-primary" id="btnCardAiGo">开始提取</button>
+    </div>
+  </div>
+</div>
+
 <!-- 消息搜索 -->
 <div id="searchModal" class="modal-overlay hidden">
   <div class="modal">
@@ -1330,8 +1359,15 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.3.6';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.3.7';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.3.7', date:'2026-08-31', title:'世界书 UI 修正 · 提取/模仿带关键词 · 续写剧情视角与总结 · 角色卡提取/模仿', items:[
+    '「世界书」页面的「提取」「模仿」按钮改为横长竖短的扁宽样式，与「创建」同尺寸，排在「创建 / 导入」下一排并列',
+    '「提取」「模仿」生成的世界书会按剧情给出 1-3 个「关键词」（各带一句详情）',
+    '「续写剧情」新增「第一人称 / 第三人称」选择：第一人称不会在 AI 成员里生成主角角色卡，「玩家设定」即主角设定（玩家代入）；第三人称会生成主角角色卡，「玩家设定」留空等玩家自填',
+    '「续写剧情」新增「总结精炼度」：AI 会把文本的剧情流程总结进会话「总结」，续写时原剧情走向不会遗忘',
+    '主页「角色卡」新增「提取」「模仿」：输入文本里某个角色的名字即可提取 / 模仿该角色，生成含人设与关键词的角色卡；文本里没有该角色时会提示「该文本没有该角色」'
+  ]},
   { v:'0.3.6', date:'2026-08-31', title:'精炼度 · 世界书 2×2 布局 · 群设置续写剧情', items:[
     '「提取」「模仿」世界书新增「精炼度」：可设置生成的世界书目标字数，AI 会按该字数生成、且内容忠于原著、不编造原文没有的设定',
     '世界书面板的「创建 / 导入 / 提取 / 模仿」改为 2×2 布局，样式与角色卡「创建 / 导入」一致',
@@ -1589,11 +1625,11 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 12;
+var BOARD_TUT_VERSION = 13;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定，直接应用到本群。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 「酒馆」里可以「结识」：AI 一键生成角色卡 + 世界书，直接存入角色卡库与世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定，直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 「酒馆」里可以「结识」：AI 一键生成角色卡 + 世界书，直接存入角色卡库与世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -3608,8 +3644,8 @@ function runWorldAi(){
     : '你是「梦语」的世界观提取助手，擅长从小说文本中提炼世界观设定。';
   var instr = isMimic
     ? '请阅读下面这部小说的内容，理解它的世界观与整体风格，然后按照「模仿要求」，原创一个风格相似、设定全新的世界观（不要复述原文的具体设定与人物）。\n\n模仿要求：\n' + (req || '（未填写，就按原作的风格做同风格仿写）') +
-      '\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"新书名或世界观名称","world":"新世界观描述"}\n新世界观描述请写约 ' + want + ' 字，风格与原著相似，但设定与人物必须原创；覆盖背景、势力、规则、氛围。\n\n参考小说内容：\n' + text
-    : '请阅读下面这部小说的内容，提炼它的世界观：世界背景与时代、地理与势力分布、核心规则或力量体系、整体氛围基调，整理成一本「世界书」。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"书名或世界观名称","world":"世界观描述"}\n世界观描述请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定；覆盖背景、势力、规则、氛围。\n\n小说内容：\n' + text;
+      '\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"新书名或世界观名称","world":"新世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n新世界观描述请写约 ' + want + ' 字，风格与原著相似，但设定与人物必须原创；覆盖背景、势力、规则、氛围。再给出 1-3 个与这个新世界观相关的关键词，每个配一句详情（例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）。\n\n参考小说内容：\n' + text
+    : '请阅读下面这部小说的内容，提炼它的世界观：世界背景与时代、地理与势力分布、核心规则或力量体系、整体氛围基调，整理成一本「世界书」。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"书名或世界观名称","world":"世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n世界观描述请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定；覆盖背景、势力、规则、氛围。再给出 1-3 个与这个世界观相关的关键词（根据剧情提炼），每个配一句详情（例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）。\n\n小说内容：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
   var body = { model: groupModel({}), messages:msgs, stream:false, temperature: isMimic ? 0.9 : 0.3, max_tokens:Math.min(4000, want + 300) };
   if(isDeepseek({})) body.thinking = { type:'disabled' };
@@ -3630,7 +3666,11 @@ function runWorldAi(){
     var data = null;
     try{ data = JSON.parse(fenced ? fenced[1] : content); }catch(e){}
     if(!data || typeof data.name !== 'string' || !data.name.trim()) throw new Error('bad');
-    var world = { id:seq++, name:data.name.trim().slice(0,20), avatar:defaultAvatar(), world:(typeof data.world === 'string' ? data.world : '').trim().slice(0,2000), keywords:[] };
+    var wkw = [];
+    (Array.isArray(data.keywords) ? data.keywords : []).forEach(function(k){
+      if(k && typeof k.key === 'string' && k.key.trim()) wkw.push({ id:seq++, key:k.key, detail:(typeof k.detail === 'string' ? k.detail : '') });
+    });
+    var world = { id:seq++, name:data.name.trim().slice(0,20), avatar:defaultAvatar(), world:(typeof data.world === 'string' ? data.world : '').trim().slice(0,2000), keywords:wkw };
     worlds.push(world);
     save(); renderWorldPanel();
     closeWorldAi();
@@ -3638,6 +3678,100 @@ function runWorldAi(){
   }).catch(function(){ showToast((isMimic ? '模仿' : '提取') + '失败，请稍后再试'); })
     .then(function(){
       worldAiBusy = false;
+      go.disabled = false;
+      go.textContent = oldText;
+    });
+}
+
+/* --- 角色卡 AI 提取 / 模仿（txt / md / markdown + 角色名 → 生成角色卡） --- */
+var cardAiMode = 'extract';   // 'extract' | 'mimic'
+var cardAiText = '';
+var cardAiBusy = false;
+
+function openCardAi(mode){
+  cardAiMode = mode;
+  cardAiText = '';
+  $('cardAiTitle').textContent = mode === 'mimic' ? '模仿角色' : '提取角色';
+  $('cardAiFile').textContent = '未选择文件（支持 txt / md / markdown）';
+  $('cardAiFileInput').value = '';
+  $('cardAiName').value = '';
+  $('cardAiLen').value = '200';
+  $('btnCardAiGo').textContent = mode === 'mimic' ? '开始模仿' : '开始提取';
+  $('cardAiModal').classList.remove('hidden');
+}
+function closeCardAi(){ $('cardAiModal').classList.add('hidden'); }
+
+$('btnExtractCard').addEventListener('click', function(){ openCardAi('extract'); });
+$('btnMimicCard').addEventListener('click', function(){ openCardAi('mimic'); });
+$('btnCardAiPick').addEventListener('click', function(){ $('cardAiFileInput').click(); });
+$('cardAiFileInput').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    cardAiText = String(reader.result || '');
+    $('cardAiFile').textContent = f.name + '（' + cardAiText.length + ' 字）';
+  };
+  reader.onerror = function(){ showToast('读取文件失败'); };
+  reader.readAsText(f);
+  this.value = '';
+});
+$('btnCardAiCancel').addEventListener('click', closeCardAi);
+$('btnCardAiGo').addEventListener('click', function(){ runCardAi(); });
+
+function runCardAi(){
+  if(cardAiBusy) return;
+  if(missingKey({})){ showToast('还没有配置 API Key：请先在 ⚙ 全局设置「API Key」里填写。'); return; }
+  if(!cardAiText || !cardAiText.trim()){ showToast('请先选择要分析的 txt / md / markdown 文件。'); return; }
+  var name = $('cardAiName').value.trim();
+  if(!name){ showToast('请先填写要' + (cardAiMode === 'mimic' ? '模仿' : '提取') + '的角色名。'); return; }
+  cardAiBusy = true;
+  var go = $('btnCardAiGo');
+  go.disabled = true;
+  var oldText = go.textContent;
+  go.textContent = cardAiMode === 'mimic' ? '正在模仿…' : '正在提取…';
+  var text = cardAiText.length > 30000 ? cardAiText.slice(0, 30000) : cardAiText;
+  var want = Math.max(50, Math.min(2000, parseInt($('cardAiLen').value, 10) || 200));
+  var isMimic = cardAiMode === 'mimic';
+  var sys = isMimic
+    ? '你是「梦语」的角色仿写助手，擅长参考原著角色的特点，原创一个风格相似、设定全新的角色。'
+    : '你是「梦语」的角色提取助手，擅长从小说文本中提炼指定角色的设定。';
+  var instr = isMimic
+    ? '请阅读下面这段文本，找到名为「' + name + '」的角色作为参考。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请参考他的身份、性格、经历与人物关系，原创一个风格相似、设定全新的新角色（不要照搬原角色的姓名与具体设定）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"新角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，风格与原著角色相似，但姓名与设定必须原创。再给出 1-3 个与这个角色相关的关键词，每个配一句详情（例如关键词「剑痴」，详情「一生痴迷剑道，为剑而生」）。\n\n参考文本内容：\n' + text
+    : '请阅读下面这段文本，找到名为「' + name + '」的角色。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请根据剧情提炼他的身份、性格、经历与人物关系，写成人设，并给出 1-3 个关键词（根据剧情提炼，各配一句详情）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定。\n\n文本内容：\n' + text;
+  var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
+  var body = { model: groupModel({}), messages:msgs, stream:false, temperature: isMimic ? 0.9 : 0.3, max_tokens:Math.min(3000, want + 300) };
+  if(isDeepseek({})) body.thinking = { type:'disabled' };
+  var hd = { 'Content-Type':'application/json' };
+  var gk = groupKey({});
+  if(gk && gk.trim()) hd['Authorization'] = 'Bearer ' + gk;
+  fetch(apiUrl({}), {
+    method:'POST',
+    headers:hd,
+    body:JSON.stringify(body)
+  }).then(function(r){
+    if(!r.ok) return r.text().then(function(){ throw new Error('HTTP ' + r.status); }, function(){ throw new Error('HTTP ' + r.status); });
+    return r.json();
+  }).then(function(j){
+    var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+    if(typeof content !== 'string' || !content.trim()) throw new Error('empty');
+    var fenced = /```(?:json)?\s*([\s\S]*?)```/.exec(content);
+    var data = null;
+    try{ data = JSON.parse(fenced ? fenced[1] : content); }catch(e){}
+    if(!data || data.found === false){ showToast('该文本没有该角色'); return; }
+    if(typeof data.name !== 'string' || !data.name.trim()) throw new Error('bad');
+    var kw = [];
+    (Array.isArray(data.keywords) ? data.keywords : []).forEach(function(k){
+      if(k && typeof k.key === 'string' && k.key.trim()) kw.push({ id:seq++, key:k.key, detail:(typeof k.detail === 'string' ? k.detail : '') });
+    });
+    var card = { id:seq++, name:data.name.trim().slice(0,20), avatar:defaultAvatar(), persona:(typeof data.persona === 'string' ? data.persona : '').trim().slice(0,2000), memory:'', keywords:kw };
+    cards.push(card);
+    save(); renderCardPanel();
+    closeCardAi();
+    showToast((isMimic ? '模仿' : '提取') + '成功：《' + card.name + '》');
+  }).catch(function(){ showToast((isMimic ? '模仿' : '提取') + '失败，请稍后再试'); })
+    .then(function(){
+      cardAiBusy = false;
       go.disabled = false;
       go.textContent = oldText;
     });
@@ -3662,15 +3796,22 @@ function runContinue(){
   var charLen = Math.max(50, Math.min(1000, parseInt($('contCharLen').value, 10) || 200));
   var worldLen = Math.max(50, Math.min(2000, parseInt($('contWorldLen').value, 10) || 300));
   var playerLen = Math.max(30, Math.min(500, parseInt($('contPlayerLen').value, 10) || 150));
+  var summaryLen = Math.max(50, Math.min(1000, parseInt($('contSummaryLen').value, 10) || 200));
+  var perEl = document.querySelector('input[name="contPer"]:checked');
+  var per = perEl && perEl.value === 'third' ? 'third' : 'first';
+  var perText = per === 'third'
+    ? '选择了第三人称：主角作为 AI 成员生成（与其它角色同等处理，放进 members），「玩家设定」输出为空字符串 ""，留给玩家自己填写。'
+    : '选择了第一人称：主角由玩家扮演，不生成主角的 AI 成员角色卡（主角不要放进 members），「玩家设定」就是主角设定（至少 ' + playerLen + ' 字：身份、性格、经历、与成员的关系）。';
   var sys = '你是「梦语」的续写剧情助手，擅长从小说 / 剧情文本中分析人物、世界观与玩家身份，生成可直接用于续写的设定包。';
   var instr = '请阅读下面这段剧情文本，忠实于原文内容（不要编造原文没有的人物与设定），生成一份可直接用于续写的设定包：\n' +
     '1. AI 成员：挑出对剧情有影响的重要角色作为 AI 成员，按重要程度判定角色分级——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词 1-3 个（每个词配一句详情，例如关键词「杀父之仇」，详情「父亲被杀，誓要手刃仇人」）。\n' +
     '2. 世界观：概括这段剧情的世界（至少 ' + worldLen + ' 字：背景时代、地理与势力、核心规则或力量体系、氛围基调），另给 1-3 个世界观关键词（各配一句详情）。\n' +
-    '3. 玩家设定：按剧情里「我 / 主角」的视角，写一段玩家设定（至少 ' + playerLen + ' 字：身份、性格、与成员的关系）。\n' +
+    '3. 叙述视角：' + perText + '\n' +
+    '4. 剧情总结：把整段文本的剧情流程概括成一段总结（至少 ' + summaryLen + ' 字：按时间顺序梳理关键剧情走向、重要事件与伏笔悬念，供后续续写引用），输出到 "summary" 字段，让原剧情流程在续写时不会被遗忘。\n' +
     '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
-    '{"members":[{"name":"角色名","role":"main|minor|extra","persona":"人设","memory":"记忆","keywords":[{"key":"关键词","detail":"详情"}]}],"world":{"world":"世界观描述","keywords":[{"key":"世界观关键词","detail":"详情"}]},"player":"玩家设定"}\n\n剧情文本：\n' + text;
+    '{"members":[{"name":"角色名","role":"main|minor|extra","persona":"人设","memory":"记忆","keywords":[{"key":"关键词","detail":"详情"}]}],"world":{"world":"世界观描述","keywords":[{"key":"世界观关键词","detail":"详情"}]},"player":"玩家设定（第三人称时为空字符串）","summary":"剧情总结"}\n\n剧情文本：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
-  var body = { model: groupModel(cv), messages:msgs, stream:false, temperature:0.4, max_tokens:Math.min(8000, 2000 + charLen*6 + worldLen + playerLen) };
+  var body = { model: groupModel(cv), messages:msgs, stream:false, temperature:0.4, max_tokens:Math.min(8000, 2000 + charLen*6 + worldLen + playerLen + summaryLen) };
   if(isDeepseek(cv)) body.thinking = { type:'disabled' };
   var hd = { 'Content-Type':'application/json' };
   var gk = groupKey(cv);
@@ -3711,7 +3852,8 @@ function runContinue(){
         if(k && typeof k.key === 'string' && k.key.trim()) wkw.push({ id:seq++, key:k.key, detail:(typeof k.detail === 'string' ? k.detail : '') });
       });
       cv.worldKeywords = wkw;
-      cv.player = (typeof data.player === 'string' ? data.player : '').trim();
+      cv.player = per === 'third' ? '' : (typeof data.player === 'string' ? data.player : '').trim();
+      if(typeof data.summary === 'string' && data.summary.trim()) cv.summary = data.summary.trim();
       save();
       $('gsWorld').value = cv.world;
       gsKwDraft = kwDraftFrom(cv.worldKeywords);
