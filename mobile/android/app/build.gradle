@@ -7,8 +7,8 @@ android {
         applicationId "com.mingyuezai0.dreamchat"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 5
-        versionName "0.3.5"
+        versionCode 6
+        versionName "0.3.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -26,7 +26,7 @@ android {
 
 android.applicationVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = "梦语-0.3.5.apk"
+        outputFileName = "梦语-0.3.6.apk"
     }
 }
 

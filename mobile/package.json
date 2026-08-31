@@ -1,6 +1,6 @@
 {
   "name": "dreamchat-mobile",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "梦语 —— 多 AI 群聊与故事写作 Android 版（Capacitor 封装网页版）",
   "main": "index.js",
   "scripts": {
