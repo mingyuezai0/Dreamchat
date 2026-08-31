@@ -204,6 +204,8 @@
   .modal label{display:block; font-size:13px; font-weight:600; color:#4a5266; margin:14px 0 6px;}
   .modal input[type=text], .modal input[type=password], .modal textarea, .modal select{width:100%; border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:14px; outline:none; background:#fff;}
   .modal input:focus, .modal textarea:focus, .modal select:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.12);}
+  .gs-num{width:100%; border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:14px; outline:none; background:#fff; color:var(--text);}
+  .gs-num:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.12);}
   .modal textarea{resize:vertical; line-height:1.55;}
   .key-row{display:flex; gap:8px;}
   .key-row input{flex:1;}
@@ -343,6 +345,8 @@
   .panel-title{font-size:16px; font-weight:700; flex:1;}
   .panel-actions{display:flex; gap:8px; padding:10px 14px 4px;}
   .panel-actions button{flex:1; padding:9px 0; font-size:13px;}
+  .panel-actions.grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .panel-actions.grid2 button{width:100%;}
   .import-opts{display:flex; flex-direction:column; gap:8px;}
 
   /* 酒馆 · 结识 */
@@ -529,6 +533,7 @@
   html[data-theme="dark"] .modal label{color:#c6cdd9;}
   html[data-theme="dark"] .modal input[type=text], html[data-theme="dark"] .modal input[type=password],
   html[data-theme="dark"] .modal textarea, html[data-theme="dark"] .modal select{background:#232833; color:var(--text);}
+  html[data-theme="dark"] .gs-num{background:#232833; color:var(--text);}
   html[data-theme="dark"] .tabs button{background:#262b35;}
   html[data-theme="dark"] .switch-row{color:#c6cdd9;}
   html[data-theme="dark"] .switch span{background:#3a4150;}
@@ -620,6 +625,7 @@
   html[data-theme="scroll"] .modal label{color:#6d5c3f;}
   html[data-theme="scroll"] .modal input[type=text], html[data-theme="scroll"] .modal input[type=password],
   html[data-theme="scroll"] .modal textarea, html[data-theme="scroll"] .modal select{background:#fbf3e1; color:var(--text);}
+  html[data-theme="scroll"] .gs-num{background:#fbf3e1; color:var(--text);}
   html[data-theme="scroll"] .tabs button{background:#e9dab4;}
   html[data-theme="scroll"] .switch-row{color:#6d5c3f;}
   html[data-theme="scroll"] .switch span{background:#c9b58a;}
@@ -759,7 +765,7 @@
         <button class="icon-btn" id="btnBackWorld" title="返回会话">←</button>
         <span class="panel-title">世界书</span>
       </div>
-      <div class="panel-actions">
+      <div class="panel-actions grid2">
         <button class="btn-primary" id="btnAddWorld"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>创建</button>
         <button class="btn-ghost" id="btnImportWorld">⬆ 导入</button>
         <button class="btn-ghost" id="btnExtractWorld"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>提取</button>
@@ -943,6 +949,7 @@
       <button data-tab="members" class="active">AI成员</button>
       <button data-tab="world">世界观</button>
       <button data-tab="player">玩家设定</button>
+      <button data-tab="continue">续写剧情</button>
       <button data-tab="api">API</button>
       <button data-tab="transfer">记忆转移</button>
       <button data-tab="cleandel">清空/删除</button>
@@ -992,6 +999,24 @@
       <label>玩家设定</label>
       <textarea id="gsPlayer" rows="6" placeholder="例如：你叫「小林」，是这家酒馆的老板……"></textarea>
       <p class="hint-text">描述「我」（你）的身份/性格/关系，所有 AI 成员会据此对待你。</p>
+    </div>
+
+    <!-- 续写剧情 -->
+    <div class="gs-pane hidden" data-pane="continue">
+      <p class="hint-text" style="margin:2px 0 12px;">导入一部小说 / 剧情文本，AI 会自动分析剧情，生成一批 AI 成员（自动判定主要 / 次要 / 路人角色，并为每人生成人设、记忆与关键词）、世界观（含世界观关键词）和玩家设定，一键应用到本会话。<b>会替换当前全部成员</b>，历史对话记录保留。</p>
+      <div style="display:flex; align-items:center; margin:6px 0 12px;">
+        <button class="btn-ghost" id="btnContPick">选择文件</button>
+        <span class="hint-text" id="contFile" style="margin-left:10px;">未选择文件（支持 txt / md / markdown）</span>
+      </div>
+      <input type="file" id="contFileInput" accept=".txt,.md,.markdown" style="display:none;">
+      <label>AI 角色人设精炼度（每个角色人设最低字数）</label>
+      <input type="number" class="gs-num" id="contCharLen" value="200" min="50" max="1000" autocomplete="off">
+      <label>世界观设定精炼度（最低字数）</label>
+      <input type="number" class="gs-num" id="contWorldLen" value="300" min="50" max="2000" autocomplete="off">
+      <label>玩家设定精炼度（最低字数）</label>
+      <input type="number" class="gs-num" id="contPlayerLen" value="150" min="30" max="500" autocomplete="off">
+      <p class="hint-text" id="contHint">生成的内容会忠于原文，不会编造剧情里没有的人物与设定。生成成功后本会话立即生效，最后记得点「保存」保存其它设置。</p>
+      <div class="modal-actions"><button class="btn-primary" id="btnContGo">开始生成</button></div>
     </div>
 
     <!-- API -->
@@ -1212,7 +1237,9 @@
       <label>模仿要求</label>
       <textarea id="worldAiReq" rows="2" placeholder="例如：把背景改成现代都市，保留修行体系与势力格局…"></textarea>
     </div>
-    <p class="hint-text" id="worldAiHint">文件较大时建议用「简单提取」，避免超出模型可读范围。</p>
+    <label>精炼度（世界观描述目标字数）</label>
+    <input type="number" class="gs-num" id="worldAiLen" value="200" min="50" max="2000" autocomplete="off">
+    <p class="hint-text" id="worldAiHint">文件较大时建议用「简单提取」，避免超出模型可读范围。生成内容会忠于原著，不会编造原文没有的设定。</p>
     <div class="modal-actions">
       <button class="btn-ghost" id="btnWorldAiCancel">取消</button>
       <button class="btn-primary" id="btnWorldAiGo">开始提取</button>
@@ -1303,8 +1330,13 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.3.5';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.3.6';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.3.6', date:'2026-08-31', title:'精炼度 · 世界书 2×2 布局 · 群设置续写剧情', items:[
+    '「提取」「模仿」世界书新增「精炼度」：可设置生成的世界书目标字数，AI 会按该字数生成、且内容忠于原著、不编造原文没有的设定',
+    '世界书面板的「创建 / 导入 / 提取 / 模仿」改为 2×2 布局，样式与角色卡「创建 / 导入」一致',
+    '群设置 / 故事设置新增「续写剧情」页签：导入一部 txt / md / markdown 小说或剧情文本，AI 会自动分析生成一批 AI 成员（自动判定主要 / 次要 / 路人角色，并为每人生成人设、记忆与关键词）、世界观（含世界观关键词）和玩家设定，一键应用到本会话（替换现有成员）；导入时可分别设置「AI 角色人设 / 世界观设定 / 玩家设定」的精炼度（最低字数）'
+  ]},
   { v:'0.3.5', date:'2026-08-31', title:'世界书导入扩展 · AI 提取/模仿世界观 · 世界观随剧情演化', items:[
     '世界书导入支持 txt / md / markdown 文件：点「导入」会先弹小窗选择「导入 txt、md、markdown 文件」或「导入梦语 json 文件」',
     '世界书新增「提取」「模仿」：提取可导入小说文件让 AI 提炼世界观（完整提取整本 / 简单提取截断大文件）；模仿可额外填写「模仿要求」，按原小说世界观仿写一本风格相似、内容原创的新世界书',
@@ -1557,11 +1589,11 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 11;
+var BOARD_TUT_VERSION = 12;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 「酒馆」里可以「结识」：AI 一键生成角色卡 + 世界书，直接存入角色卡库与世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观，或填「模仿要求」仿写一本相似的新世界书。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建聊天」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定，直接应用到本群。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「开始故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 「酒馆」里可以「结识」：AI 一键生成角色卡 + 世界书，直接存入角色卡库与世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔），一眼区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -3569,16 +3601,17 @@ function runWorldAi(){
   var full = (document.querySelector('input[name="worldAiMode"]:checked') || {}).value !== 'simple';
   var text = full ? worldAiText : worldAiText.slice(0, 20000);
   var req = $('worldAiReq').value.trim();
+  var want = Math.max(50, Math.min(2000, parseInt($('worldAiLen').value, 10) || 200));
   var isMimic = worldAiMode === 'mimic';
   var sys = isMimic
     ? '你是「梦语」的世界观仿写助手，擅长按参考世界的整体风格，原创一个风格相似、设定全新的世界观。'
     : '你是「梦语」的世界观提取助手，擅长从小说文本中提炼世界观设定。';
   var instr = isMimic
     ? '请阅读下面这部小说的内容，理解它的世界观与整体风格，然后按照「模仿要求」，原创一个风格相似、设定全新的世界观（不要复述原文的具体设定与人物）。\n\n模仿要求：\n' + (req || '（未填写，就按原作的风格做同风格仿写）') +
-      '\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"新书名或世界观名称","world":"新世界观描述"}\n世界观描述请写 3-6 句话，覆盖背景、势力、规则、氛围。\n\n参考小说内容：\n' + text
-    : '请阅读下面这部小说的内容，提炼它的世界观：世界背景与时代、地理与势力分布、核心规则或力量体系、整体氛围基调，整理成一本「世界书」。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"书名或世界观名称","world":"世界观描述"}\n世界观描述请写 3-6 句话，覆盖背景、势力、规则、氛围。\n\n小说内容：\n' + text;
+      '\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"新书名或世界观名称","world":"新世界观描述"}\n新世界观描述请写约 ' + want + ' 字，风格与原著相似，但设定与人物必须原创；覆盖背景、势力、规则、氛围。\n\n参考小说内容：\n' + text
+    : '请阅读下面这部小说的内容，提炼它的世界观：世界背景与时代、地理与势力分布、核心规则或力量体系、整体氛围基调，整理成一本「世界书」。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"书名或世界观名称","world":"世界观描述"}\n世界观描述请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定；覆盖背景、势力、规则、氛围。\n\n小说内容：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
-  var body = { model: groupModel({}), messages:msgs, stream:false, temperature: isMimic ? 0.9 : 0.3, max_tokens:2000 };
+  var body = { model: groupModel({}), messages:msgs, stream:false, temperature: isMimic ? 0.9 : 0.3, max_tokens:Math.min(4000, want + 300) };
   if(isDeepseek({})) body.thinking = { type:'disabled' };
   var hd = { 'Content-Type':'application/json' };
   var gk = groupKey({});
@@ -3609,6 +3642,105 @@ function runWorldAi(){
       go.textContent = oldText;
     });
 }
+
+/* --- 群设置 / 故事设置 → 续写剧情（导入剧情文本 → 自动生成 AI 成员 / 世界观 / 玩家设定） --- */
+var contText = '';
+var contBusy = false;
+
+function runContinue(){
+  var cv = current();
+  if(!cv) return;
+  if(contBusy) return;
+  if(missingKey(cv)){ showToast('还没有配置 API Key：请先在 ⚙ 全局设置「API Key」里填写。'); return; }
+  if(!contText || !contText.trim()){ showToast('请先选择要导入的 txt / md / markdown 文件。'); return; }
+  contBusy = true;
+  var go = $('btnContGo');
+  go.disabled = true;
+  var oldText = go.textContent;
+  go.textContent = '正在生成…';
+  var text = contText.length > 30000 ? contText.slice(0, 30000) : contText;
+  var charLen = Math.max(50, Math.min(1000, parseInt($('contCharLen').value, 10) || 200));
+  var worldLen = Math.max(50, Math.min(2000, parseInt($('contWorldLen').value, 10) || 300));
+  var playerLen = Math.max(30, Math.min(500, parseInt($('contPlayerLen').value, 10) || 150));
+  var sys = '你是「梦语」的续写剧情助手，擅长从小说 / 剧情文本中分析人物、世界观与玩家身份，生成可直接用于续写的设定包。';
+  var instr = '请阅读下面这段剧情文本，忠实于原文内容（不要编造原文没有的人物与设定），生成一份可直接用于续写的设定包：\n' +
+    '1. AI 成员：挑出对剧情有影响的重要角色作为 AI 成员，按重要程度判定角色分级——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词 1-3 个（每个词配一句详情，例如关键词「杀父之仇」，详情「父亲被杀，誓要手刃仇人」）。\n' +
+    '2. 世界观：概括这段剧情的世界（至少 ' + worldLen + ' 字：背景时代、地理与势力、核心规则或力量体系、氛围基调），另给 1-3 个世界观关键词（各配一句详情）。\n' +
+    '3. 玩家设定：按剧情里「我 / 主角」的视角，写一段玩家设定（至少 ' + playerLen + ' 字：身份、性格、与成员的关系）。\n' +
+    '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
+    '{"members":[{"name":"角色名","role":"main|minor|extra","persona":"人设","memory":"记忆","keywords":[{"key":"关键词","detail":"详情"}]}],"world":{"world":"世界观描述","keywords":[{"key":"世界观关键词","detail":"详情"}]},"player":"玩家设定"}\n\n剧情文本：\n' + text;
+  var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
+  var body = { model: groupModel(cv), messages:msgs, stream:false, temperature:0.4, max_tokens:Math.min(8000, 2000 + charLen*6 + worldLen + playerLen) };
+  if(isDeepseek(cv)) body.thinking = { type:'disabled' };
+  var hd = { 'Content-Type':'application/json' };
+  var gk = groupKey(cv);
+  if(gk && gk.trim()) hd['Authorization'] = 'Bearer ' + gk;
+  fetch(apiUrl(cv), { method:'POST', headers:hd, body:JSON.stringify(body) })
+    .then(function(r){
+      if(!r.ok) return r.text().then(function(){ throw new Error('HTTP ' + r.status); }, function(){ throw new Error('HTTP ' + r.status); });
+      return r.json();
+    })
+    .then(function(j){
+      var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      if(typeof content !== 'string' || !content.trim()) throw new Error('empty');
+      var fenced = /```(?:json)?\s*([\s\S]*?)```/.exec(content);
+      var data = null;
+      try{ data = JSON.parse(fenced ? fenced[1] : content); }catch(e){}
+      if(!data || !Array.isArray(data.members) || !data.members.length) throw new Error('bad');
+      var used = {};
+      var chars = [];
+      data.members.forEach(function(m){
+        if(!m || typeof m.name !== 'string' || !m.name.trim()) return;
+        var name = m.name.trim().slice(0,20);
+        if(used[name]) return;
+        used[name] = true;
+        var role = (m.role === 'main' || m.role === 'extra') ? m.role : 'minor';
+        var kw = [];
+        (Array.isArray(m.keywords) ? m.keywords : []).forEach(function(k){
+          if(k && typeof k.key === 'string' && k.key.trim()) kw.push({ id:seq++, key:k.key, detail:(typeof k.detail === 'string' ? k.detail : '') });
+        });
+        chars.push({ id:seq++, name:name, avatar:defaultAvatar(), persona:(typeof m.persona === 'string' ? m.persona : '').trim(), memory:(typeof m.memory === 'string' ? m.memory : '').trim(), present:true, role:role, keywords:kw });
+      });
+      if(!chars.length) throw new Error('bad');
+      cv.chars = chars;
+      cv.selectedNext = [];
+      var wd = data.world || {};
+      cv.world = (typeof wd.world === 'string' ? wd.world : '').trim();
+      var wkw = [];
+      (Array.isArray(wd.keywords) ? wd.keywords : []).forEach(function(k){
+        if(k && typeof k.key === 'string' && k.key.trim()) wkw.push({ id:seq++, key:k.key, detail:(typeof k.detail === 'string' ? k.detail : '') });
+      });
+      cv.worldKeywords = wkw;
+      cv.player = (typeof data.player === 'string' ? data.player : '').trim();
+      save();
+      $('gsWorld').value = cv.world;
+      gsKwDraft = kwDraftFrom(cv.worldKeywords);
+      renderKwBox($('gsKeywords'), gsKwDraft);
+      $('gsPlayer').value = cv.player;
+      renderGroupMembers(); renderChips(); renderConvList(); renderChatHeader();
+      showToast('续写剧情生成成功：' + chars.length + ' 位成员');
+    })
+    .catch(function(){ showToast('续写剧情生成失败，请稍后再试'); })
+    .then(function(){
+      contBusy = false;
+      go.disabled = false;
+      go.textContent = oldText;
+    });
+}
+$('btnContPick').addEventListener('click', function(){ $('contFileInput').click(); });
+$('contFileInput').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    contText = String(reader.result || '');
+    $('contFile').textContent = f.name + '（' + contText.length + ' 字）';
+  };
+  reader.onerror = function(){ showToast('读取文件失败'); };
+  reader.readAsText(f);
+  this.value = '';
+});
+$('btnContGo').addEventListener('click', function(){ runContinue(); });
 
 /* --- 角色卡 / 世界书 编辑器 --- */
 function buildLibEmojiGrid(){
