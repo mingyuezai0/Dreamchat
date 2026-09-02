@@ -1313,6 +1313,42 @@
   </div>
 </div>
 
+<!-- 酒馆：结识角色卡前填写信息 -->
+<div id="meetCardModal" class="modal-overlay hidden">
+  <div class="modal small">
+    <h3>结识角色卡</h3>
+    <p class="hint-text" style="margin:6px 0 2px;">想结识怎样的角色？可只填一部分，其余由 AI 补全；填了姓名就会沿用。</p>
+    <label>姓名</label>
+    <input type="text" id="mcName" placeholder="例如：林晚" autocomplete="off">
+    <label>性别</label>
+    <input type="text" id="mcGender" placeholder="例如：女 / 男 / 未定…" autocomplete="off">
+    <label>大致人设</label>
+    <textarea id="mcPersona" rows="2" placeholder="例如：清冷少言的剑客，背负一段旧仇…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="meetCardCancel">取消</button>
+      <button class="btn-primary" id="meetCardGo">生成角色卡</button>
+    </div>
+  </div>
+</div>
+
+<!-- 酒馆：结识世界书前填写信息 -->
+<div id="meetWorldModal" class="modal-overlay hidden">
+  <div class="modal small">
+    <h3>结识世界书</h3>
+    <p class="hint-text" style="margin:6px 0 2px;">想结识怎样的世界？可只填一部分，其余由 AI 补全；填了世界名就会沿用。</p>
+    <label>世界名</label>
+    <input type="text" id="mwName" placeholder="例如：烬土纪年" autocomplete="off">
+    <label>类型</label>
+    <input type="text" id="mwType" placeholder="例如：奇幻 / 科幻 / 仙侠 / 悬疑…" autocomplete="off">
+    <label>大致世界观</label>
+    <textarea id="mwDesc" rows="2" placeholder="例如：末法时代，灵能者靠猎杀巨兽夺其命核延续寿命…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="meetWorldCancel">取消</button>
+      <button class="btn-primary" id="meetWorldGo">生成世界书</button>
+    </div>
+  </div>
+</div>
+
 <!-- 选择世界书（导入到群世界观） -->
 <div id="worldPickModal" class="modal-overlay hidden">
   <div class="modal small">
@@ -1474,8 +1510,13 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.4.1';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.4.2';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.4.2', date:'2026-09-03', title:'私聊关键词详情修复 · 关键词数量按剧情而定 · 酒馆结识先填意向', items:[
+    '修复私聊「智能体」的关键词无法展开查看 / 编辑详情：现在点每条关键词右侧的「详情」即可展开它的详情说明，可查看也可直接改写',
+    '「世界书」「角色卡」的「提取」「模仿」和「续写剧情」生成的关键词不再固定只有 3 个：会按该角色 / 世界观在剧情里的重要程度灵活给出，可能一个都没有，也可能有好几个',
+    '「酒馆」的「结识角色卡」「结识世界书」新增填写意向弹窗：结识角色卡前可填「姓名 / 性别 / 大致人设」，结识世界书前可填「世界名 / 类型 / 大致世界观」；填了就会尽量沿用（姓名 / 世界名会固定采用），没填的部分交给 AI 补全——「根据已有卡 / 书生成配套」功能不变'
+  ]},
   { v:'0.4.1', date:'2026-09-03', title:'消息重置重做 · 私聊智能体导入角色卡', items:[
     '「重置」消息重做（双端）：重置任何一条 AI 回复或「我」的消息时，都会先把这条之后的所有消息删掉，再按之前的剧情重新生成——不再出现新回复接在旧消息后面、内容错乱的现象',
     '「我」的消息点「重置」现在会保留这条本身，只重新生成它之后的 AI 回复；原来会连这条一起删掉',
@@ -1768,12 +1809,12 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 17;
+var BOARD_TUT_VERSION = 18;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「字数」可设上限与下限，AI 回复必须遵守。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定，直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设回复字数上限与下限，AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事。\n· 「酒馆」里可以只「结识」一张角色卡、或一本世界书；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
-  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、关键词与记忆，也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（可设上限 / 下限）与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「字数」可设上限与下限，AI 回复必须遵守。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设回复字数上限与下限，AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事。\n· 「酒馆」里点「结识角色卡 / 结识世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
+  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（可设上限 / 下限）与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -3645,8 +3686,33 @@ function showPanelView(v){
 function enterMobilePanel(){ if(window.innerWidth <= 780) document.body.classList.remove('chat-open'); }
 $('btnTavern').addEventListener('click', function(){ enterMobilePanel(); showPanelView('tavern'); });
 $('btnBackTavern').addEventListener('click', function(){ showPanelView('conv'); });
-$('btnMeetCard').addEventListener('click', function(){ runTavern('card'); });
-$('btnMeetWorld').addEventListener('click', function(){ runTavern('world'); });
+function openMeetModal(kind){
+  if(kind === 'card'){
+    $('mcName').value = ''; $('mcGender').value = ''; $('mcPersona').value = '';
+    $('meetCardModal').classList.remove('hidden');
+  } else {
+    $('mwName').value = ''; $('mwType').value = ''; $('mwDesc').value = '';
+    $('meetWorldModal').classList.remove('hidden');
+  }
+}
+function closeMeetModal(kind){ $(kind === 'card' ? 'meetCardModal' : 'meetWorldModal').classList.add('hidden'); }
+function meetGuard(){ if(meetBusy) return false; if(missingKey({})){ showToast('还没有配置 API Key：请先在 ⚙ 全局设置「API Key」里填写。'); return false; } return true; }
+$('btnMeetCard').addEventListener('click', function(){ openMeetModal('card'); });
+$('btnMeetWorld').addEventListener('click', function(){ openMeetModal('world'); });
+$('meetCardCancel').addEventListener('click', function(){ closeMeetModal('card'); });
+$('meetWorldCancel').addEventListener('click', function(){ closeMeetModal('world'); });
+$('meetCardGo').addEventListener('click', function(){
+  if(!meetGuard()) return;
+  var info = { name:$('mcName').value, gender:$('mcGender').value, persona:$('mcPersona').value };
+  closeMeetModal('card');
+  runTavern('card', null, info);
+});
+$('meetWorldGo').addEventListener('click', function(){
+  if(!meetGuard()) return;
+  var info = { name:$('mwName').value, type:$('mwType').value, desc:$('mwDesc').value };
+  closeMeetModal('world');
+  runTavern('world', null, info);
+});
 $('btnDeriveWorld').addEventListener('click', function(){
   var c = getCard(Number($('tavernCardPick').value));
   if(!c){ showToast('请先选择一张角色卡'); return; }
@@ -3767,7 +3833,7 @@ function tavernBtnState(){
   var ids = TAVERN_BTN_IDS.slice();
   ids.forEach(function(id){ $(id).disabled = (id === 'btnDeriveWorld' ? !cards.length : (id === 'btnDeriveCard' ? !worlds.length : false)); });
 }
-function runTavern(mode, base){
+function runTavern(mode, base, info){
   if(meetBusy) return;
   if(missingKey({})){ showToast('还没有配置 API Key：请先在 ⚙ 全局设置「API Key」里填写。'); return; }
   meetBusy = true;
@@ -3784,16 +3850,26 @@ function runTavern(mode, base){
   var sys = '你是「梦语」的酒馆老板，负责为客人创作 AI 角色卡与世界书。';
   var instr;
   if(isCard){
-    instr = '请创作一位全新的、有魅力的 AI 角色' + (mode === 'deriveCard' ? '，其设定要与提供的世界书高度配套、契合' : '') + '。要求：\n' +
-      '1. 角色名 2-8 个字，不要与已有名字重复（已有：' + (usedNames.length ? usedNames.join('、') : '无') + '）。\n' +
+    var hint = '';
+    if(mode === 'card' && info){
+      var cn = (info.name || '').trim(), cg = (info.gender || '').trim(), cp = (info.persona || '').trim();
+      if(cn || cg || cp) hint = '客人想结识这样一位角色：' + (cn ? '姓名「' + cn + '」' : '') + (cg ? '性别「' + cg + '」' : '') + (cp ? '大致人设「' + cp + '」' : '') + '。请尽量贴合客人的构想：填了姓名就必须沿用这个名字，不要另起名；没填的部分由你自由发挥。\n\n';
+    }
+    instr = hint + '请创作一位全新的、有魅力的 AI 角色' + (mode === 'deriveCard' ? '，其设定要与提供的世界书高度配套、契合' : '') + '。要求：\n' +
+      '1. 角色名 2-8 个字' + (mode === 'card' && info && (info.name || '').trim() ? '（按上面客人填的姓名来）' : '，不要与已有名字重复（已有：' + (usedNames.length ? usedNames.join('、') : '无') + '）') + '。\n' +
       '2. 人设 1-2 句话，说清楚性格与身份背景。\n' +
       '3. 给出 1-3 个与该角色相关、容易随剧情发展而变化的关键词，每个关键词配一句详情（例如关键词「杀父之仇」，详情可以是「父亲被杀，誓要手刃仇人」）。\n' +
       (mode === 'deriveCard' ? '4. 参考的已有世界书：\n书名《' + base.name + '》\n内容：' + base.world + '\n请让这个角色在这部世界里成立、有存在感。\n' : '') +
       '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
       '{"char":{"name":"角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}}';
   } else {
-    instr = '请创作一部全新的、有氛围的世界书' + (mode === 'deriveWorld' ? '，其设定要与提供的角色卡高度配套、契合' : '') + '。要求：\n' +
-      '1. 书名 2-10 个字，不要与已有书名重复。\n' +
+    var hint = '';
+    if(mode === 'world' && info){
+      var wn = (info.name || '').trim(), wt = (info.type || '').trim(), wd = (info.desc || '').trim();
+      if(wn || wt || wd) hint = '客人想结识这样一部世界书：' + (wn ? '世界名「' + wn + '」' : '') + (wt ? '类型「' + wt + '」' : '') + (wd ? '大致世界观「' + wd + '」' : '') + '。请尽量贴合客人的构想：填了世界名就必须沿用这个名字，不要另起名；没填的部分由你自由发挥。\n\n';
+    }
+    instr = hint + '请创作一部全新的、有氛围的世界书' + (mode === 'deriveWorld' ? '，其设定要与提供的角色卡高度配套、契合' : '') + '。要求：\n' +
+      '1. 书名 2-10 个字' + (mode === 'world' && info && (info.name || '').trim() ? '（按上面客人填的世界名来）' : '，不要与已有书名重复') + '。\n' +
       '2. 内容 2-4 句描述该世界的环境、势力与氛围。\n' +
       '3. 给出 1-3 个与该世界相关、容易随剧情发展而变化的关键词，每个关键词配一句详情。\n' +
       (mode === 'deriveWorld' ? '4. 参考的已有角色卡：\n角色名「' + base.name + '」\n人设：' + base.persona + '\n请让这部世界能容纳这个角色、适合 TA 的故事。\n' : '') +
@@ -3825,9 +3901,11 @@ function runTavern(mode, base){
       var card = null, world = null;
       if(isCard){
         card = { id:seq++, name:obj.name.trim().slice(0,20), avatar:defaultAvatar(), persona:(typeof obj.persona === 'string' ? obj.persona : '').trim().slice(0,500), memory:'', keywords:kw };
+        if(info && (info.name || '').trim()) card.name = info.name.trim().slice(0,20);
         cards.push(card);
       } else {
         world = { id:seq++, name:obj.name.trim().slice(0,20), avatar:defaultAvatar(), world:(typeof obj.world === 'string' ? obj.world : '').trim().slice(0,800), keywords:kw };
+        if(info && (info.name || '').trim()) world.name = info.name.trim().slice(0,20);
         worlds.push(world);
       }
       save();
@@ -4083,8 +4161,8 @@ function runWorldAi(){
     : '你是「梦语」的世界观提取助手，擅长从小说文本中提炼世界观设定。';
   var instr = isMimic
     ? '请阅读下面这部小说的内容，理解它的世界观与整体风格，然后按照「模仿要求」，原创一个风格相似、设定全新的世界观（不要复述原文的具体设定与人物）。\n\n模仿要求：\n' + (req || '（未填写，就按原作的风格做同风格仿写）') +
-      '\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"新书名或世界观名称","world":"新世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n新世界观描述请写约 ' + want + ' 字，风格与原著相似，但设定与人物必须原创；覆盖背景、势力、规则、氛围。再给出 1-3 个与这个新世界观相关的关键词，每个配一句详情（例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）。\n\n参考小说内容：\n' + text
-    : '请阅读下面这部小说的内容，提炼它的世界观：世界背景与时代、地理与势力分布、核心规则或力量体系、整体氛围基调，整理成一本「世界书」。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"书名或世界观名称","world":"世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n世界观描述请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定；覆盖背景、势力、规则、氛围。再给出 1-3 个与这个世界观相关的关键词（根据剧情提炼），每个配一句详情（例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）。\n\n小说内容：\n' + text;
+      '\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"新书名或世界观名称","world":"新世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n新世界观描述请写约 ' + want + ' 字，风格与原著相似，但设定与人物必须原创；覆盖背景、势力、规则、氛围。再给出世界观关键词，每个配一句详情（例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）。关键词数量不设固定值：按这个新世界观里值得长期关注的核心设定自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个。\n\n参考小说内容：\n' + text
+    : '请阅读下面这部小说的内容，提炼它的世界观：世界背景与时代、地理与势力分布、核心规则或力量体系、整体氛围基调，整理成一本「世界书」。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"书名或世界观名称","world":"世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n世界观描述请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定；覆盖背景、势力、规则、氛围。再给世界观关键词（根据剧情提炼，每个配一句详情，例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）：数量不设固定值，按这个世界观要素在剧情里的重要程度自由决定，可能一个都没有（keywords 给空数组 []），也可能有多个。\n\n小说内容：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
   var body = { model: groupModel({}), messages:msgs, stream:false, temperature: isMimic ? 0.9 : 0.3, max_tokens:Math.min(4000, want + 300) };
   if(isDeepseek({})) body.thinking = { type:'disabled' };
@@ -4176,8 +4254,8 @@ function runCardAi(){
     ? '你是「梦语」的角色仿写助手，擅长参考原著角色的特点，原创一个风格相似、设定全新的角色。'
     : '你是「梦语」的角色提取助手，擅长从小说文本中提炼指定角色的设定。';
   var instr = isMimic
-    ? '请阅读下面这段文本，找到名为「' + name + '」的角色作为参考。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请参考他的身份、性格、经历与人物关系，原创一个风格相似、设定全新的新角色（不要照搬原角色的姓名与具体设定）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"新角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，风格与原著角色相似，但姓名与设定必须原创。再给出 1-3 个与这个角色相关的关键词，每个配一句详情（例如关键词「剑痴」，详情「一生痴迷剑道，为剑而生」）。\n\n参考文本内容：\n' + text
-    : '请阅读下面这段文本，找到名为「' + name + '」的角色。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请根据剧情提炼他的身份、性格、经历与人物关系，写成人设，并给出 1-3 个关键词（根据剧情提炼，各配一句详情）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定。\n\n文本内容：\n' + text;
+    ? '请阅读下面这段文本，找到名为「' + name + '」的角色作为参考。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请参考他的身份、性格、经历与人物关系，原创一个风格相似、设定全新的新角色（不要照搬原角色的姓名与具体设定）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"新角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，风格与原著角色相似，但姓名与设定必须原创。再给出该角色的关键词，每个配一句详情（例如关键词「剑痴」，详情「一生痴迷剑道，为剑而生」）。关键词数量不设固定值：按这个角色值得长期关注的点自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个。\n\n参考文本内容：\n' + text
+    : '请阅读下面这段文本，找到名为「' + name + '」的角色。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请根据剧情提炼他的身份、性格、经历与人物关系，写成人设，并给出关键词（根据剧情提炼，各配一句详情）。关键词数量不设固定值：按这个角色在剧情里的重要程度自由决定，可能一个都没有（keywords 给空数组 []），也可能有多个。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定。\n\n文本内容：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
   var body = { model: groupModel({}), messages:msgs, stream:false, temperature: isMimic ? 0.9 : 0.3, max_tokens:Math.min(3000, want + 300) };
   if(isDeepseek({})) body.thinking = { type:'disabled' };
@@ -4244,12 +4322,12 @@ function runContinue(){
   var scopeEl = document.querySelector('input[name="contScope"]:checked');
   var scopeAll = scopeEl && scopeEl.value === 'all';
   var scopeText = scopeAll
-    ? '选择了「生成所有角色」：把剧情中所有出现过的角色（无论戏份多少）都作为 AI 成员生成出来，人数不限、不要遗漏。每个成员给出：姓名（2-8 个字）、人设（主要 / 次要角色至少 ' + charLen + ' 字：身份、性格、目标、立场；路人角色 1-2 句话简述即可）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词 1-3 个（每个词配一句详情）。'
-    : '选择了「生成重要角色」：只挑出对剧情有影响的重要角色——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词 1-3 个（每个词配一句详情）。';
+    ? '选择了「生成所有角色」：把剧情中所有出现过的角色（无论戏份多少）都作为 AI 成员生成出来，人数不限、不要遗漏。每个成员给出：姓名（2-8 个字）、人设（主要 / 次要角色至少 ' + charLen + ' 字：身份、性格、目标、立场；路人角色 1-2 句话简述即可）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词（每个词配一句详情；数量按这个角色在剧情中的重要程度自由决定，可能一个都没有——那时 keywords 用空数组 []，也可能有多个）。'
+    : '选择了「生成重要角色」：只挑出对剧情有影响的重要角色——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词（每个词配一句详情；数量按这个角色在剧情中的重要程度自由决定，可能一个都没有——那时 keywords 用空数组 []，也可能有多个）。';
   var sys = '你是「梦语」的续写剧情助手，擅长从小说 / 剧情文本中分析人物、世界观与玩家身份，生成可直接用于续写的设定包。';
   var instr = '请阅读下面这段剧情文本，忠实于原文内容（不要编造原文没有的人物与设定），生成一份可直接用于续写的设定包：\n' +
     '1. AI 成员：' + scopeText + '\n' +
-    '2. 世界观：概括这段剧情的世界（至少 ' + worldLen + ' 字：背景时代、地理与势力、核心规则或力量体系、氛围基调），另给 1-3 个世界观关键词（各配一句详情）。\n' +
+    '2. 世界观：概括这段剧情的世界（至少 ' + worldLen + ' 字：背景时代、地理与势力、核心规则或力量体系、氛围基调），另给世界观关键词（各配一句详情；数量按这个世界观要素在剧情里的重要程度自由决定，可能没有——那时 keywords 用空数组 []，也可能有多个）。\n' +
     '3. 叙述视角：' + perText + '\n' +
     '4. 剧情总结：把整段文本的剧情流程概括成一段总结（至少 ' + summaryLen + ' 字：按时间顺序梳理关键剧情走向、重要事件与伏笔悬念，供后续续写引用），输出到 "summary" 字段，让原剧情流程在续写时不会被遗忘。\n' +
     '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
@@ -4970,6 +5048,7 @@ $('emCancel').addEventListener('click', closeEdit);
 bindKwEditor($('emKeywords'), function(){ return editKwDraft; }, $('emKwAdd'));
 bindKwEditor($('gsKeywords'), function(){ return gsKwDraft; }, $('gsKwAdd'));
 bindKwEditor($('libKeywords'), function(){ return libKwDraft; }, $('libKwAdd'));
+bindKwEditor($('dmKeywords'), function(){ return dmKwDraft; }, $('dmKwAdd'));
 
 /* ---------- 全局设置 ---------- */
 function applyTheme(theme){
