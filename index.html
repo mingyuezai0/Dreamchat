@@ -1050,6 +1050,8 @@
         <span class="switch"><input type="checkbox" id="dmAutoMem"><span></span></span>
       </label>
       <p class="hint-text">开启后，TA 会每过一段时间把聊过的内容提炼进「记忆」，下次对话能记住。</p>
+      <button id="gsImportCardDm" class="btn-ghost" style="width:100%; margin-top:14px;">从已有角色卡导入</button>
+      <p class="hint-text">从角色卡库挑一张卡，3 秒内确认后即可直接覆盖 TA 的名字 / 头像 / 人设 / 关键词与记忆。</p>
     </div>
 
     <!-- 世界观 -->
@@ -1289,12 +1291,25 @@
   </div>
 </div>
 
-<!-- 选择角色卡（导入到群成员） -->
+<!-- 选择角色卡（导入到群成员 / 私聊智能体） -->
 <div id="cardPickModal" class="modal-overlay hidden">
   <div class="modal small">
     <h3>选择要导入的角色卡</h3>
     <div class="pick-list" id="cardPickList"></div>
     <div class="modal-actions"><button class="btn-ghost" id="cardPickCancel">取消</button></div>
+  </div>
+</div>
+
+<!-- 私聊：用角色卡覆盖智能体（3 秒内选择，超时自动取消） -->
+<div id="dmCardModal" class="modal-overlay hidden">
+  <div class="modal small">
+    <h3>用角色卡覆盖智能体？</h3>
+    <p class="muted" id="dmCardDesc" style="margin-top:8px;"></p>
+    <p class="muted" id="dmCardCount" style="margin-top:6px; font-size:12px;"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="dmCardCancel">取消</button>
+      <button class="btn-primary" id="dmCardYes">覆盖智能体</button>
+    </div>
   </div>
 </div>
 
@@ -1459,8 +1474,13 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.4.0';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.4.1';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.4.1', date:'2026-09-03', title:'消息重置重做 · 私聊智能体导入角色卡', items:[
+    '「重置」消息重做（双端）：重置任何一条 AI 回复或「我」的消息时，都会先把这条之后的所有消息删掉，再按之前的剧情重新生成——不再出现新回复接在旧消息后面、内容错乱的现象',
+    '「我」的消息点「重置」现在会保留这条本身，只重新生成它之后的 AI 回复；原来会连这条一起删掉',
+    '私聊「智能体」支持「从已有角色卡导入」：在私聊设置的「智能体」页从角色卡库挑一张卡，3 秒内确认即可直接覆盖智能体的名字、头像、人设、关键词与记忆，超时自动取消'
+  ]},
   { v:'0.4.0', date:'2026-09-01', title:'破甲/提示 · 酒馆自由生成 · 展开按钮修复', items:[
     '「群设置 / 故事设置 / 私聊设置」新增「破甲/提示」页签：在「世界观」和「玩家设定」之间写一段破甲词和提示词，所有角色与世界观都会遵守，且拥有最高优先级——与其他任何设定（人设、世界观、玩家设定、对话规则等）冲突时一律以它为准',
     '「酒馆」改造：可以只生成一张角色卡、或只生成一本世界书；也可以选一张已有角色卡生成配套的世界书、选一本已有世界书生成配套的角色卡',
@@ -1748,12 +1768,12 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 16;
+var BOARD_TUT_VERSION = 17;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。「字数」可设上限与下限，AI 回复必须遵守。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定，直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「字数」可设上限与下限，AI 回复必须遵守。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定，直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
   { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设回复字数上限与下限，AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
   { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事。\n· 「酒馆」里可以只「结识」一张角色卡、或一本世界书；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
-  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、关键词与记忆。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（可设上限 / 下限）与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
+  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、关键词与记忆，也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（可设上限 / 下限）与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -2779,9 +2799,11 @@ function resetMsg(mid){
   if(!m) return;
   if(m.status === 'streaming'){ showToast('生成中的消息不能重置'); return; }
   stopAll();
+  var idx = cv.history.indexOf(m);
+  if(idx < 0) return;
   if(m.speakerId === 'user'){
-    // 我的消息：从这条起截断（连同它及之后的内容删除），AI 跟随回复（含旁白）重新生成
-    cv.history.splice(cv.history.indexOf(m));
+    // 我的消息：保留本条，只删掉它之后的 AI 回复（含旁白），再让 AI 重新回应本条 —— 不丢内容，新回复也正确接在这条后面
+    cv.history.splice(idx + 1);
     cv.lastActiveAt = Date.now();
     save(); renderMsgs(); renderConvList();
     var sel = replyTargets(cv, m.text);
@@ -2795,7 +2817,8 @@ function resetMsg(mid){
   }
   var c = getChar(cv, m.speakerId);
   if(!c) return;
-  cv.history.splice(cv.history.indexOf(m), 1);
+  // AI 消息：把这条回复连同它之后的消息一并删除（否则新回复会被排到旧消息后面，造成消息乱序），再让 TA 按此前剧情重新回复
+  cv.history.splice(idx);
   cv.lastActiveAt = Date.now();
   save(); renderMsgs(); renderConvList();
   stopFlag = false;
@@ -4429,22 +4452,92 @@ function renderCardPick(){
     l.appendChild(it);
   });
 }
-function openCardPick(){ renderCardPick(); $('cardPickModal').classList.remove('hidden'); }
+var cardPickAction = 'add';   // 选卡后的动作：'add' 群聊/故事加入新成员；'dm' 私聊覆盖智能体
+function openCardPick(action){
+  cardPickAction = action || 'add';
+  renderCardPick(); $('cardPickModal').classList.remove('hidden');
+}
 function closeCardPick(){ $('cardPickModal').classList.add('hidden'); }
-$('gsImportCard').addEventListener('click', openCardPick);
+$('gsImportCard').addEventListener('click', function(){ openCardPick('add'); });
+$('gsImportCardDm').addEventListener('click', function(){ openCardPick('dm'); });
 $('cardPickCancel').addEventListener('click', closeCardPick);
 $('cardPickList').addEventListener('click', function(e){
   var it = e.target.closest('.pick-item');
   if(!it) return;
-  var cv = current();
-  if(!cv) return;
   var card = getCard(Number(it.dataset.id));
   if(!card) return;
+  closeCardPick();
+  if(cardPickAction === 'dm'){ dmImportCard(card); return; }
+  var cv = current();
+  if(!cv) return;
   var c = { id:seq++, name:card.name, avatar:JSON.parse(JSON.stringify(card.avatar)), persona:card.persona||'', present:true, memory:'', role:'minor', keywords:kwDraftFrom(card.keywords) };
   cv.chars.push(c);
   save(); renderGroupMembers(); renderChips(); renderConvList();
-  closeCardPick();
   openEdit(c);
+});
+
+/* 私聊：用角色卡覆盖当前智能体 —— 3 秒确认弹窗，超时自动取消（不改变智能体） */
+var dmCardPending = null;
+var dmCardTimer = null;
+function dmImportCard(card){
+  var cv = current();
+  if(!cv || cv.mode !== 'dm') return;
+  dmCardReset();
+  dmCardPending = card;
+  $('dmCardDesc').textContent = '是否用角色卡「'+card.name+'」覆盖当前智能体？会一并替换 TA 的名字、头像、人设、关键词与记忆。';
+  $('dmCardCount').textContent = '3 秒内未选择将自动取消…';
+  $('dmCardModal').classList.remove('hidden');
+  var left = 3;
+  dmCardTimer = setInterval(function(){
+    left--;
+    if(left <= 0){ dmCardReset(); addNote('已取消导入，智能体未改变。'); }
+    else $('dmCardCount').textContent = left + ' 秒后自动取消…';
+  }, 1000);
+}
+function dmCardReset(){
+  if(dmCardTimer){ clearInterval(dmCardTimer); dmCardTimer = null; }
+  dmCardPending = null;
+  $('dmCardModal').classList.add('hidden');
+}
+function dmApplyCard(card){
+  if(!card) return;
+  var cv = current();
+  if(!cv) return;
+  var ai = (cv.chars && cv.chars[0]) || null;
+  if(!ai){
+    ai = { id:seq++, name:'', avatar:defaultAvatar(), persona:'', present:true, memory:'', role:'minor', keywords:[] };
+    cv.chars.push(ai);
+  }
+  ai.name = String(card.name || '').slice(0, 12);
+  ai.persona = String(card.persona || '');
+  ai.memory = String(card.memory || '');
+  ai.keywords = kwDraftFrom(card.keywords);
+  var av = (card.avatar && card.avatar.mode) ? { mode:card.avatar.mode, value:card.avatar.value||'' } : defaultAvatar();
+  if((av.mode === 'url' || av.mode === 'upload') && !av.value) av = defaultAvatar();
+  ai.avatar = av;
+  save();
+  // 同步刷新「智能体」页签的输入框与预览，改动即时可见（保存时也会一并写回）
+  $('dmName').value = ai.name;
+  $('dmPersona').value = ai.persona;
+  $('dmMemory').value = ai.memory;
+  dmKwDraft = kwDraftFrom(ai.keywords);
+  renderKwBox($('dmKeywords'), dmKwDraft);
+  dmAvatarDraft = { mode:ai.avatar.mode, value:ai.avatar.value||'' };
+  setDmAvTab((dmAvatarDraft.mode === 'upload' || dmAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
+  if(dmAvatarDraft.mode === 'svg'){ var _di = ANIME_AVS.indexOf(dmAvatarDraft.value); if(_di >= 0) selectDmEmoji(_di); }
+  $('dmAvFile').value = '';
+  updateDmPreview();
+  renderConvList(); renderMsgs(); renderChatHeader(); renderChips();
+  addNote('已用角色卡「'+card.name+'」覆盖当前智能体。');
+}
+$('dmCardYes').addEventListener('click', function(){
+  var card = dmCardPending;
+  dmCardReset();
+  dmApplyCard(card);
+});
+$('dmCardCancel').addEventListener('click', function(){
+  dmCardReset();
+  addNote('已取消导入，智能体未改变。');
 });
 function renderWorldPick(){
   var l = $('worldPickList');
@@ -5150,6 +5243,7 @@ document.querySelectorAll('.modal-overlay').forEach(function(ov){
   ov.addEventListener('mousedown', function(e){
     if(e.target === ov){
       if(ov.id === 'confirmModal') resetConfirm();
+      else if(ov.id === 'dmCardModal') dmCardReset();
       else ov.classList.add('hidden');
       if(ov.id === 'settingsModal') applyTheme(settings.theme);   // 未保存的风格预览，点遮罩退出时还原已保存主题
     }
