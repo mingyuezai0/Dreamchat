@@ -112,8 +112,10 @@
   .input-area{position:relative; background:rgba(255,255,255,.85); border-top:1px solid var(--border); padding:12px 22px 18px;}
   .input-inner{max-width:780px; margin:0 auto;}
   .chip-row{display:flex; align-items:center; gap:8px; margin-bottom:8px; padding:2px 0 4px; position:relative;}
-  .chip-scroll{display:flex; align-items:center; gap:8px; overflow-x:auto; scrollbar-width:none; flex:1 1 auto; min-width:0; padding:2px;}
+  .chip-scroll{display:flex; align-items:center; gap:8px; overflow-x:auto; scrollbar-width:none; flex:1 1 auto; min-width:0; padding:2px; cursor:grab; user-select:none; overscroll-behavior-x:contain;}
   .chip-scroll::-webkit-scrollbar{display:none;}
+  .chip-scroll.dragging{cursor:grabbing;}
+  #chipBox{flex-shrink:0; min-width:max-content;}
   #btnChipExpand{flex-shrink:0;}
   .chip-label{font-size:12px; color:var(--muted); flex-shrink:0; font-weight:600;}
   .chip{display:inline-flex; align-items:center; gap:6px; padding:4px 11px 4px 4px; border-radius:20px; border:1px solid var(--border); background:#fff; font-size:12px; color:var(--muted); flex-shrink:0; transition:.15s;}
@@ -191,6 +193,11 @@
   .len-custom{display:flex; gap:8px; margin-top:10px;}
   .len-custom input{flex:1; min-width:0; padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-size:14px; color:var(--text); outline:none; background:#fff;}
   .len-custom input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.12);}
+  .force-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:4px 0 10px;}
+  .force-row-label{font-size:12px; color:var(--muted); font-weight:600;}
+  .force-pill{width:54px; height:30px; border-radius:15px; border:1px solid var(--border); background:var(--main); color:var(--muted); font-size:16px; font-weight:800; flex-shrink:0; cursor:pointer; transition:.15s; line-height:1;}
+  .force-pill.on{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .force-body{display:block;}
 
   /* ---------- 骰子 ---------- */
   .dice-label{font-size:12px; color:var(--muted); margin:12px 0 6px; font-weight:600;}
@@ -889,6 +896,7 @@
 
     <input type="file" id="importMemFile" accept=".json,application/json" style="display:none;">
     <input type="file" id="importCardFile" accept=".json,application/json" style="display:none;">
+    <input type="file" id="importCardTextFile" accept=".txt,.md,.markdown" style="display:none;">
     <input type="file" id="importWorldFile" accept=".json,application/json" style="display:none;">
     <input type="file" id="importWorldTextFile" accept=".txt,.md,.markdown" style="display:none;">
   </aside>
@@ -912,10 +920,10 @@
     <div class="input-area">
       <div class="input-inner">
         <div class="chip-row">
-          <div class="chip-scroll">
-            <span class="chip-label">下轮对话</span>
+          <span class="chip-label">下轮对话</span>
+          <button id="btnRandom" class="chip" title="开启：多人回复顺序随机；关闭：按你点选人物的先后顺序回复（数字角标表示先后）">🎲 随机先后</button>
+          <div class="chip-scroll" id="chipScroll">
             <div id="chipBox" style="display:flex; gap:8px;"></div>
-            <button id="btnRandom" class="chip" title="开启：多人回复顺序随机；关闭：按你点选人物的先后顺序回复（数字角标表示先后）">🎲 随机先后</button>
           </div>
           <button id="btnChipExpand" class="chip" title="展开所有在场角色（越重要越靠前）">⌄</button>
           <div id="chipExpandBox" class="chip-expand-box hidden"></div>
@@ -933,7 +941,8 @@
           <button class="fab-item" data-act="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>搜索</button>
           <button class="fab-item" data-act="dice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8" cy="8" r="1"/><circle cx="16" cy="8" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/></svg>骰子</button>
           <button class="fab-item" data-act="cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>费用</button>
-          <button class="fab-item" data-act="len"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>字数</button>
+          <button class="fab-item" data-act="len"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>字数范围</button>
+          <button class="fab-item" data-act="forcelen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>强制字数</button>
           <button class="fab-item" data-act="rel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>关系</button>
           <button class="fab-item" data-act="attach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>附件</button>
         </div>
@@ -1371,6 +1380,19 @@
   </div>
 </div>
 
+<!-- 导入角色卡（选择来源） -->
+<div id="cardImportModal" class="modal-overlay hidden">
+  <div class="modal small">
+    <h3>导入角色卡</h3>
+    <p class="hint-text" style="margin:6px 0 12px;">选择导入方式</p>
+    <div class="import-opts">
+      <button class="btn-ghost" id="btnCardImportText">⬆ 导入 txt / md / markdown 文件</button>
+      <button class="btn-ghost" id="btnCardImportJson">⬆ 导入梦语 json 文件</button>
+    </div>
+    <div class="modal-actions"><button class="btn-ghost" id="btnCardImportCancel">取消</button></div>
+  </div>
+</div>
+
 <!-- AI 提取 / 模仿世界书 -->
 <div id="worldAiModal" class="modal-overlay hidden">
   <div class="modal">
@@ -1443,7 +1465,7 @@
 <!-- 回复字数上限 -->
 <div id="lenModal" class="modal-overlay hidden">
   <div class="modal small">
-    <h3>字数上限</h3>
+    <h3>字数范围（上限 / 下限）</h3>
     <p class="len-cur" id="lenCur"></p>
     <div class="len-grid" id="lenGrid"></div>
     <div class="len-custom hidden" id="lenCustom">
@@ -1459,6 +1481,27 @@
     </div>
     <p class="cost-note" id="lenNote"></p>
     <div class="modal-actions"><button class="btn-ghost" id="lenCancel">关闭</button></div>
+  </div>
+</div>
+
+<!-- 强制字数 -->
+<div id="forceLenModal" class="modal-overlay hidden">
+  <div class="modal small">
+    <h3>强制字数</h3>
+    <div class="force-row">
+      <span class="force-row-label">强制字数开关（O = 开 / N = 关）</span>
+      <button id="forceToggle" class="force-pill" title="点击切换强制字数开关"></button>
+    </div>
+    <p class="len-cur" id="forceCur"></p>
+    <div class="force-body hidden" id="forceBody">
+      <div class="len-grid" id="forceGrid"></div>
+      <div class="len-custom hidden" id="forceCustom">
+        <input type="number" id="forceInput" min="1" max="9999" placeholder="自定义强制字数" autocomplete="off">
+        <button class="btn-ghost" id="forceApply">应用</button>
+      </div>
+    </div>
+    <p class="cost-note" id="forceNote"></p>
+    <div class="modal-actions"><button class="btn-ghost" id="forceCancel">关闭</button></div>
   </div>
 </div>
 
@@ -1510,8 +1553,16 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.4.2';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.4.3';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.4.3', date:'2026-09-03', title:'字数拆成范围 + 强制字数 · 记忆按剧情合理知晓 · 下轮对话布局与滑动 · 卡/书智能导入', items:[
+    '「＋」里的「字数」拆成两个：「字数范围」保留原来的上限 / 下限；新增「强制字数」——用 O / N 开关打开后可点档位或输入目标字数，AI 回复会强制写到约 N 字（允许 ±10% 误差），关闭后自动回到「字数范围」',
+    '角色的记忆只在「剧情合理知晓」时才写入：按「我」的发言把对话切成一轮一轮，角色只从自己参与回复的轮次里提炼记忆，不再把角色未在场、不知情时发生的事写进自己的记忆',
+    '「下轮对话」的「随机顺序」按钮固定到「下轮对话」文字右侧，人数再多也不会被挤到后面',
+    '「下轮对话」的角色横排现在可以滑动：桌面端用鼠标滚轮或按住左键拖动、手机端手指滑动，都能看到后面的角色',
+    '「角色卡」导入和「世界书」一样先弹窗确认文件类型：txt / md / markdown 或梦语 json',
+    '导入 txt / md / markdown 时会自动判断是否已符合「角色卡 / 世界书」格式：符合就直接用；不符合（比如小说、散文、零散设定）就调用 AI 整理成规范格式——人设、世界观内容一字不改，只按剧情与重要程度提炼关键词（可能一个都没有，也可能多个）'
+  ]},
   { v:'0.4.2', date:'2026-09-03', title:'私聊关键词详情修复 · 关键词数量按剧情而定 · 酒馆结识先填意向', items:[
     '修复私聊「智能体」的关键词无法展开查看 / 编辑详情：现在点每条关键词右侧的「详情」即可展开它的详情说明，可查看也可直接改写',
     '「世界书」「角色卡」的「提取」「模仿」和「续写剧情」生成的关键词不再固定只有 3 个：会按该角色 / 世界观在剧情里的重要程度灵活给出，可能一个都没有，也可能有好几个',
@@ -1809,12 +1860,12 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 18;
+var BOARD_TUT_VERSION = 19;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会自己记住。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「字数」可设上限与下限，AI 回复必须遵守。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设回复字数上限与下限，AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事。\n· 「酒馆」里点「结识角色卡 / 结识世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 世界书支持导入 txt / md / markdown 文件；还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
-  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（可设上限 / 下限）与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事。\n· 「酒馆」里点「结识角色卡 / 结识世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
+  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -1874,7 +1925,7 @@ function newConv(name, chars, history){
   chars.forEach(function(c){ if(typeof c.present==='undefined') c.present = true; if(typeof c.memory!=='string') c.memory=''; if(['main','minor','extra'].indexOf(c.role)===-1) c.role='minor'; assignId(c); });
   history.forEach(assignId);
   var now = Date.now();
-  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', player:'', breakPrompt:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, minReplyLen:DEFAULT_MINLEN, relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
+  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', player:'', breakPrompt:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, minReplyLen:DEFAULT_MINLEN, forceLen:0, forceOn:false, relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
 }
 function load(){
   try{ settings = Object.assign({apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE}, JSON.parse(localStorage.getItem(LS.set)||'{}')); }catch(e){}
@@ -1915,6 +1966,8 @@ function load(){
     if(cv.mode !== 'story' && cv.mode !== 'dm') cv.mode = 'chat';
     if(typeof cv.maxReplyLen !== 'number' || isNaN(cv.maxReplyLen) || cv.maxReplyLen < 0) cv.maxReplyLen = (cv.mode === 'story' ? STORY_MAXLEN : CHAT_MAXLEN);
     if(typeof cv.minReplyLen !== 'number' || isNaN(cv.minReplyLen) || cv.minReplyLen < 0) cv.minReplyLen = DEFAULT_MINLEN;
+    if(typeof cv.forceLen !== 'number' || isNaN(cv.forceLen) || cv.forceLen < 0) cv.forceLen = 0;
+    if(typeof cv.forceOn !== 'boolean') cv.forceOn = false;
     if(typeof cv.breakPrompt !== 'string') cv.breakPrompt = '';
     if(!cv.avatar || typeof cv.avatar !== 'object' || !cv.avatar.mode) cv.avatar = null;
     if(typeof cv.compressMem !== 'boolean') cv.compressMem = false;
@@ -2215,6 +2268,7 @@ $('fabMenu').addEventListener('click', function(e){
   else if(act === 'dice') openDice();
   else if(act === 'cost') openCost();
   else if(act === 'len') openLen();
+  else if(act === 'forcelen') openForceLen();
   else if(act === 'rel') openRel();
   else if(act === 'attach') $('attachFile').click();
 });
@@ -2322,7 +2376,16 @@ function openCost(){
 }
 $('costCancel').addEventListener('click', function(){ $('costModal').classList.add('hidden'); });
 
-/* 回复字数上限 / 下限 */
+/* 回复字数：字数范围（上限 / 下限）+ 强制字数（O/N 开关，±10%） */
+function forceLenActive(cv){
+  return !!(cv && cv.forceOn && typeof cv.forceLen === 'number' && cv.forceLen > 0);
+}
+function forceLenRuleText(cv){
+  // 强制字数：让 AI 写到约 N 字，误差不超过 ±10%
+  var n = cv.forceLen;
+  var lo = Math.max(1, Math.floor(n * 0.9)), hi = Math.ceil(n * 1.1);
+  return '要写到 ' + n + ' 字左右（允许 ±10% 误差，即 ' + lo + '–' + hi + ' 字之间），内容要完整、结尾自然，不要只写一点就草草收尾，也不要超出 ' + hi + ' 字。';
+}
 function maxLenLabel(cv){
   var m = cv.maxReplyLen;
   return (!m ? '无上限' : m + ' 字');
@@ -2332,12 +2395,13 @@ function minLenLabel(cv){
   return '不少于 ' + n + ' 字';
 }
 function replyLenRule(cv, story){
+  var pre = (story ? '\n7. 整条回复（含神态、台词、旁白）' : '\n6. 每条回复');
+  if(forceLenActive(cv)) return pre + forceLenRuleText(cv);   // 开启强制字数时，字数范围不生效
   var m = cv.maxReplyLen, n = (typeof cv.minReplyLen === 'number' && cv.minReplyLen > 0) ? cv.minReplyLen : DEFAULT_MINLEN;
   var parts = [];
   if(m) parts.push('控制在 ' + m + ' 字以内');
   parts.push('不少于 ' + n + ' 字');
-  if(!parts.length) return '';
-  return (story ? '\n7. 整条回复（含神态、台词、旁白）' : '\n6. 每条回复') + parts.join('，') + '：内容要完整，用「。」等标点收尾，宁精炼不要写超、不要被截断。';
+  return pre + parts.join('，') + '：内容要完整，用「。」等标点收尾，宁精炼不要写超、不要被截断。';
 }
 function openLen(){
   var cv = current();
@@ -2452,6 +2516,90 @@ $('lenInput').addEventListener('keydown', function(e){
 });
 $('lenMinInput').addEventListener('keydown', function(e){
   if(e.key === 'Enter'){ e.preventDefault(); $('lenMinApply').click(); }
+});
+
+/* 强制字数：O/N 开关 + 输入目标字数，AI 强制遵守（误差 ≤10%）；关闭后视为使用「字数范围」 */
+var FORCE_LEN_TIERS = [100,200,300,500,800,1000];
+function openForceLen(){
+  var cv = current();
+  if(!cv){ showToast('还没有打开任何群聊/故事。'); return; }
+  $('forceNote').textContent = '开启强制字数后，AI 会尽量写到目标字数，允许 ±10% 误差（硬截断上限为目标字数的 110%）；想只按「字数范围」的上限 / 下限限制时，请把开关保持为 N。';
+  renderForceLen(cv);
+  $('forceLenModal').classList.remove('hidden');
+}
+function renderForceLen(cv){
+  var on = forceLenActive(cv);
+  var tog = $('forceToggle');
+  tog.classList.toggle('on', on);
+  tog.textContent = on ? 'O' : 'N';
+  tog.title = on ? '点击关闭强制字数，恢复使用「字数范围」' : '点击开启强制字数';
+  $('forceCur').textContent = on
+    ? '当前「' + cv.name + '」：已开启，AI 回复约 ' + cv.forceLen + ' 字（±10%）。开启期间「字数范围」的上限 / 下限暂不生效。'
+    : '当前「' + cv.name + '」：未开启，使用「字数范围」的上限 / 下限。';
+  $('forceBody').classList.toggle('hidden', !on);
+  $('forceCustom').classList.add('hidden');
+  buildForceGrid(cv);
+}
+function buildForceGrid(cv){
+  var grid = $('forceGrid');
+  grid.innerHTML = '';
+  FORCE_LEN_TIERS.forEach(function(v){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = v + ' 字';
+    b.classList.toggle('on', cv.forceLen === v && forceLenActive(cv));
+    b.addEventListener('click', function(){ setForceLen(v); });
+    grid.appendChild(b);
+  });
+  var cb = document.createElement('button');
+  cb.type = 'button';
+  cb.textContent = '自定义';
+  cb.classList.toggle('on', forceLenActive(cv) && FORCE_LEN_TIERS.indexOf(cv.forceLen) === -1);
+  cb.addEventListener('click', function(){ showForceCustom(); });
+  grid.appendChild(cb);
+}
+function showForceCustom(){
+  var cv = current();
+  if(!cv) return;
+  $('forceCustom').classList.remove('hidden');
+  $('forceInput').value = (forceLenActive(cv) && FORCE_LEN_TIERS.indexOf(cv.forceLen) === -1) ? cv.forceLen : '';
+  $('forceInput').focus();
+}
+function setForceLen(v){
+  var cv = current();
+  if(!cv) return;
+  v = Math.min(9999, Math.max(1, Math.floor(v)));
+  cv.forceLen = v;
+  cv.forceOn = true;    // 一旦设定目标字数即视为开启
+  save();
+  renderForceLen(cv);
+  $('forceCustom').classList.add('hidden');
+  $('forceLenModal').classList.add('hidden');
+  showToast('强制字数已开启：约 ' + v + ' 字（±10%）。');
+}
+function closeForceLenModal(){ $('forceLenModal').classList.add('hidden'); }
+$('forceCancel').addEventListener('click', closeForceLenModal);
+$('forceToggle').addEventListener('click', function(){
+  var cv = current();
+  if(!cv) return;
+  if(forceLenActive(cv)){
+    cv.forceOn = false;
+    save(); renderForceLen(cv);
+    showToast('已关闭强制字数，恢复使用「字数范围」。');
+  } else {
+    if(typeof cv.forceLen !== 'number' || cv.forceLen < 1) cv.forceLen = 200;   // 首次开启默认约 200 字
+    cv.forceOn = true;
+    save(); renderForceLen(cv);
+    showToast('已开启强制字数：请选择档位或输入目标字数。');
+  }
+});
+$('forceApply').addEventListener('click', function(){
+  var v = parseInt($('forceInput').value, 10);
+  if(isNaN(v) || v < 1){ showToast('请输入 1–9999 之间的字数'); return; }
+  setForceLen(v);
+});
+$('forceInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ e.preventDefault(); $('forceApply').click(); }
 });
 
 /* 骰子：选面数 + 自定义每面内容 + 投出（重投 / 取消 / 附消息确认发出） */
@@ -2997,6 +3145,44 @@ function toggleChip(id){
   save(); renderChips();
 }
 
+/* 下轮对话角色横排可滚动：桌面滚轮 + 左键拖动（拖动结束吞掉误触点击）；手机端交给原生触摸滑动 */
+(function(){
+  var sc = $('chipScroll');
+  if(!sc) return;
+  var down = false, moved = false, startX = 0, startL = 0;
+  function onMove(e){
+    if(!down) return;
+    var dx = e.clientX - startX;
+    if(Math.abs(dx) > 4) moved = true;
+    sc.scrollLeft = startL - dx;
+  }
+  function onUp(){
+    if(!down) return;
+    down = false;
+    sc.classList.remove('dragging');
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    if(moved){
+      var stop = function(ev){ ev.stopPropagation(); ev.preventDefault(); };
+      window.addEventListener('click', stop, true);
+      setTimeout(function(){ window.removeEventListener('click', stop, true); }, 60);
+    }
+  }
+  sc.addEventListener('wheel', function(e){
+    if(sc.scrollWidth <= sc.clientWidth + 2) return;   // 没有溢出时不劫持滚轮，不影响页面上下滚动
+    e.preventDefault();
+    sc.scrollLeft += (e.deltaY || e.deltaX || 0);
+  }, { passive:false });
+  sc.addEventListener('pointerdown', function(e){
+    if(e.pointerType !== 'mouse' || e.button !== 0) return;   // 手机端用原生触摸滑动
+    down = true; moved = false;
+    startX = e.clientX; startL = sc.scrollLeft;
+    sc.classList.add('dragging');
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  });
+})();
+
 /* 「下轮对话」展开面板：向上列出全部在场角色，越重要越靠前 */
 function renderChipExpand(){
   var cv = current();
@@ -3309,7 +3495,7 @@ function generateReply(c, cv){
             var j = JSON.parse(payload);
             var d = j.choices && j.choices[0] && j.choices[0].delta;
             if(d && d.content){
-              var cap = (cv.maxReplyLen||0);
+              var cap = forceLenActive(cv) ? Math.ceil(cv.forceLen * 1.1) : (cv.maxReplyLen||0);   // 强制字数：以上限 110% 为界截断
               if(cap > 0){
                 if(msg.text.length >= cap){ stop = true; break; }   // 已达上限：不再读取剩余流
                 var room = cap - msg.text.length;
@@ -3347,6 +3533,25 @@ function generateReply(c, cv){
 }
 
 /* ---------- 成员自动记忆 ---------- */
+/* 记忆提炼只拿角色「亲历」的轮次：按「我」的发言把近期对话切成一轮一轮，
+   角色只记住自己参与回复的轮次，避免把角色不在场、不知情时发生的事写进记忆 */
+function memoryCtxFor(c, cv){
+  var hist = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-24);
+  var rounds = [], cur = [];
+  for(var i = 0; i < hist.length; i++){
+    var m = hist[i];
+    if(m.speakerId === 'user' && cur.length){ rounds.push(cur); cur = []; }
+    cur.push(m);
+  }
+  if(cur.length) rounds.push(cur);
+  var out = [];
+  rounds.forEach(function(r){
+    for(var j = 0; j < r.length; j++){
+      if(r[j].speakerId === c.id){ out = out.concat(r); break; }   // 角色参与过的轮次整体纳入
+    }
+  });
+  return out;
+}
 function updateMemory(c, cv){
   if(!cv.autoMemory) return;
   if(missingKey(cv)) return;
@@ -3358,12 +3563,12 @@ function updateMemory(c, cv){
     '\n\n更早对话总结：\n' + (cv.summary || '（暂无）') +
     '\n\n你的关键词：\n' + (c.keywords && c.keywords.length ? c.keywords.map(function(k){ return '· '+k.key+'：'+(k.detail||'（无详情）'); }).join('\n') : '（无）');
   var msgs = [{ role:'system', content:sys }];
-  var ctx = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-24);
+  var ctx = memoryCtxFor(c, cv);
   ctx.forEach(function(m){
     if(m.speakerId === 'user') msgs.push({ role:'user', content:'我：'+m.text });
     else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
-  msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。\n'+roleInstr(c) +
+  msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。只挑「你亲身经历、亲眼所见，或别人直接告诉你」的事；这段对话里发生在你没参与、你并不知晓的时刻的情节，不要当成你自己的记忆写进去。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。\n'+roleInstr(c) +
     '\n\n另外，对照上面这段对话检查你的「关键词」：如果剧情发展让某个关键词的情况发生了变化（例如关键词是「杀父之仇」，现在已经报了仇，详情就应该更新成「已复仇，放下了心结」），就在记忆末尾单独输出关键词更新，格式为：\n【关键词更新】\n关键词名：更新后的详情\n……\n每个要更新的关键词占一行，关键词名必须与现有关键词完全一致；如果关键词详情没有变化，就什么都不要加。' +
     '\n\n另外，如果剧情推进让当前世界观发生了明显变化（例如世界发生重大事件、规则或势力格局改变、主角所处地区转变等），请在最后单独输出世界观更新，格式为：\n【世界观更新】\n更新后的世界观描述\n如果世界观没有明显变化，就不要加这一块。' });
   var ub = { model: groupModel(cv), messages:msgs, stream:false, temperature:0, max_tokens:roleTok(c) + 320 };
@@ -3628,6 +3833,8 @@ function importBackup(file){
       if(conv.mode !== 'story' && conv.mode !== 'dm') conv.mode = 'chat';
       if(typeof conv.maxReplyLen !== 'number' || isNaN(conv.maxReplyLen) || conv.maxReplyLen < 0) conv.maxReplyLen = (conv.mode === 'story' ? STORY_MAXLEN : CHAT_MAXLEN);
       if(typeof conv.minReplyLen !== 'number' || isNaN(conv.minReplyLen) || conv.minReplyLen < 0) conv.minReplyLen = DEFAULT_MINLEN;
+      if(typeof conv.forceLen !== 'number' || isNaN(conv.forceLen) || conv.forceLen < 0) conv.forceLen = 0;
+      if(typeof conv.forceOn !== 'boolean') conv.forceOn = false;
       if(typeof conv.breakPrompt !== 'string') conv.breakPrompt = '';
       if(typeof conv.randomOrder !== 'boolean') conv.randomOrder = false;
       if(!conv.avatar || typeof conv.avatar !== 'object' || !conv.avatar.mode) conv.avatar = null;
@@ -3763,12 +3970,16 @@ function showLogView(v){
 $('btnBackLog').addEventListener('click', function(){ showPanelView('about'); });
 $('btnAddCard').addEventListener('click', function(){ openLibEdit('card', null); });
 $('btnAddWorld').addEventListener('click', function(){ openLibEdit('world', null); });
-$('btnImportCard').addEventListener('click', function(){ $('importCardFile').click(); });
+$('btnImportCard').addEventListener('click', function(){ $('cardImportModal').classList.remove('hidden'); });
+$('btnCardImportText').addEventListener('click', function(){ $('cardImportModal').classList.add('hidden'); $('importCardTextFile').click(); });
+$('btnCardImportJson').addEventListener('click', function(){ $('cardImportModal').classList.add('hidden'); $('importCardFile').click(); });
+$('btnCardImportCancel').addEventListener('click', function(){ $('cardImportModal').classList.add('hidden'); });
 $('btnImportWorld').addEventListener('click', function(){ $('worldImportModal').classList.remove('hidden'); });
 $('btnWorldImportText').addEventListener('click', function(){ $('worldImportModal').classList.add('hidden'); $('importWorldTextFile').click(); });
 $('btnWorldImportJson').addEventListener('click', function(){ $('worldImportModal').classList.add('hidden'); $('importWorldFile').click(); });
 $('btnWorldImportCancel').addEventListener('click', function(){ $('worldImportModal').classList.add('hidden'); });
 $('importCardFile').addEventListener('change', function(){ var f=this.files&&this.files[0]; if(f) importLibFile(f,'card'); this.value=''; });
+$('importCardTextFile').addEventListener('change', function(){ var f=this.files&&this.files[0]; if(f) importCardText(f); this.value=''; });
 $('importWorldFile').addEventListener('change', function(){ var f=this.files&&this.files[0]; if(f) importLibFile(f,'world'); this.value=''; });
 $('importWorldTextFile').addEventListener('change', function(){ var f=this.files&&this.files[0]; if(f) importWorldText(f); this.value=''; });
 
@@ -4090,20 +4301,139 @@ function importLibFile(file, kind){
   reader.readAsText(file);
 }
 function importWorldText(file){
+  readLibText(file, 'world');
+}
+function importCardText(file){
+  readLibText(file, 'card');
+}
+function readLibText(file, kind){
   var reader = new FileReader();
   reader.onload = function(){
     var txt = String(reader.result || '');
     if(!txt.trim()){ alert('导入失败：文件内容为空。'); return; }
     if(txt.length > 100000){
-      alert('文件较大（' + txt.length + ' 字），已截取前 100000 字导入；完整内容建议用「提取」生成世界观。');
+      alert('文件较大（' + txt.length + ' 字），已截取前 100000 字导入。');
       txt = txt.slice(0, 100000);
     }
-    var base = (file.name || '未命名').replace(/\.[^.]+$/, '');
-    worlds.push({ id:seq++, name:base.slice(0,20), avatar:defaultAvatar(), world:txt, keywords:[] });
-    save(); renderWorldPanel(); showPanelView('worlds');
+    var base = ((file.name || '未命名').replace(/\.[^.]+$/, '') || '未命名').trim();
+    adoptOrConvert(kind, txt, base);
   };
   reader.onerror = function(){ alert('读取文件失败。'); };
   reader.readAsText(file);
+}
+/* 导入 txt / md / markdown 时先看是否符合本软件「角色卡 / 世界书」格式：
+   1) 文本本身就是可解析的结构化 JSON（含梦语备份导出）→ 直接入库；
+   2) 普通散文 → 配置了 API Key 就调 AI 整理成符合格式（人设 / 世界观内容不改变、关键词用 AI 提炼，数量随重要程度而定）；
+   3) 没配 Key → 退化为直接按原文导入，提示未提炼关键词。 */
+function adoptOrConvert(kind, txt, base){
+  if(libJsonFromText(txt, kind)) return;
+  if(missingKey({})){
+    pushRawLib(kind, txt, base);
+    showToast('未配置 API Key，已按原文直接导入' + (kind === 'card' ? '角色卡' : '世界书') + '（未提炼关键词）。配置 Key 后可重新导入或使用「提取」补上。');
+    return;
+  }
+  aiConvertLibText(kind, txt, base);
+}
+/* 文本若能解析为结构化 JSON 且匹配本软件角色卡 / 世界书形状，就直接入库（符合格式，无需 AI） */
+function libJsonFromText(txt, kind){
+  var m = /```(?:json)?\s*([\s\S]*?)```/.exec(txt.trim());
+  var raw = m ? m[1] : txt.trim();
+  if(raw.charAt(0) !== '{') return false;
+  var data;
+  try{ data = JSON.parse(raw); }catch(e){ return false; }
+  if(kind === 'card'){
+    var c = (data && data.__mengyu_card__ === true) ? data.card : data;
+    if(!c || typeof c !== 'object' || typeof c.name !== 'string' || !c.name) return false;
+    if(typeof c.persona !== 'string') c.persona = '';
+    if(!c.avatar || typeof c.avatar !== 'object' || !c.avatar.mode) c.avatar = defaultAvatar();
+    c.memory = '';
+    c.id = seq++;
+    cards.push(c);
+    save(); renderCardPanel(); showPanelView('cards');
+    showToast('已导入角色卡《' + c.name + '》。');
+    return true;
+  }
+  var w = (data && data.__mengyu_world__ === true) ? data.world : data;
+  if(!w || typeof w !== 'object' || typeof w.name !== 'string' || !w.name) return false;
+  if(typeof w.world !== 'string') w.world = '';
+  if(!w.avatar || typeof w.avatar !== 'object' || !w.avatar.mode) w.avatar = defaultAvatar();
+  w.id = seq++;
+  worlds.push(w);
+  save(); renderWorldPanel(); showPanelView('worlds');
+  showToast('已导入世界书《' + w.name + '》。');
+  return true;
+}
+/* 未配置 API Key 的退化路径：按原文直接入库（世界书保留全文，角色卡人设最多存 2000 字） */
+function pushRawLib(kind, txt, base){
+  base = base.slice(0, 20);
+  if(kind === 'card'){
+    cards.push({ id:seq++, name:base, avatar:defaultAvatar(), persona:txt.trim().slice(0,2000), memory:'', keywords:[] });
+    save(); renderCardPanel(); showPanelView('cards');
+  } else {
+    worlds.push({ id:seq++, name:base, avatar:defaultAvatar(), world:txt.trim(), keywords:[] });
+    save(); renderWorldPanel(); showPanelView('worlds');
+  }
+}
+/* AI 整理：把普通散文整理成符合本软件「角色卡 / 世界书」格式。
+   原文可直接作人设 / 世界观时返回空字符串 → 保留原文一字不改；否则忠实整理成正式人设 / 世界观。
+   关键词由 AI 提炼，数量随剧情与人设重要程度而定（可能 0 个也可能多个）。 */
+var libAiBusy = false;
+function aiConvertLibText(kind, txt, base){
+  if(libAiBusy) return;
+  libAiBusy = true;
+  var isCard = kind === 'card';
+  var text = txt.length > 30000 ? txt.slice(0, 30000) : txt;
+  var sys = isCard
+    ? '你是「梦语」的角色卡整理助手，负责把导入的 txt / md / markdown 文本整理成符合本软件「角色卡」格式的内容。'
+    : '你是「梦语」的世界书整理助手，负责把导入的 txt / md / markdown 文本整理成符合本软件「世界书」格式的内容。';
+  var instr = isCard
+    ? '下面这段文本将被导入成一张「角色卡」。一张「角色卡」包含三个部分：name（角色名）、persona（人设）、keywords（关键词）。\n判断这段文本是否已经可以直接当作该角色的「人设」：如果已经是一段通顺、可直接作人设的文字，请把 persona 设为空字符串 ""（表示「原文已可直接使用」，软件会原样保留它，人设内容一字不改）；只有当文本是小说、故事、零散资料等没法直接当人设的内容时，才把 persona 写成整理后的正式人设（身份、性格、经历、人物关系等），并且必须忠于原文，不得新增原文没有的设定、也不得改变原文已有的人物事实。\n再提炼该角色的「关键词」（keywords 数组，每项为 {"key":"关键词","detail":"详情"}）：数量不设固定值，按这个角色在剧情与人设里的重要程度自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个；每个关键词各配一句详情。\n角色名：如果文件名《' + base + '》看起来像角色名就优先采用它；否则从文本里挑最贴切的主要角色名（必须是文本中出现过的名字）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"角色名","persona":"整理后的人设；若原文可直接使用则填空字符串 \\\"\\\"","keywords":[{"key":"关键词","detail":"详情"}]}\n\n文件名：《' + base + '》\n\n文本内容：\n' + text
+    : '下面这段文本将被导入成一本「世界书」。一本「世界书」包含三个部分：name（名称）、world（世界观描述）、keywords（关键词）。\n判断这段文本是否已经可以直接当作「世界观」描述：如果已经是一段通顺、可直接作世界观描述的文字，请把 world 设为空字符串 ""（表示「原文已可直接使用」，软件会原样保留它，世界观内容一字不改）；只有当文本是小说、故事、零散资料等没法直接当世界观的内容时，才把 world 写成整理后的正式世界观（时代背景、地理与势力、规则体系、氛围基调等），并且必须忠于原文，不得新增原文没有的设定。\n再提炼「关键词」（keywords 数组，每项为 {"key":"关键词","detail":"详情"}）：数量不设固定值，按这个世界观要素在剧情里的重要程度自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个；每个关键词各配一句详情。\n名称：如果文件名《' + base + '》看起来可用就优先采用它；否则从文本里挑一个贴切的名字。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"名称","world":"整理后的世界观；若原文可直接使用则填空字符串 \\\"\\\"","keywords":[{"key":"关键词","detail":"详情"}]}\n\n文件名：《' + base + '》\n\n文本内容：\n' + text;
+  var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
+  var body = { model: groupModel({}), messages:msgs, stream:false, temperature:0.3, max_tokens: 8000 };
+  if(isDeepseek({})) body.thinking = { type:'disabled' };
+  var hd = { 'Content-Type':'application/json' };
+  var gk = groupKey({});
+  if(gk && gk.trim()) hd['Authorization'] = 'Bearer ' + gk;
+  showToast('正在用 AI 把文件整理成' + (isCard ? '角色卡' : '世界书') + '…');
+  fetch(apiUrl({}), {
+    method:'POST',
+    headers:hd,
+    body:JSON.stringify(body)
+  }).then(function(r){
+    if(!r.ok) return r.text().then(function(){ throw new Error('HTTP ' + r.status); }, function(){ throw new Error('HTTP ' + r.status); });
+    return r.json();
+  }).then(function(j){
+    var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+    if(typeof content !== 'string' || !content.trim()) throw new Error('empty');
+    var fenced = /```(?:json)?\s*([\s\S]*?)```/.exec(content);
+    var data;
+    try{ data = JSON.parse(fenced ? fenced[1] : content); }catch(e){}
+    if(!data || typeof data.name !== 'string' || !data.name.trim()) throw new Error('bad');
+    var name = data.name.trim().slice(0, 20);
+    if(isCard){
+      var kw = [];
+      (Array.isArray(data.keywords) ? data.keywords : []).forEach(function(k){
+        if(k && typeof k.key === 'string' && k.key.trim()) kw.push({ id:seq++, key:k.key, detail:(typeof k.detail === 'string' ? k.detail : '') });
+      });
+      var personaRaw = (typeof data.persona === 'string' ? data.persona : '').trim();
+      var card = { id:seq++, name:name, avatar:defaultAvatar(), persona:(personaRaw ? personaRaw.slice(0,2000) : txt.trim()), memory:'', keywords:kw };
+      cards.push(card);
+      save(); renderCardPanel(); showPanelView('cards');
+      showToast('导入成功：角色卡《' + card.name + '》。');
+    } else {
+      var wkw = [];
+      (Array.isArray(data.keywords) ? data.keywords : []).forEach(function(k){
+        if(k && typeof k.key === 'string' && k.key.trim()) wkw.push({ id:seq++, key:k.key, detail:(typeof k.detail === 'string' ? k.detail : '') });
+      });
+      var worldRaw = (typeof data.world === 'string' ? data.world : '').trim();
+      var world = { id:seq++, name:name, avatar:defaultAvatar(), world:(worldRaw ? worldRaw.slice(0,2000) : txt.trim()), keywords:wkw };
+      worlds.push(world);
+      save(); renderWorldPanel(); showPanelView('worlds');
+      showToast('导入成功：世界书《' + world.name + '》。');
+    }
+  }).catch(function(){ showToast('AI 整理失败，请稍后再试。'); })
+    .then(function(){ libAiBusy = false; });
 }
 
 /* --- 世界书 AI 提取 / 模仿（txt / md / markdown → 生成世界书） --- */
