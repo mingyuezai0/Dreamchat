@@ -26,7 +26,7 @@ android {
 
 android.applicationVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = "梦语-0.4.3.apk"
+        outputFileName = "梦语-0.4.4.apk"
     }
 }
 
