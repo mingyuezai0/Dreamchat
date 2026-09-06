@@ -184,6 +184,9 @@
   .cost-body .cost-row b{font-weight:700; color:var(--accent);}
   .cost-note{font-size:11px; color:var(--muted); margin-top:10px; padding-top:8px; border-top:1px solid var(--border);}
 
+  /* ---------- 剧情时间线 ---------- */
+  #timelineBody{white-space:pre-wrap; word-break:break-word; line-height:1.7; font-size:14px; color:var(--text); max-height:56vh; overflow-y:auto; padding:14px; background:var(--bg); border:1px solid var(--border); border-radius:12px; margin:0 0 4px;}
+
   /* ---------- 回复字数上限 ---------- */
   .len-cur{font-size:13px; color:var(--accent); font-weight:600; margin-bottom:10px;}
   .len-grid{display:flex; flex-wrap:wrap; gap:8px;}
@@ -782,6 +785,8 @@
             <button class="menu-item" data-act="new">新建群聊</button>
             <button class="menu-item" data-act="dm">新建私聊</button>
             <button class="menu-item" data-act="story">新建故事</button>
+            <button class="menu-item" data-act="guide">新建攻略</button>
+            <button class="menu-item" data-act="sim">新建模拟</button>
             <button class="menu-item" data-act="import">导入记忆</button>
           </div>
         </div>
@@ -912,7 +917,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <button id="btnSummary" class="text-btn" title="压缩上下文：把较早的对话总结成要点，防止角色因上下文过长而遗忘设定">总结【上下文】</button>
+        <button id="btnSummary" class="text-btn" title="压缩上下文：把较早的对话总结成要点，只给你（作者/玩家）看，供回顾剧情并防止故事剧情发生错乱（角色看不到总结）">总结【上下文】</button>
         <button id="btnGroupSettings" class="text-btn" title="本群设置：AI成员 / 世界观 / 玩家设定 / API / 记忆转移 / 清空·删除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>群设置</button>
       </div>
     </header>
@@ -943,6 +948,7 @@
           <button class="fab-item" data-act="cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-3"/></svg>费用</button>
           <button class="fab-item" data-act="len"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="12" x2="12" y1="20" y2="4"/></svg>字数范围</button>
           <button class="fab-item" data-act="forcelen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>强制字数</button>
+          <button class="fab-item" data-act="timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>时间线</button>
           <button class="fab-item" data-act="rel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>关系</button>
           <button class="fab-item" data-act="attach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>附件</button>
         </div>
@@ -1052,7 +1058,7 @@
       <label>关键词</label>
       <div id="dmKeywords" class="kw-box"></div>
       <button id="dmKwAdd" class="btn-add" style="margin:10px 0 0;">＋ 添加关键词</button>
-      <p class="hint-text">当有人提到某个关键词时，TA 会先查看关键词详情，再按剧情需要选择性作出反应。关键词详情不会被「总结」压缩。</p>
+      <p class="hint-text">当有人提到某个关键词时，TA 会先查看关键词详情，再按剧情需要选择性作出反应。关键词可以是性格、身份、目标，也可以是某个时间、地点、物品、人物、事件、关系等，词长不限。关键词详情不会被「总结」压缩。</p>
       <label>记忆</label>
       <textarea id="dmMemory" rows="4" placeholder="TA 记住的事情。开启「成员自动记忆」后会不断自动更新；你也可以手动写。"></textarea>
       <label class="switch-row">成员自动记忆
@@ -1086,7 +1092,10 @@
       <label>世界观关键词</label>
       <div id="gsKeywords" class="kw-box"></div>
       <button id="gsKwAdd" class="btn-add" style="margin:10px 0 0;">＋ 添加关键词</button>
-      <p class="hint-text">防止对话太久后遗忘关键事件：某关键词被提及时，所有成员都会查看它的详情进行回忆，再按剧情需要选择性作出反应。关键词详情不会被「总结」压缩。</p>
+      <p class="hint-text">防止对话太久后遗忘关键事件：某关键词被提及时，所有成员都会查看它的详情进行回忆，再按剧情需要选择性作出反应。关键词可以是性格、身份、目标，也可以是某个时间、地点、物品、人物、事件、关系等，词长不限。关键词详情不会被「总结」压缩。</p>
+      <label style="margin-top:14px;">剧情时间线（世界观记忆）</label>
+      <textarea id="gsWorldMem" rows="4" placeholder="剧情推进的记录会由 AI 自动续写到这里，也可以手动修改。例如：雨夜在旧码头结识了船工老周……"></textarea>
+      <p class="hint-text">这里保存这个故事 / 对话一路发展下来的剧情时间线。它只给你（作者 / 玩家）看，角色不会看到它——角色只知道他们亲身经历或听说的剧情。内容会随「记忆转移」备份一起带走；自动记录到约 8000 字后会暂停，可在这里手动精简。</p>
       <button id="gsImportWorld" class="btn-ghost" style="width:100%; margin-top:12px;">从已有世界书导入</button>
       <p class="hint-text">所有 AI 成员都会遵守这段世界观，并在言行中体现它。</p>
     </div>
@@ -1147,7 +1156,7 @@
 
     <!-- 记忆转移 -->
     <div class="gs-pane hidden" data-pane="transfer">
-      <p class="hint-text">把本群的对话记录、成员人设与记忆、AI 人数、世界观与世界观关键词、成员关键词、玩家设定、群名头像、总结内容等全部设定打包成一份文件，导出下载到本地。<b>出于安全考虑，本群单独设置的 API Key 不会包含在备份里</b>。要载入别人的备份，请在主页点「＋」→「导入记忆」。</p>
+      <p class="hint-text">把本群的对话记录、成员人设与记忆、AI 人数、世界观与世界观关键词、剧情时间线、成员关键词、玩家设定、群名头像、总结内容等全部设定打包成一份文件，导出下载到本地。<b>出于安全考虑，本群单独设置的 API Key 不会包含在备份里</b>。要载入别人的备份，请在主页点「＋」→「导入记忆」。</p>
       <label class="switch-row" style="margin-bottom:8px;">导出本群</label>
       <button class="btn-primary" id="gsExport">⬇ 导出备份文件</button>
       <p class="hint-text" id="gsTransferMsg"></p>
@@ -1192,8 +1201,8 @@
       <button class="btn-ghost" id="btnSumAutoOff" style="width:100%; margin-top:10px;">关闭自动总结（回到手动）</button>
     </div>
     <label>总结内容</label>
-    <textarea id="sumContent" rows="7" readonly placeholder="点击「手动总结」，或在「自动总结」里选一个阈值后，压缩出来的总结会写在这里。压缩后较早的消息会被移除，但总结会随每次对话注入给 AI，关键信息不会丢失。"></textarea>
-    <label class="switch-row" style="margin-top:10px;">同时压缩角色记忆（主要角色保留更多细节）
+    <textarea id="sumContent" rows="7" readonly placeholder="点击「手动总结」，或在「自动总结」里选一个阈值后，压缩出来的总结会写在这里。压缩后较早的消息会被移除。这份总结只给你（作者 / 玩家）看，供回顾剧情、防止故事剧情发生错乱——角色不会看到它，他们只记得自己亲身经历或听说的剧情（角色记忆）。"></textarea>
+    <label class="switch-row" style="margin-top:10px;">同时压缩角色记忆（只精简角色自己的记忆，主要角色保留更多细节）
       <span class="switch"><input type="checkbox" id="sumCompressMem"><span></span></span>
     </label>
     <p class="hint-text" id="sumHint"></p>
@@ -1242,7 +1251,7 @@
     <label>关键词</label>
     <div id="emKeywords" class="kw-box"></div>
     <button id="emKwAdd" class="btn-add" style="margin:10px 0 0;">＋ 添加关键词</button>
-    <p class="hint-text">当有人提到某个关键词时，这个成员会先查看关键词详情，再按剧情需要选择性作出反应。关键词详情不会被「总结」压缩。</p>
+    <p class="hint-text">当有人提到某个关键词时，这个成员会先查看关键词详情，再按剧情需要选择性作出反应。关键词可以是性格、身份、目标，也可以是某个时间、地点、物品、人物、事件、关系等，词长不限。关键词详情不会被「总结」压缩。</p>
     <label>角色类型</label>
     <div class="role-box">
       <label class="role-opt"><input type="radio" name="emRole" value="main"><span>主要角色</span><small>最多 10 个 · 记忆保留更多细节</small></label>
@@ -1291,7 +1300,7 @@
     <label>关键词</label>
     <div id="libKeywords" class="kw-box"></div>
     <button id="libKwAdd" class="btn-add" style="margin:10px 0 0;">＋ 添加关键词</button>
-    <p class="hint-text">角色卡的关键词随卡片导入群成员时一起带入；世界书的关键词随导入一起填入世界观。关键词详情不会被「总结」压缩。</p>
+    <p class="hint-text">角色卡的关键词随卡片导入群成员时一起带入；世界书的关键词随导入一起填入世界观。关键词可以是性格、身份、目标，也可以是某个时间、地点、物品、人物、事件、关系等，词长不限。关键词详情不会被「总结」压缩。</p>
     <div class="modal-actions">
       <button class="btn-danger hidden" id="libDel" style="margin-right:auto;">删除</button>
       <button class="btn-ghost" id="libCancel">取消</button>
@@ -1526,6 +1535,26 @@
   </div>
 </div>
 
+<!-- 时间线（世界观记忆 · 剧情发展线，仅作者可见，角色不会看到） -->
+<div id="timelineModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>剧情时间线 · 世界观记忆</h3>
+    <p class="hint-text" id="timelineSub"></p>
+    <div class="timeline-body" id="timelineBody"></div>
+    <p class="cost-note">这是故事一路发展下来的时间线，只给你（作者 / 玩家）看，角色看不到——角色只知道他们亲身经历或听说的剧情，防止角色知道不该知道的事、剧情错乱。想修改，请到「设置」里的「剧情时间线」。</p>
+    <div class="modal-actions"><button class="btn-ghost" id="timelineCopy">复制</button><button class="btn-ghost" id="timelineClose">关闭</button></div>
+  </div>
+</div>
+
+<!-- 退出确认（手机原生返回键回到主页最底层时询问） -->
+<div id="exitModal" class="modal-overlay hidden">
+  <div class="modal small">
+    <h3>退出梦语</h3>
+    <p class="hint-text">确定要退出「梦语」吗？</p>
+    <div class="modal-actions"><button class="btn-ghost" id="exitNo">取消</button><button class="btn-danger" id="exitYes">退出</button></div>
+  </div>
+</div>
+
 <!-- 居中提醒（渐变红字，淡入淡出） -->
 <div id="toast" class="toast"><span class="toast-txt"></span></div>
 
@@ -1553,8 +1582,15 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.4.3';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.4.4';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.4.4', date:'2026-09-07', title:'剧情时间线（世界观记忆）· 关键词自主成长 · 总结仅作者可见 · 安卓返回键', items:[
+    '三个模式的世界观都加上了「剧情时间线（世界观记忆）」：在设置页的「世界观」里可以手动编辑，AI 也会每过一段时间把一路推进的剧情自动续写进去；消息区「＋」新增「时间线」小工具，随时查看 / 复制这条线。它只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱；随「记忆转移」一起备份',
+    '「总结」改为只给作者（玩家）看：不再注入给角色，防止故事剧情发生错乱——角色只记得自己亲身经历或听说的剧情（他们的「记忆」）；「同时压缩角色记忆」现在只精简角色自己的记忆，重要剧情与关键信息会保留、不会丢',
+    '角色经历对塑造有长期重大影响的情节后，会在记忆提炼时自主给自己新增「关键词」；关键词不限于性格——也可以是某个时间、地点、物品、人物、事件、身份、目标、关系等，词长不限，只按重要程度给数量（一般到约 40 个就不再自动新增）',
+    '手机端：点系统返回键不再直接退回桌面，而是和软件自己的返回键一样一层层往回走（先关弹窗 → 收起「＋」菜单 → 聊天返回主页列表 → 主页子页退回会话列表），在主页最底层时会先弹「是否退出软件」的确认框',
+    '主页「＋」菜单里「新建故事」下方新增「新建攻略」「新建模拟」两个占位入口，对应后面会推出的「攻略模式」「模拟模式」，目前点了会提示开发中'
+  ]},
   { v:'0.4.3', date:'2026-09-03', title:'字数拆成范围 + 强制字数 · 记忆按剧情合理知晓 · 下轮对话布局与滑动 · 卡/书智能导入', items:[
     '「＋」里的「字数」拆成两个：「字数范围」保留原来的上限 / 下限；新增「强制字数」——用 O / N 开关打开后可点档位或输入目标字数，AI 回复会强制写到约 N 字（允许 ±10% 误差），关闭后自动回到「字数范围」',
     '角色的记忆只在「剧情合理知晓」时才写入：按「我」的发言把对话切成一轮一轮，角色只从自己参与回复的轮次里提炼记忆，不再把角色未在场、不知情时发生的事写进自己的记忆',
@@ -1860,12 +1896,12 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 19;
+var BOARD_TUT_VERSION = 20;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图小工具；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「总结」可压缩上下文，勾选也能同时压缩角色记忆，重要事件保留更多细节。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事。\n· 「酒馆」里点「结识角色卡 / 结识世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
-  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。「世界观」页签里的「剧情时间线（世界观记忆）」会自动记录剧情发展、也可手动编辑；时间线与「总结」都只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆；经历影响自身塑造的重大剧情后，TA 还会在记忆提炼时自主新增「关键词」——关键词不限于性格，也可以是某个时间 / 地点 / 物品 / 人物 / 事件 / 身份 / 关系等，词长不限，只按重要程度给数量。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图 / 时间线小工具（时间线即世界观记忆，随时查看 / 复制发展线）；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「世界观」页签的「剧情时间线（世界观记忆）」会自动记录故事发展线、也可手动编辑；「总结」可压缩上下文、勾选也能同时压缩角色记忆——时间线与总结都只给作者（玩家）看，角色看不到，防止剧情错乱，角色只记得自己经历或听说的剧情（重要剧情不会丢）。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名；经历影响自身的重大剧情后，角色会自主给「关键词」成长（不限于性格，时间 / 地点 / 物品 / 人物 / 事件等皆可，词长不限）。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事；另有「新建攻略」「新建模拟」两个占位入口，对应后面将推出的攻略 / 模拟模式。\n· 「酒馆」里点「结识角色卡 / 结识世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
+  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。「世界观」页签里的「剧情时间线（世界观记忆）」会随你们的对话自动记录推进线、也可手动编辑，「＋」里也有「时间线」小工具；时间线与「总结」都只给作者看，TA 看不到——TA 只记得自己经历过的对话，重大经历后也会在记忆提炼时自主成长「关键词」。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）/ 时间线与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -1925,7 +1961,7 @@ function newConv(name, chars, history){
   chars.forEach(function(c){ if(typeof c.present==='undefined') c.present = true; if(typeof c.memory!=='string') c.memory=''; if(['main','minor','extra'].indexOf(c.role)===-1) c.role='minor'; assignId(c); });
   history.forEach(assignId);
   var now = Date.now();
-  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', player:'', breakPrompt:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, minReplyLen:DEFAULT_MINLEN, forceLen:0, forceOn:false, relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
+  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', worldMem:'', worldMemAt:0, player:'', breakPrompt:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, minReplyLen:DEFAULT_MINLEN, forceLen:0, forceOn:false, relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
 }
 function load(){
   try{ settings = Object.assign({apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE}, JSON.parse(localStorage.getItem(LS.set)||'{}')); }catch(e){}
@@ -1955,6 +1991,8 @@ function load(){
     if(typeof cv.randomOrder !== 'boolean') cv.randomOrder = false;
     if(typeof cv.name !== 'string' || !cv.name) cv.name = '群聊';
     if(typeof cv.world !== 'string') cv.world = '';
+    if(typeof cv.worldMem !== 'string') cv.worldMem = '';
+    if(typeof cv.worldMemAt !== 'number') cv.worldMemAt = 0;
     if(typeof cv.player !== 'string') cv.player = '';
     if(typeof cv.apiKey !== 'string') cv.apiKey = '';
     if(typeof cv.apiBase !== 'string') cv.apiBase = '';
@@ -2210,6 +2248,8 @@ $('newConvMenu').addEventListener('click', function(e){
   if(act === 'new') doNewConv();
   else if(act === 'dm') doNewDm();
   else if(act === 'story') doNewStory();
+  else if(act === 'guide') showToast('攻略模式开发中，敬请期待');
+  else if(act === 'sim') showToast('模拟模式开发中，敬请期待');
   else if(act === 'import') $('importMemFile').click();
 });
 function doNewDm(){
@@ -2269,6 +2309,7 @@ $('fabMenu').addEventListener('click', function(e){
   else if(act === 'cost') openCost();
   else if(act === 'len') openLen();
   else if(act === 'forcelen') openForceLen();
+  else if(act === 'timeline') openTimeline();
   else if(act === 'rel') openRel();
   else if(act === 'attach') $('attachFile').click();
 });
@@ -2357,7 +2398,6 @@ function openCost(){
   if(cv.world) inChars += cv.world.length;
   if(cv.player) inChars += cv.player.length;
   (cv.chars||[]).forEach(function(c){ if(c.persona) inChars += c.persona.length; if(c.memory) inChars += c.memory.length; });
-  if(cv.summary) inChars += cv.summary.length;
   var rows = '<div class="cost-row"><span>消息条数</span><b>'+n+'</b></div>';
   rows += '<div class="cost-row"><span>估算输入</span><b>≈ '+fmtTokens(Math.max(1,inChars))+' tokens</b></div>';
   rows += '<div class="cost-row"><span>估算输出</span><b>≈ '+fmtTokens(Math.max(0,outChars))+' tokens</b></div>';
@@ -2600,6 +2640,24 @@ $('forceApply').addEventListener('click', function(){
 });
 $('forceInput').addEventListener('keydown', function(e){
   if(e.key === 'Enter'){ e.preventDefault(); $('forceApply').click(); }
+});
+
+/* 时间线小工具：查看当前会话的「剧情时间线（世界观记忆）」（仅作者可见，角色看不到） */
+function openTimeline(){
+  var cv = current();
+  if(!cv) return;
+  var name = cv.name || '';
+  $('timelineSub').textContent = cv.mode === 'story' ? '「'+name+'」的故事发展线' : (cv.mode === 'dm' ? '「'+name+'」的对话推进线' : '「'+name+'」的剧情推进线');
+  var body = $('timelineBody');
+  body.textContent = cv.worldMem && cv.worldMem.trim() ? cv.worldMem : '（还没有记录剧情时间线。随着剧情推进，AI 会在这里自动续写；也可以在「设置」里手动写。）';
+  $('timelineModal').classList.remove('hidden');
+}
+function closeTimeline(){ $('timelineModal').classList.add('hidden'); }
+$('timelineClose').addEventListener('click', closeTimeline);
+$('timelineCopy').addEventListener('click', function(){
+  var txt = (current() && current().worldMem) || '';
+  if(!txt.trim()){ showToast('还没有剧情时间线内容可复制。'); return; }
+  copyText(txt);
 });
 
 /* 骰子：选面数 + 自定义每面内容 + 投出（重投 / 取消 / 附消息确认发出） */
@@ -3258,7 +3316,7 @@ function send(){
     summarizeContext(cv).then(function(content){
       if(content){
         applySummary(cv, content);
-        if(cv.compressMem) compressMemories(cv, content);   // 压缩角色记忆（后台进行，不阻塞发送）
+        if(cv.compressMem) compressMemories(cv);   // 压缩角色记忆（后台进行，不阻塞发送）
       }
       else addNote('自动总结失败，跳过本次压缩。');
       generating = false; setGenerating(false);
@@ -3371,7 +3429,6 @@ function buildMessages(c, cv){
       '【玩家设定 · 故事里的人类「我」】\n' + (cv.player || '（未设定，把「我」当作普通角色即可）') + '\n\n' +
       '【你的人设，务必遵守】\n' + (c.persona || '（无特别设定）') + '\n\n' +
       '【你的记忆（你知道的事）】\n' + (c.memory || '（暂无）') + '\n\n' +
-      '【更早对话总结（这是早前对话的压缩要点，当作既知事实）】\n' + (cv.summary || '（暂无）') + '\n\n' +
       '回复格式（务必严格遵守）：\n' +
       (allowNarr
         ? '1. 「旁白：……」是可选的，而且不要每轮都写：只在剧情确实需要（环境变化、时间流逝、画面转场等）时，才在开头写一行用第三人称描写的旁白，平时不用写。\n'
@@ -3391,7 +3448,6 @@ function buildMessages(c, cv){
       '【玩家设定 · 人类「我」】\n' + (cv.player || '（未设定，把「我」当作普通用户即可）') + '\n\n' +
       '【你的人设，务必遵守】\n' + (c.persona || '（无特别设定）') + '\n\n' +
       '【你的记忆（你知道的事）】\n' + (c.memory || '（暂无）') + '\n\n' +
-      '【更早对话总结（这是早前对话的压缩要点，当作既知事实）】\n' + (cv.summary || '（暂无）') + '\n\n' +
       '对话规则：\n' +
       '1. 你只能以「'+c.name+'」的身份和口吻说话，始终保持你的人设，并遵守本私聊设定。\n' +
       '2. 这是你和我两个人的私聊，不需要替别人说话，也不要提到其它角色。\n' +
@@ -3406,7 +3462,6 @@ function buildMessages(c, cv){
       '【玩家设定 · 群里的人类「我」】\n' + (cv.player || '（未设定，把「我」当作普通用户即可）') + '\n\n' +
       '【你的人设，务必遵守】\n' + (c.persona || '（无特别设定）') + '\n\n' +
       '【你的记忆（你知道的事）】\n' + (c.memory || '（暂无）') + '\n\n' +
-      '【更早对话总结（这是早前对话的压缩要点，当作既知事实）】\n' + (cv.summary || '（暂无）') + '\n\n' +
       '对话规则：\n' +
       '1. 你只能以「'+c.name+'」的身份和口吻说话，始终保持你的人设，并遵守本群世界观。\n' +
       '2. 群里其他人：'+(others || '（目前只有你一个 AI 在场）')+'，他们是谁与你无关，不要替他们说话，也不要模仿他们。\n' +
@@ -3528,7 +3583,7 @@ function generateReply(c, cv){
   }).finally(function(){
     delete activeCtrls[c.id];
     setMsgText(msg); save(); renderConvList();
-    if(msg.status === 'done') updateMemory(c, cv);
+    if(msg.status === 'done'){ updateMemory(c, cv); updateStoryline(cv); }
   });
 }
 
@@ -3560,7 +3615,6 @@ function updateMemory(c, cv){
   if(uc - (c.lastMemAt||0) < 8) return;   // 节流：约每 8 条用户发言提炼一次
   var sys = '你是「'+c.name+'」，你的人设：\n' + (c.persona||'（无）') +
     '\n\n你当前的记忆：\n' + (c.memory || '（暂无）') +
-    '\n\n更早对话总结：\n' + (cv.summary || '（暂无）') +
     '\n\n你的关键词：\n' + (c.keywords && c.keywords.length ? c.keywords.map(function(k){ return '· '+k.key+'：'+(k.detail||'（无详情）'); }).join('\n') : '（无）');
   var msgs = [{ role:'system', content:sys }];
   var ctx = memoryCtxFor(c, cv);
@@ -3569,7 +3623,10 @@ function updateMemory(c, cv){
     else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
   msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。只挑「你亲身经历、亲眼所见，或别人直接告诉你」的事；这段对话里发生在你没参与、你并不知晓的时刻的情节，不要当成你自己的记忆写进去。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。\n'+roleInstr(c) +
-    '\n\n另外，对照上面这段对话检查你的「关键词」：如果剧情发展让某个关键词的情况发生了变化（例如关键词是「杀父之仇」，现在已经报了仇，详情就应该更新成「已复仇，放下了心结」），就在记忆末尾单独输出关键词更新，格式为：\n【关键词更新】\n关键词名：更新后的详情\n……\n每个要更新的关键词占一行，关键词名必须与现有关键词完全一致；如果关键词详情没有变化，就什么都不要加。' +
+    '\n\n另外，对照上面这段对话检查你的「关键词」（关键词不限于性格：也可以是某个时间、地点、物品、人物、事件、身份、目标、关系等，词长不限，不必是四个字，每个关键词带一句详情）：\n' +
+    '- 更新：某个现有关键词代表的情况发生了变化（例如关键词「杀父之仇」，现已报仇，详情更新成「已复仇，放下了心结」）。\n' +
+    '- 新增：这段剧情里发生了对你的塑造有长期重大影响的新事项（比如结识了某个重要的人、获得或失去了重要的东西、改变了人生的重大事件、立下新的目标、身份转变等），就把它新增为一个关键词。新增只挑真正重要、足以改变你的，数量按剧情自由、不要凑数；若你的关键词已接近 40 个，就只更新、不要再新增；新词不要与现有关键词重复或意思相近。\n' +
+    '若有以上变化，就在记忆末尾单独输出关键词更新块，格式为：\n【关键词更新】\n关键词名：更新后的详情（更新现有关键词，名字必须与现有关键词完全一致）\n新增关键词：新关键词——一句话详情（新增的关键词）\n……\n若既无更新也无新增，就不要输出这个块。' +
     '\n\n另外，如果剧情推进让当前世界观发生了明显变化（例如世界发生重大事件、规则或势力格局改变、主角所处地区转变等），请在最后单独输出世界观更新，格式为：\n【世界观更新】\n更新后的世界观描述\n如果世界观没有明显变化，就不要加这一块。' });
   var ub = { model: groupModel(cv), messages:msgs, stream:false, temperature:0, max_tokens:roleTok(c) + 320 };
   if(isDeepseek(cv)) ub.thinking = { type:'disabled' };
@@ -3595,12 +3652,22 @@ function updateMemory(c, cv){
         if(mem) c.memory = mem.slice(0, roleCap(c));
         content.slice(m2 + 7).split('\n').forEach(function(ln){
           ln = ln.trim();
-          if(!ln) return;
-          var i = ln.indexOf('：');
-          if(i <= 0) i = ln.indexOf(':');
-          if(i <= 0) return;
-          var kk = ln.slice(0, i).trim(), dd = ln.slice(i + 1).trim();
-          (c.keywords || []).forEach(function(k){ if(k && k.key === kk) k.detail = dd; });
+          if(!ln || ln.charAt(0) === '【') return;            // 别的标记块残行，跳过
+          var isNew = /^(新增|[＋+*])/.test(ln);              // 新增关键词：/ ＋ / + / *
+          if(/^新增/.test(ln)) ln = ln.replace(/^新增(关键词)?/, '').replace(/^[：:—\-]+\s*/, '');
+          else if(/^[＋+*]/.test(ln)) ln = ln.replace(/^[＋+*]/, '').trim();
+          var norm = ln.replace(/——/g, '：');
+          var ci = norm.indexOf('：');
+          if(ci <= 0) return;
+          var kk = norm.slice(0, ci).trim();
+          var dd = norm.slice(ci + 1).trim();
+          if(!kk) return;
+          var hit = null;
+          (c.keywords || []).forEach(function(k){ if(k && k.key === kk) hit = k; });
+          if(hit){ hit.detail = dd; return; }                 // 与现有关键词同名 → 更新详情
+          if(!isNew) return;                                   // 未标「新增」的非同名行不处理，防误新增近义词
+          if(c.keywords.length >= 40) return;                  // 关键词软上限：只更新不再新增
+          c.keywords.push({ id:seq++, key:kk.slice(0,40), detail:dd.slice(0,300) });
         });
       } else {
         c.memory = content.trim().slice(0, roleCap(c));
@@ -3609,6 +3676,52 @@ function updateMemory(c, cv){
       save();
     }
   }).catch(function(){}); // 记忆提炼失败不影响聊天
+}
+
+/* 剧情时间线（世界观记忆）自动续写：给作者维护一条旁观者视角的时间线。
+   这条线角色看不到（buildMessages 不会注入 worldMem），只给作者/玩家看。
+   与成员记忆共用 cv.autoMemory 开关和节流节奏（约每 8 条用户发言续写一次）。 */
+function userMsgCount(cv){
+  var n = 0, i;
+  for(i=0;i<cv.history.length;i++){ if(cv.history[i].speakerId === 'user') n++; }
+  return n;
+}
+function updateStoryline(cv){
+  if(!cv.autoMemory) return;
+  if(missingKey(cv)) return;
+  var uc = userMsgCount(cv);
+  if(uc - (cv.worldMemAt||0) < 8) return;
+  var cur = cv.worldMem || '';
+  if(cur.length >= 8000) return;   // 已达上限：暂停自动追加，等作者在「设置」里手动精简
+  function tr(s, n){ s = (s || '').replace(/\s+/g,' ').trim(); return s.length <= n ? s : s.slice(0, n) + '……'; }
+  var names = ['我'];
+  (cv.chars || []).forEach(function(ch){ if(ch && ch.name && names.indexOf(ch.name) === -1) names.push(ch.name); });
+  var tail = cur.length > 1400 ? '……'+cur.slice(-1400) : (cur || '（还没有时间线）');
+  var msgs = [{ role:'system', content:'你是梦语的「剧情时间线整理者」，负责为作者的会话维护一条只给作者看的剧情时间线。你不是故事里的角色，不要用任何角色视角说话。' }];
+  msgs.push({ role:'user', content:'会话：「'+(cv.name||'')+'」（'+(cv.mode==='story'?'故事':cv.mode==='dm'?'私聊':'群聊')+'）\n当前世界观：'+(cv.world||'（无）')+'\n出场角色：'+names.join('、')+'\n\n已有时间线（末尾部分，只作避免重复的参考）：\n'+tail });
+  cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-24).forEach(function(m){
+    if(m.speakerId === 'user') msgs.push({ role:'user', content:'我：'+tr(m.text, 500) });
+    else msgs.push({ role:'assistant', content:(m.speaker||'？')+'：'+tr(m.text, 500) });
+  });
+  msgs.push({ role:'user', content:'请把上面这段对话里「推动剧情发展的新进展」挑出来，按发生顺序追加到已有时间线末尾。要求：只写这里新发生的事，已有时间线里记录过的不要重复；用旁观者视角写简短条目；每条一行，最多 6 条；直接输出要追加的文本，不要任何说明前缀。如果这段对话没有值得记录的剧情进展，只输出一行：（无进展）' });
+  var body = { model: groupModel(cv), messages:msgs, stream:false, temperature:0.4, max_tokens:600 };
+  if(isDeepseek(cv)) body.thinking = { type:'disabled' };
+  var hdrs = { 'Content-Type':'application/json' };
+  var gk = groupKey(cv);
+  if(gk && gk.trim()) hdrs['Authorization'] = 'Bearer '+gk;
+  fetch(apiUrl(cv), { method:'POST', headers:hdrs, body:JSON.stringify(body) })
+    .then(function(r){ return r.json(); }).then(function(j){
+      var content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      cv.worldMemAt = uc;   // 无论有无进展都推进节流，避免反复读同一段历史
+      if(typeof content === 'string' && content.trim()){
+        var seg = content.trim();
+        if(seg.indexOf('无进展') === -1){
+          var prev = (cv.worldMem || '').replace(/\s+$/,'');
+          cv.worldMem = (prev ? prev + '\n' : '') + seg.slice(0, 8000 - prev.length);
+        }
+      }
+      save();
+    }).catch(function(){}); // 时间线续写失败不影响聊天
 }
 
 function setGenerating(b){
@@ -3822,6 +3935,8 @@ function importBackup(file){
       if(!Array.isArray(conv.selectedNext)) conv.selectedNext = [];
       if(typeof conv.name !== 'string' || !conv.name) conv.name = '未命名群聊';
       if(typeof conv.world !== 'string') conv.world = '';
+      if(typeof conv.worldMem !== 'string') conv.worldMem = '';
+      if(typeof conv.worldMemAt !== 'number') conv.worldMemAt = 0;
       if(typeof conv.player !== 'string') conv.player = '';
       if(typeof conv.apiKey !== 'string') conv.apiKey = '';   // 备份不含 apiKey，回退用全局 Key
       if(typeof conv.apiBase !== 'string') conv.apiBase = ''; // 接口地址 / 模型名非密钥，随备份一起还原
@@ -4069,7 +4184,7 @@ function runTavern(mode, base, info){
     instr = hint + '请创作一位全新的、有魅力的 AI 角色' + (mode === 'deriveCard' ? '，其设定要与提供的世界书高度配套、契合' : '') + '。要求：\n' +
       '1. 角色名 2-8 个字' + (mode === 'card' && info && (info.name || '').trim() ? '（按上面客人填的姓名来）' : '，不要与已有名字重复（已有：' + (usedNames.length ? usedNames.join('、') : '无') + '）') + '。\n' +
       '2. 人设 1-2 句话，说清楚性格与身份背景。\n' +
-      '3. 给出 1-3 个与该角色相关、容易随剧情发展而变化的关键词，每个关键词配一句详情（例如关键词「杀父之仇」，详情可以是「父亲被杀，誓要手刃仇人」）。\n' +
+      '3. 给出 1-3 个与该角色相关、容易随剧情发展而变化的关键词（关键词不限于性格：可以是身份、目标，也可以是某个时间、地点、物品、人物、事件、关系等，词长不限，不必是四个字），每个关键词配一句详情（例如关键词「杀父之仇」，详情可以是「父亲被杀，誓要手刃仇人」）。\n' +
       (mode === 'deriveCard' ? '4. 参考的已有世界书：\n书名《' + base.name + '》\n内容：' + base.world + '\n请让这个角色在这部世界里成立、有存在感。\n' : '') +
       '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
       '{"char":{"name":"角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}}';
@@ -4082,7 +4197,7 @@ function runTavern(mode, base, info){
     instr = hint + '请创作一部全新的、有氛围的世界书' + (mode === 'deriveWorld' ? '，其设定要与提供的角色卡高度配套、契合' : '') + '。要求：\n' +
       '1. 书名 2-10 个字' + (mode === 'world' && info && (info.name || '').trim() ? '（按上面客人填的世界名来）' : '，不要与已有书名重复') + '。\n' +
       '2. 内容 2-4 句描述该世界的环境、势力与氛围。\n' +
-      '3. 给出 1-3 个与该世界相关、容易随剧情发展而变化的关键词，每个关键词配一句详情。\n' +
+      '3. 给出 1-3 个与该世界相关、容易随剧情发展而变化的关键词（关键词不限于设定词：也可以是这个世界里某个重要的时间、地点、物品、人物、事件、势力、关系等，词长不限，不必是四个字），每个关键词配一句详情。\n' +
       (mode === 'deriveWorld' ? '4. 参考的已有角色卡：\n角色名「' + base.name + '」\n人设：' + base.persona + '\n请让这部世界能容纳这个角色、适合 TA 的故事。\n' : '') +
       '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
       '{"world":{"name":"书名","world":"世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}}';
@@ -4387,8 +4502,8 @@ function aiConvertLibText(kind, txt, base){
     ? '你是「梦语」的角色卡整理助手，负责把导入的 txt / md / markdown 文本整理成符合本软件「角色卡」格式的内容。'
     : '你是「梦语」的世界书整理助手，负责把导入的 txt / md / markdown 文本整理成符合本软件「世界书」格式的内容。';
   var instr = isCard
-    ? '下面这段文本将被导入成一张「角色卡」。一张「角色卡」包含三个部分：name（角色名）、persona（人设）、keywords（关键词）。\n判断这段文本是否已经可以直接当作该角色的「人设」：如果已经是一段通顺、可直接作人设的文字，请把 persona 设为空字符串 ""（表示「原文已可直接使用」，软件会原样保留它，人设内容一字不改）；只有当文本是小说、故事、零散资料等没法直接当人设的内容时，才把 persona 写成整理后的正式人设（身份、性格、经历、人物关系等），并且必须忠于原文，不得新增原文没有的设定、也不得改变原文已有的人物事实。\n再提炼该角色的「关键词」（keywords 数组，每项为 {"key":"关键词","detail":"详情"}）：数量不设固定值，按这个角色在剧情与人设里的重要程度自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个；每个关键词各配一句详情。\n角色名：如果文件名《' + base + '》看起来像角色名就优先采用它；否则从文本里挑最贴切的主要角色名（必须是文本中出现过的名字）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"角色名","persona":"整理后的人设；若原文可直接使用则填空字符串 \\\"\\\"","keywords":[{"key":"关键词","detail":"详情"}]}\n\n文件名：《' + base + '》\n\n文本内容：\n' + text
-    : '下面这段文本将被导入成一本「世界书」。一本「世界书」包含三个部分：name（名称）、world（世界观描述）、keywords（关键词）。\n判断这段文本是否已经可以直接当作「世界观」描述：如果已经是一段通顺、可直接作世界观描述的文字，请把 world 设为空字符串 ""（表示「原文已可直接使用」，软件会原样保留它，世界观内容一字不改）；只有当文本是小说、故事、零散资料等没法直接当世界观的内容时，才把 world 写成整理后的正式世界观（时代背景、地理与势力、规则体系、氛围基调等），并且必须忠于原文，不得新增原文没有的设定。\n再提炼「关键词」（keywords 数组，每项为 {"key":"关键词","detail":"详情"}）：数量不设固定值，按这个世界观要素在剧情里的重要程度自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个；每个关键词各配一句详情。\n名称：如果文件名《' + base + '》看起来可用就优先采用它；否则从文本里挑一个贴切的名字。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"名称","world":"整理后的世界观；若原文可直接使用则填空字符串 \\\"\\\"","keywords":[{"key":"关键词","detail":"详情"}]}\n\n文件名：《' + base + '》\n\n文本内容：\n' + text;
+    ? '下面这段文本将被导入成一张「角色卡」。一张「角色卡」包含三个部分：name（角色名）、persona（人设）、keywords（关键词）。\n判断这段文本是否已经可以直接当作该角色的「人设」：如果已经是一段通顺、可直接作人设的文字，请把 persona 设为空字符串 ""（表示「原文已可直接使用」，软件会原样保留它，人设内容一字不改）；只有当文本是小说、故事、零散资料等没法直接当人设的内容时，才把 persona 写成整理后的正式人设（身份、性格、经历、人物关系等），并且必须忠于原文，不得新增原文没有的设定、也不得改变原文已有的人物事实。\n再提炼该角色的「关键词」（keywords 数组，每项为 {"key":"关键词","detail":"详情"}；关键词不限于性格：可以是身份、目标、关系，也可以是某个时间、地点、物品、人物、事件等，词长不限，不必是四个字）：数量不设固定值，按这个角色在剧情与人设里的重要程度自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个；每个关键词各配一句详情。\n角色名：如果文件名《' + base + '》看起来像角色名就优先采用它；否则从文本里挑最贴切的主要角色名（必须是文本中出现过的名字）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"角色名","persona":"整理后的人设；若原文可直接使用则填空字符串 \\\"\\\"","keywords":[{"key":"关键词","detail":"详情"}]}\n\n文件名：《' + base + '》\n\n文本内容：\n' + text
+    : '下面这段文本将被导入成一本「世界书」。一本「世界书」包含三个部分：name（名称）、world（世界观描述）、keywords（关键词）。\n判断这段文本是否已经可以直接当作「世界观」描述：如果已经是一段通顺、可直接作世界观描述的文字，请把 world 设为空字符串 ""（表示「原文已可直接使用」，软件会原样保留它，世界观内容一字不改）；只有当文本是小说、故事、零散资料等没法直接当世界观的内容时，才把 world 写成整理后的正式世界观（时代背景、地理与势力、规则体系、氛围基调等），并且必须忠于原文，不得新增原文没有的设定。\n再提炼「关键词」（keywords 数组，每项为 {"key":"关键词","detail":"详情"}；关键词不限于设定词：也可以是这个世界里某个重要的时间、地点、物品、人物、事件、势力、关系等，词长不限，不必是四个字）：数量不设固定值，按这个世界观要素在剧情里的重要程度自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个；每个关键词各配一句详情。\n名称：如果文件名《' + base + '》看起来可用就优先采用它；否则从文本里挑一个贴切的名字。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"名称","world":"整理后的世界观；若原文可直接使用则填空字符串 \\\"\\\"","keywords":[{"key":"关键词","detail":"详情"}]}\n\n文件名：《' + base + '》\n\n文本内容：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
   var body = { model: groupModel({}), messages:msgs, stream:false, temperature:0.3, max_tokens: 8000 };
   if(isDeepseek({})) body.thinking = { type:'disabled' };
@@ -4491,8 +4606,8 @@ function runWorldAi(){
     : '你是「梦语」的世界观提取助手，擅长从小说文本中提炼世界观设定。';
   var instr = isMimic
     ? '请阅读下面这部小说的内容，理解它的世界观与整体风格，然后按照「模仿要求」，原创一个风格相似、设定全新的世界观（不要复述原文的具体设定与人物）。\n\n模仿要求：\n' + (req || '（未填写，就按原作的风格做同风格仿写）') +
-      '\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"新书名或世界观名称","world":"新世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n新世界观描述请写约 ' + want + ' 字，风格与原著相似，但设定与人物必须原创；覆盖背景、势力、规则、氛围。再给出世界观关键词，每个配一句详情（例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）。关键词数量不设固定值：按这个新世界观里值得长期关注的核心设定自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个。\n\n参考小说内容：\n' + text
-    : '请阅读下面这部小说的内容，提炼它的世界观：世界背景与时代、地理与势力分布、核心规则或力量体系、整体氛围基调，整理成一本「世界书」。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"书名或世界观名称","world":"世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n世界观描述请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定；覆盖背景、势力、规则、氛围。再给世界观关键词（根据剧情提炼，每个配一句详情，例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）：数量不设固定值，按这个世界观要素在剧情里的重要程度自由决定，可能一个都没有（keywords 给空数组 []），也可能有多个。\n\n小说内容：\n' + text;
+      '\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"新书名或世界观名称","world":"新世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n新世界观描述请写约 ' + want + ' 字，风格与原著相似，但设定与人物必须原创；覆盖背景、势力、规则、氛围。再给出世界观关键词，每个配一句详情（例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）。关键词不限于性格：也可以是某个时间、地点、物品、人物、事件、身份、关系等，词长不限，不必是四个字。关键词数量不设固定值：按这个新世界观里值得长期关注的核心设定自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个。\n\n参考小说内容：\n' + text
+    : '请阅读下面这部小说的内容，提炼它的世界观：世界背景与时代、地理与势力分布、核心规则或力量体系、整体氛围基调，整理成一本「世界书」。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"name":"书名或世界观名称","world":"世界观描述","keywords":[{"key":"关键词","detail":"详情"}]}\n世界观描述请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定；覆盖背景、势力、规则、氛围。再给世界观关键词（根据剧情提炼，每个配一句详情，例如关键词「灵气复苏」，详情「末法时代之后灵气重回大地」）：关键词不限于设定词：也可以是这个世界里某个重要的时间、地点、物品、人物、事件、势力、关系等，词长不限，不必是四个字。数量不设固定值，按这个世界观要素在剧情里的重要程度自由决定，可能一个都没有（keywords 给空数组 []），也可能有多个。\n\n小说内容：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
   var body = { model: groupModel({}), messages:msgs, stream:false, temperature: isMimic ? 0.9 : 0.3, max_tokens:Math.min(4000, want + 300) };
   if(isDeepseek({})) body.thinking = { type:'disabled' };
@@ -4584,8 +4699,8 @@ function runCardAi(){
     ? '你是「梦语」的角色仿写助手，擅长参考原著角色的特点，原创一个风格相似、设定全新的角色。'
     : '你是「梦语」的角色提取助手，擅长从小说文本中提炼指定角色的设定。';
   var instr = isMimic
-    ? '请阅读下面这段文本，找到名为「' + name + '」的角色作为参考。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请参考他的身份、性格、经历与人物关系，原创一个风格相似、设定全新的新角色（不要照搬原角色的姓名与具体设定）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"新角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，风格与原著角色相似，但姓名与设定必须原创。再给出该角色的关键词，每个配一句详情（例如关键词「剑痴」，详情「一生痴迷剑道，为剑而生」）。关键词数量不设固定值：按这个角色值得长期关注的点自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个。\n\n参考文本内容：\n' + text
-    : '请阅读下面这段文本，找到名为「' + name + '」的角色。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请根据剧情提炼他的身份、性格、经历与人物关系，写成人设，并给出关键词（根据剧情提炼，各配一句详情）。关键词数量不设固定值：按这个角色在剧情里的重要程度自由决定，可能一个都没有（keywords 给空数组 []），也可能有多个。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定。\n\n文本内容：\n' + text;
+    ? '请阅读下面这段文本，找到名为「' + name + '」的角色作为参考。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请参考他的身份、性格、经历与人物关系，原创一个风格相似、设定全新的新角色（不要照搬原角色的姓名与具体设定）。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"新角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，风格与原著角色相似，但姓名与设定必须原创。再给出该角色的关键词，每个配一句详情（例如关键词「剑痴」，详情「一生痴迷剑道，为剑而生」）。关键词不限于性格：也可以是某个时间、地点、物品、人物、事件、身份、关系等，词长不限，不必是四个字。关键词数量不设固定值：按这个角色值得长期关注的点自由决定，可能一个都没有（那时 keywords 给空数组 []），也可能有多个。\n\n参考文本内容：\n' + text
+    : '请阅读下面这段文本，找到名为「' + name + '」的角色。如果文本里根本没有这个角色，就只输出 {"found":false}。如果存在，请根据剧情提炼他的身份、性格、经历与人物关系，写成人设，并给出关键词（根据剧情提炼，各配一句详情）。关键词不限于性格：也可以是某个时间、地点、物品、人物、事件、身份、关系等，词长不限，不必是四个字。关键词数量不设固定值：按这个角色在剧情里的重要程度自由决定，可能一个都没有（keywords 给空数组 []），也可能有多个。\n\n只输出一个 JSON 对象，不要任何说明文字，格式为：\n{"found":true,"name":"角色名","persona":"人设","keywords":[{"key":"关键词","detail":"详情"}]}\n人设请写约 ' + want + ' 字，必须忠于原著内容，不要编造原文没有的设定。\n\n文本内容：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
   var body = { model: groupModel({}), messages:msgs, stream:false, temperature: isMimic ? 0.9 : 0.3, max_tokens:Math.min(3000, want + 300) };
   if(isDeepseek({})) body.thinking = { type:'disabled' };
@@ -4652,12 +4767,12 @@ function runContinue(){
   var scopeEl = document.querySelector('input[name="contScope"]:checked');
   var scopeAll = scopeEl && scopeEl.value === 'all';
   var scopeText = scopeAll
-    ? '选择了「生成所有角色」：把剧情中所有出现过的角色（无论戏份多少）都作为 AI 成员生成出来，人数不限、不要遗漏。每个成员给出：姓名（2-8 个字）、人设（主要 / 次要角色至少 ' + charLen + ' 字：身份、性格、目标、立场；路人角色 1-2 句话简述即可）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词（每个词配一句详情；数量按这个角色在剧情中的重要程度自由决定，可能一个都没有——那时 keywords 用空数组 []，也可能有多个）。'
-    : '选择了「生成重要角色」：只挑出对剧情有影响的重要角色——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词（每个词配一句详情；数量按这个角色在剧情中的重要程度自由决定，可能一个都没有——那时 keywords 用空数组 []，也可能有多个）。';
+    ? '选择了「生成所有角色」：把剧情中所有出现过的角色（无论戏份多少）都作为 AI 成员生成出来，人数不限、不要遗漏。每个成员给出：姓名（2-8 个字）、人设（主要 / 次要角色至少 ' + charLen + ' 字：身份、性格、目标、立场；路人角色 1-2 句话简述即可）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词（可以是性格、身份、目标、关系，也可以是某个时间、地点、物品、人物、事件等，词长不限，不必是四个字；每个词配一句详情；数量按这个角色在剧情中的重要程度自由决定，可能一个都没有——那时 keywords 用空数组 []，也可能有多个）。'
+    : '选择了「生成重要角色」：只挑出对剧情有影响的重要角色——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词（可以是性格、身份、目标、关系，也可以是某个时间、地点、物品、人物、事件等，词长不限，不必是四个字；每个词配一句详情；数量按这个角色在剧情中的重要程度自由决定，可能一个都没有——那时 keywords 用空数组 []，也可能有多个）。';
   var sys = '你是「梦语」的续写剧情助手，擅长从小说 / 剧情文本中分析人物、世界观与玩家身份，生成可直接用于续写的设定包。';
   var instr = '请阅读下面这段剧情文本，忠实于原文内容（不要编造原文没有的人物与设定），生成一份可直接用于续写的设定包：\n' +
     '1. AI 成员：' + scopeText + '\n' +
-    '2. 世界观：概括这段剧情的世界（至少 ' + worldLen + ' 字：背景时代、地理与势力、核心规则或力量体系、氛围基调），另给世界观关键词（各配一句详情；数量按这个世界观要素在剧情里的重要程度自由决定，可能没有——那时 keywords 用空数组 []，也可能有多个）。\n' +
+    '2. 世界观：概括这段剧情的世界（至少 ' + worldLen + ' 字：背景时代、地理与势力、核心规则或力量体系、氛围基调），另给世界观关键词（可以是这个世界里某个重要的时间、地点、物品、人物、事件、势力、关系等，词长不限，不必是四个字；各配一句详情；数量按这个世界观要素在剧情里的重要程度自由决定，可能没有——那时 keywords 用空数组 []，也可能有多个）。\n' +
     '3. 叙述视角：' + perText + '\n' +
     '4. 剧情总结：把整段文本的剧情流程概括成一段总结（至少 ' + summaryLen + ' 字：按时间顺序梳理关键剧情走向、重要事件与伏笔悬念，供后续续写引用），输出到 "summary" 字段，让原剧情流程在续写时不会被遗忘。\n' +
     '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
@@ -5001,6 +5116,7 @@ function openGroupSettings(tab){
   $('gsConvName').textContent = cv.name;
   $('gsName').value = cv.name;
   $('gsWorld').value = cv.world || '';
+  $('gsWorldMem').value = cv.worldMem || '';
   gsKwDraft = kwDraftFrom(cv.worldKeywords);
   renderKwBox($('gsKeywords'), gsKwDraft);
   $('gsPlayer').value = cv.player || '';
@@ -5063,6 +5179,7 @@ function saveGroupSettings(){
   var nm = $('gsName').value.trim();
   if(nm) cv.name = nm.slice(0,20);
   cv.world = $('gsWorld').value.trim();
+  cv.worldMem = $('gsWorldMem').value.trim();
   cv.worldKeywords = kwDraftCommit(gsKwDraft);
   cv.player = $('gsPlayer').value.trim();
   cv.breakPrompt = $('gsBreakPrompt').value.trim();
@@ -5218,7 +5335,7 @@ var editKwDraft = [], gsKwDraft = [], libKwDraft = [];
 function kwRowHtml(k){
   return '<div class="kw-row">' +
     '<div class="kw-head">' +
-      '<input type="text" class="kw-key" maxlength="20" placeholder="关键词" value="'+esc(k.key||'')+'">' +
+      '<input type="text" class="kw-key" maxlength="40" placeholder="关键词" value="'+esc(k.key||'')+'">' +
       '<button type="button" class="kw-detail-btn" title="查看或编辑详情">详情</button>' +
       '<button type="button" class="kw-del" title="删除这个关键词">✕</button>' +
     '</div>' +
@@ -5457,7 +5574,6 @@ function estimateContextTokens(cv){
     if(c.persona) chars += c.persona.length;
     if(c.memory) chars += c.memory.length;
   });
-  if(cv.summary) chars += cv.summary.length;
   (cv.history||[]).forEach(function(m){
     if(m.text) chars += m.text.length;
     if(m.speaker) chars += m.speaker.length;
@@ -5550,23 +5666,23 @@ function applySummary(cv, content){
   addNote('已总结压缩上下文：移除 '+removed+' 条较早消息，总结已写入「总结内容」。');
   return removed;
 }
-/* 总结时可选：把每个成员的记忆也压缩一遍（合并最新总结）；主要角色保留更多细节 */
-function compressMemories(cv, summary){
+/* 总结时可选：把每个成员的记忆也压缩一遍（只压缩角色自己的记忆，不掺入作者向的总结）；
+   保留重要剧情/关系等关键事实，只精简措辞，不删关键信息、不擅自定义。 */
+function compressMemories(cv){
   var jobs = [];
   (cv.chars||[]).forEach(function(c){
-    if(c.memory && String(c.memory).trim()){
-      jobs.push({ sys:'你是「'+c.name+'」，你的人设：\n'+(c.persona||'（无）')+'\n\n你当前的记忆：\n'+(c.memory||'')+'\n\n最新总结：\n'+(summary||'（暂无）'), c:c });
-    }
+    if(c.memory && String(c.memory).trim()) jobs.push({ c:c });
   });
   if(!jobs.length) return Promise.resolve(0);
   var done = 0;
   var chain = Promise.resolve();
   jobs.forEach(function(j){
     chain = chain.then(function(){
-      var msgs = [{ role:'system', content: j.sys +
-        '\n\n请把上面这段「已有记忆」与「最新总结」合并压缩成这份角色压缩后的新记忆。要求：\n' +
+      var sys = '你是「'+j.c.name+'」，你的人设：\n'+(j.c.persona||'（无）')+'\n\n你当前的记忆：\n'+(j.c.memory||'');
+      var msgs = [{ role:'system', content: sys +
+        '\n\n请把上面这段「你的记忆」压缩精炼成一份更简短但仍完整的记忆。要求：\n' +
         '1. '+roleInstr(j.c)+'\n' +
-        '2. 日常琐事一笔带过；不要编造总结里没有的内容。\n' +
+        '2. 这段记忆里重要的剧情、关系、关键信息一律保留，只精简措辞、合并同类项；不要删掉关键事实，也不要编造记忆里没有的内容。\n' +
         '3. 直接输出要点式内容，不要任何说明。' }];
       msgs.push({ role:'user', content:'请输出压缩后的记忆：' });
       var b = { model: groupModel(cv), messages: msgs, stream:false, temperature:0, max_tokens: roleTok(j.c) };
@@ -5604,7 +5720,7 @@ function doManualSummary(){
     var removed = applySummary(cv, content);
     if(cv.compressMem){
       $('sumHint').textContent = '已生成总结，正在压缩角色记忆…';
-      return compressMemories(cv, content).then(function(n){
+      return compressMemories(cv).then(function(n){
         $('sumHint').textContent = '已生成总结（'+cv.summary.length+' 字），并压缩了 '+n+' 段角色记忆；移除了 '+removed+' 条较早的消息。';
       });
     }
@@ -5658,6 +5774,48 @@ document.querySelectorAll('.modal-overlay').forEach(function(ov){
     }
   });
 });
+
+/* ---------- 退出确认（安卓系统返回键 · 主页最底层时弹出） ---------- */
+$('exitNo').addEventListener('click', function(){ $('exitModal').classList.add('hidden'); });
+$('exitYes').addEventListener('click', function(){
+  $('exitModal').classList.add('hidden');
+  var cap = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if(cap && cap.exitApp) cap.exitApp();
+  else { try{ window.close(); }catch(e){} showToast('已退出。'); }
+});
+
+/* ---------- 安卓系统返回键：和软件自己的返回（⟵）一个作用 ----------
+   把系统返回收进应用内返回栈：有弹层先关最上面的弹层 → 关关系图 →
+   收起弹出菜单 → 聊天内返回主页列表 → 主页子页退回会话列表 → 列表根层弹「退出确认」。
+   只挂到原生 App（Capacitor App 插件 backButton 事件），网页 / 桌面 / 浏览器不劫持返回。 */
+function nativeCapApp(){ return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App; }
+function closeOverlayById(ov){
+  var id = ov && ov.id;
+  if(!ov) return;
+  if(id === 'confirmModal'){ resetConfirm(); return; }
+  if(id === 'dmCardModal'){ dmCardReset(); return; }
+  if(id === 'settingsModal') applyTheme(settings.theme);   // 未保存的风格预览：返回时也还原已保存主题
+  ov.classList.add('hidden');
+}
+function nativeBack(){
+  var ovs = document.querySelectorAll('.modal-overlay');
+  var top = null;
+  for(var i=0;i<ovs.length;i++){ if(!ovs[i].classList.contains('hidden')) top = ovs[i]; }   // 有弹层：关最上面那个
+  if(top){ closeOverlayById(top); return; }
+  if(relState.open){ closeRel(); return; }
+  var fm = $('fabMenu');
+  if(fm && !fm.classList.contains('hidden')){ closeFabMenu(); return; }
+  var nm = $('newConvMenu');
+  if(nm && !nm.classList.contains('hidden')){ nm.classList.add('hidden'); return; }
+  if(document.body.classList.contains('chat-open')){ document.body.classList.remove('chat-open'); return; }   // 聊天内 → 返回主页列表
+  if(panelView === 'log'){ showPanelView('about'); return; }
+  if(panelView !== 'conv'){ showPanelView('conv'); return; }   // 主页子页 → 退回会话列表
+  $('exitModal').classList.remove('hidden');                   // 主页根层：问是否退出软件
+}
+var _capApp = nativeCapApp();
+if(_capApp && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()){
+  _capApp.addListener('backButton', function(){ nativeBack(); });
+}
 
 /* ---------- 关系图 ---------- */
 function relNames(cv){
