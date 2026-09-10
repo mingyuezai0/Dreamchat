@@ -40,7 +40,7 @@
   .conv-item:hover{background:#f5f6fa;}
   .conv-item.active{background:#eef2ff;}
   .conv-item.active::before{content:''; position:absolute; left:-8px; top:20%; bottom:20%; width:3px; border-radius:3px; background:var(--accent);}
-  /* 会话头像框：群聊=紫色方形（双人图标），故事=暖色方形（书和笔），配色随主题 */
+  /* 会话头像框：群聊=紫色方形（双人图标），故事=暖色方形（书本），配色随主题 */
   .conv-avatar{width:44px; height:44px; border-radius:12px; overflow:hidden; flex-shrink:0; background:#ece9ff; border:1px solid #d9d3ff; display:flex; align-items:center; justify-content:center; font-size:22px; position:relative; color:#6a5ff0;}
   .conv-avatar img{width:100%; height:100%; object-fit:cover;}
   .conv-avatar.story,.header-avatar.story{background:#fdf0dd; border-color:#f2d9ae; color:#b06d1f;}
@@ -310,6 +310,12 @@
   .av-crop-origin{margin-top:8px; text-align:center;}
   .av-crop-origin img{max-width:100%; max-height:220px; border-radius:10px; border:1px solid var(--border);}
   #avCropZoom{width:100%;}
+  /* 温度滑杆：0.0-2.0 连续可调，滑块用与图标同款的紫色 */
+  .temp-row{display:flex; align-items:center; justify-content:space-between; margin:16px 0 2px;}
+  .temp-row label{margin:0;}
+  .temp-val{font-size:13px; font-weight:600; color:#7a5cf0; background:var(--bg); border-radius:8px; padding:1px 9px;}
+  .temp-range{width:100%; margin:2px 0 0; height:22px; accent-color:#7a5cf0; cursor:pointer;}
+  .temp-ends{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:-2px;}
   .link-url{font-size:12px; color:var(--muted); word-break:break-all; margin:6px 0 0; line-height:1.5;}
   .modal-actions-col{flex-direction:column; align-items:stretch;}
   .modal-actions-col button{width:100%;}
@@ -857,7 +863,7 @@
           <p class="tavern-desc">AI 随机创作一位角色卡，或一部世界书；也可以从已有角色卡生成配套世界书、从已有世界书生成配套角色卡。生成的内容直接存入角色卡库 / 世界书库，随时导入群聊 / 故事。</p>
           <div class="panel-actions grid2">
             <button class="btn-primary" id="btnMeetCard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>结识角色卡</button>
-            <button class="btn-primary" id="btnMeetWorld"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>结识世界书</button>
+            <button class="btn-primary" id="btnMeetWorld"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>收集世界书</button>
           </div>
           <div class="tavern-derive">
             <label class="tavern-derive-label">已有角色卡 → 生成配套世界书</label>
@@ -913,7 +919,7 @@
           <div class="about-links">
             <button class="about-btn" id="aboutGithub" title="GitHub 仓库"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>GitHub</button>
             <button class="about-btn" id="aboutBili" title="哔哩哔哩主页"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z"/></svg>哔哩哔哩</button>
-            <button class="about-btn" id="aboutQQ" title="QQ群 598382490"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.395 15.035a40 40 0 0 0-.803-2.264l-1.079-2.695c.001-.032.014-.562.014-.836C19.526 4.632 17.351 0 12 0S4.474 4.632 4.474 9.241c0 .274.013.804.014.836l-1.08 2.695a39 39 0 0 0-.802 2.264c-1.021 3.283-.69 4.643-.438 4.673.54.065 2.103-2.472 2.103-2.472 0 1.469.756 3.387 2.394 4.771-.612.188-1.363.479-1.845.835-.434.32-.379.646-.301.778.343.578 5.883.369 7.482.189 1.6.18 7.14.389 7.483-.189.078-.132.132-.458-.301-.778-.483-.356-1.233-.646-1.846-.836 1.637-1.384 2.393-3.302 2.393-4.771 0 0 1.563 2.537 2.103 2.472.251-.03.581-1.39-.438-4.673"/></svg>QQ群 598382490</button>
+            <button class="about-btn" id="aboutQQ" title="QQ 群"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.395 15.035a40 40 0 0 0-.803-2.264l-1.079-2.695c.001-.032.014-.562.014-.836C19.526 4.632 17.351 0 12 0S4.474 4.632 4.474 9.241c0 .274.013.804.014.836l-1.08 2.695a39 39 0 0 0-.802 2.264c-1.021 3.283-.69 4.643-.438 4.673.54.065 2.103-2.472 2.103-2.472 0 1.469.756 3.387 2.394 4.771-.612.188-1.363.479-1.845.835-.434.32-.379.646-.301.778.343.578 5.883.369 7.482.189 1.6.18 7.14.389 7.483-.189.078-.132.132-.458-.301-.778-.483-.356-1.233-.646-1.846-.836 1.637-1.384 2.393-3.302 2.393-4.771 0 0 1.563 2.537 2.103 2.472.251-.03.581-1.39-.438-4.673"/></svg>QQ群</button>
             <button class="about-btn" id="aboutSite" title="官方网站（暂未开放）"><span class="ab-ico">🌐</span>官方网站</button>
           </div>
         </div>
@@ -1018,7 +1024,7 @@
       <label class="switch-row">深度思考模式（thinking）
         <span class="switch"><input type="checkbox" id="stThinking"><span></span></span>
       </label>
-      <p class="hint-text">深度思考只在官方 DeepSeek 接口时生效；其它接口不会发送该参数（兼容性更好）。各群聊可在「群设置 → API」单独覆盖 Key。</p>
+      <p class="hint-text">深度思考只在官方 DeepSeek 接口时生效；其它接口不会发送该参数（兼容性更好）。这里决定<b>新建聊天</b>的默认档位（开启＝Medium）；已有的每个聊天都能在「群设置 → API → 思考等级」里单独调整，以各自设置为准。各群聊还可在「群设置 → API」单独覆盖 Key。</p>
     </div>
     <div class="gs-pane hidden" data-pane="ui">
       <label>UI 风格</label>
@@ -1065,6 +1071,10 @@
         <span class="switch"><input type="checkbox" id="gsAutoMem"><span></span></span>
       </label>
       <p class="hint-text">开启后，成员会每过一段时间把聊过的内容提炼进各自的「记忆」，下次对话能记住。每个成员的记忆可在 ✎ 编辑里查看和修改。</p>
+      <div class="temp-row"><label>对话温度</label><span class="temp-val" id="gsTempVal">0.9</span></div>
+      <input type="range" class="temp-range" id="gsTemp" min="0" max="2" step="0.1" value="0.9">
+      <div class="temp-ends"><span>更稳定</span><span>更有创意</span></div>
+      <p class="hint-text">控制本聊天里 AI 回复的随机性：越低越稳定保守，越高越有创意、也越容易跑偏。默认 0.9。开启「深度思考」时，思考过程不受温度影响。</p>
     </div>
 
     <!-- 智能体（私聊：唯一一位 AI 的编辑） -->
@@ -1100,6 +1110,10 @@
       <p class="hint-text">开启后，TA 会每过一段时间把聊过的内容提炼进「记忆」，下次对话能记住。</p>
       <button id="gsImportCardDm" class="btn-ghost" style="width:100%; margin-top:14px;">从已有角色卡导入</button>
       <p class="hint-text">从角色卡库挑一张卡，3 秒内确认后即可直接覆盖 TA 的名字 / 头像 / 人设 / 关键词与记忆。</p>
+      <div class="temp-row"><label>对话温度</label><span class="temp-val" id="dmTempVal">0.9</span></div>
+      <input type="range" class="temp-range" id="dmTemp" min="0" max="2" step="0.1" value="0.9">
+      <div class="temp-ends"><span>更稳定</span><span>更有创意</span></div>
+      <p class="hint-text">控制 TA 回复的随机性：越低越稳定保守，越高越有创意、也越容易跑偏。默认 0.9。开启「深度思考」时，思考过程不受温度影响。</p>
     </div>
 
     <!-- 世界观 -->
@@ -1169,6 +1183,10 @@
       <input type="number" class="gs-num" id="contPlayerLen" value="150" min="30" max="500" autocomplete="off">
       <label>总结精炼度（剧情流程总结最低字数）</label>
       <input type="number" class="gs-num" id="contSummaryLen" value="200" min="50" max="1000" autocomplete="off">
+      <div class="temp-row"><label>生成温度</label><span class="temp-val" id="contTempVal">0.7</span></div>
+      <input type="range" class="temp-range" id="contTemp" min="0" max="2" step="0.1" value="0.7">
+      <div class="temp-ends"><span>更稳定</span><span>更有创意</span></div>
+      <p class="hint-text">控制生成成员人设 / 世界观 / 玩家设定时的随机性：越低越稳定、越忠于原文，越高越有创意、人设也越放得开。默认 0.7。</p>
       <p class="hint-text" id="contHint">生成的内容会忠于原文，不会编造剧情里没有的人物与设定；剧情流程总结会写入会话「总结」，同时按发生顺序整理出一条「剧情时间线（世界观记忆）」，续写时不会遗忘原剧情走向、事件先后也有据可依。角色记忆会按时间顺序记录，且只记 TA 亲身经历或被告知的事。生成成功后本会话立即生效，最后记得点「保存」保存其它设置。</p>
       <div class="modal-actions"><button class="btn-primary" id="btnContGo">开始生成</button></div>
     </div>
@@ -1185,6 +1203,14 @@
       <label>模型名称（可选）</label>
       <input type="text" id="gsModel" placeholder="如 deepseek-v4-flash，留空用全局" autocomplete="off">
       <p class="hint-text">本群填了 API Key 才用自己的 API：此时接口地址 / 模型名称（留空则用全局）一起对本群生效；本群 Key 留空则完全用全局设置。</p>
+      <label>思考等级（thinking）</label>
+      <div class="style-opts" id="gsThinkLevel">
+        <button data-lv="medium">Medium</button>
+        <button data-lv="high">High</button>
+        <button data-lv="max">Max</button>
+      </div>
+      <p class="hint-text" id="gsThinkHint"></p>
+      <p class="hint-text">每个聊天单独设置，改动会真实作用在请求上。只在官方 DeepSeek 接口生效（其它接口不发送该参数）。官方 DeepSeek 上 Medium 与 High 的实际强度相同，Max 最强、思考最久；想追求回复速度或让「对话温度」生效，再点一次已选中的档位即可关闭。</p>
     </div>
 
     <!-- 记忆转移 -->
@@ -1382,11 +1408,11 @@
   </div>
 </div>
 
-<!-- 酒馆：结识世界书前填写信息 -->
+<!-- 酒馆：收集世界书前填写信息 -->
 <div id="meetWorldModal" class="modal-overlay hidden">
   <div class="modal small">
-    <h3>结识世界书</h3>
-    <p class="hint-text" style="margin:6px 0 2px;">想结识怎样的世界？可只填一部分，其余由 AI 补全；填了世界名就会沿用。</p>
+    <h3>收集世界书</h3>
+    <p class="hint-text" style="margin:6px 0 2px;">想收集怎样的世界？可只填一部分，其余由 AI 补全；填了世界名就会沿用。</p>
     <label>世界名</label>
     <input type="text" id="mwName" placeholder="例如：烬土纪年" autocomplete="off">
     <label>类型</label>
@@ -1663,8 +1689,17 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.4.5';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.4.6';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.4.6', date:'2026-09-10', title:'对话温度 · 思考等级 · 续写生成温度 · 酒馆措辞 · 故事头像 · QQ 群链接', items:[
+    '「AI成员 / 智能体」页签最下方新增「对话温度」滑杆（0.0–2.0，默认 0.9）：控制本聊天里 AI 回复的随机性，越低越稳定保守、越高越有创意，每个聊天单独设置',
+    '「续写剧情」页签新增「生成温度」滑杆（默认 0.7）：控制生成成员人设 / 世界观 / 玩家设定时的随机性，越低越忠于原文、越高人设越放得开',
+    '「API」页签最下方新增「思考等级」：Medium / High / Max 三档，每个聊天单独设置，会真实作用在请求上（深度思考模式）；再点一次已选中的档位即可关闭思考——关闭后回复更快，且「对话温度」正常生效',
+    '全局设置里的「深度思考模式」改为决定「新建聊天」的默认档位（开启＝Medium），已有聊天以各自的思考等级为准',
+    'QQ 群链接改为新地址 https://qm.qq.com/q/JY41MrDQQy，界面上不再显示群号',
+    '「酒馆」里「结识世界书」统一改为「收集世界书」（按钮、弹窗与提示语）',
+    '故事模式的默认头像改为一本摊开的书，去掉原来多余的笔画；教程措辞同步更新'
+  ]},
   { v:'0.4.5', date:'2026-09-10', title:'垃圾桶恢复 · 导出选格式 · 续写剧情带时间线 · 头像裁剪 · 关系图关系名 · 关于链接确认', items:[
     '主页侧边栏「黑板」上方新增「垃圾桶」：删除的角色卡、世界书、聊天都会先收进这里（最多保留最近 30 个），点「恢复」就能复原——聊天按原样恢复（成员、消息、世界观、时间线都在），角色卡与世界书回到各自的库',
     '导出角色卡 / 世界书时先弹出小窗选择文件格式：md / markdown 是纯文本格式，方便阅读、编辑与分享；梦语 json 是完整备份，可原样导入回来（含头像）',
@@ -1883,6 +1918,9 @@ var DEFAULT_MINLEN = 5;  // 默认回复字数下限（所有模式）
 var LEN_TIERS = [30,50,70,100,150,200];   // 回复字数额设档位
 var MIN_LEN_TIERS = [5,30,50,100,150,200]; // 回复字数下限预设档位
 var SENT_PUNCT = ['。','！','？','…','\n','"','”'];   // 句子结尾标点：截断时尽量收在完整句子末尾
+var DEFAULT_TEMP = 0.9;      // 每个聊天的默认「对话温度」（与旧版本写死的值一致，升级后手感不变）
+var DEFAULT_CONT_TEMP = 0.7; // 「续写剧情」生成设定包时的默认「生成温度」
+var TEMP_MIN = 0, TEMP_MAX = 2;   // 温度可调范围
 var DICE_FACE_SETS = [4,6,8,12];   // 骰子可选面数
 var DICE_DEFAULT_FACES = 6;        // 骰子默认面数
 var DEFAULT_PERSONA = '你是一位在「梦语」群聊里随和的AI人物，说话自然、友好，像真人一样参与聊天。';
@@ -1950,7 +1988,7 @@ var ICON_REL_AV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 var ICON_ME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="12" fill="#7a5cf0"/><path class="rel-av-me" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle class="rel-av-me" cx="12" cy="7" r="4"/></svg>';   // 关系图「我」的头像：紫盘 + 白色描线人形（三种风格固定，不随主题变色）
 var ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14"/><path d="M5 14l1-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4l1 3z"/></svg>';
 var AV_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';   // 群聊默认头像：两个人形（描边）
-var AV_STORY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v13"/><path d="M3 18a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/><path d="M17.5 3.5l3.5 3.5"/><path d="M14.5 6.5l3 3"/></svg>';   // 故事默认头像：一本书 + 一支笔（描边）
+var AV_STORY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v13"/><path d="M3 18a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>';   // 故事默认头像：一本摊开的书（描边，v0.4.6 起去掉多余的笔）
 var AV_DM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';   // 私聊默认头像：单人描线人形
 var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null, hideChipAvatar:false, relMode:'avatar' };
 var convs = [];
@@ -1988,12 +2026,12 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 21;
+var BOARD_TUT_VERSION = 22;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。「世界观」页签里的「剧情时间线（世界观记忆）」会自动记录剧情发展、也可手动编辑；时间线与「总结」都只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆；经历影响自身塑造的重大剧情后，TA 还会在记忆提炼时自主新增「关键词」——关键词不限于性格，也可以是某个时间 / 地点 / 物品 / 人物 / 事件 / 身份 / 关系等，词长不限，只按重要程度给数量。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图 / 时间线小工具（时间线即世界观记忆，随时查看 / 复制发展线）；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。连线上的「关系名」画在角色头像之上（不会被头像挡住），名字较长时会自动折成两行。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；同时还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，接着往下续写时事件先后有据可依——角色记忆也按时间顺序记录，且只记 TA 亲身经历或被告知的事，TA 不知情的情节不会写进记忆、也不会被提起；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「世界观」页签的「剧情时间线（世界观记忆）」会自动记录故事发展线、也可手动编辑；「总结」可压缩上下文、勾选也能同时压缩角色记忆——时间线与总结都只给作者（玩家）看，角色看不到，防止剧情错乱，角色只记得自己经历或听说的剧情（重要剧情不会丢）。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名；经历影响自身的重大剧情后，角色会自主给「关键词」成长（不限于性格，时间 / 地点 / 物品 / 人物 / 事件等皆可，词长不限）。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘；还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，角色记忆也按时间顺序记录、只记 TA 亲身经历或被告知的事（不知情的情节不会被提起）。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 垃圾桶 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 「垃圾桶」保留你最近删除的角色卡、世界书与聊天（最多 30 个），点「恢复」即可复原——聊天会按原样恢复（成员、消息、世界观、时间线都在），角色卡与世界书回到各自的库。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事；另有「新建攻略」「新建模拟」两个占位入口，对应后面将推出的攻略 / 模拟模式。\n· 「酒馆」里点「结识角色卡 / 结识世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入；「导出」时先选格式：md / markdown 是纯文本（方便阅读、编辑与分享），梦语 json 是完整备份（可原样导入回来，含头像）。\n· 上传图片做头像时会先让你裁剪：拖动图片调整位置、滑动缩放，还能「查看原图」；角色卡 / 世界书 / 群聊 / 成员头像都一样。\n· 「关于」页的 GitHub / 哔哩哔哩 / QQ 群链接，点一下会先弹窗确认，点「取消」就不会跳转。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
-  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。「世界观」页签里的「剧情时间线（世界观记忆）」会随你们的对话自动记录推进线、也可手动编辑，「＋」里也有「时间线」小工具；时间线与「总结」都只给作者看，TA 看不到——TA 只记得自己经历过的对话，重大经历后也会在记忆提炼时自主成长「关键词」。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）/ 时间线与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；「AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9，越低越稳定保守、越高越有创意），「API」页签最下方可设「思考等级」（Medium / High / Max，会真实作用在请求上；再点一次已选中的档位就是关闭思考，回复更快、温度也生效），两者都每个聊天单独设置；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。「世界观」页签里的「剧情时间线（世界观记忆）」会自动记录剧情发展、也可手动编辑；时间线与「总结」都只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆；经历影响自身塑造的重大剧情后，TA 还会在记忆提炼时自主新增「关键词」——关键词不限于性格，也可以是某个时间 / 地点 / 物品 / 人物 / 事件 / 身份 / 关系等，词长不限，只按重要程度给数量。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图 / 时间线小工具（时间线即世界观记忆，随时查看 / 复制发展线）；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。连线上的「关系名」画在角色头像之上（不会被头像挡住），名字较长时会自动折成两行。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；同时还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，接着往下续写时事件先后有据可依——角色记忆也按时间顺序记录，且只记 TA 亲身经历或被告知的事，TA 不知情的情节不会写进记忆、也不会被提起；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）；「生成温度」（默认 0.7）控制生成设定时的随机性，越低越忠于原文、越高人设越放得开。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「世界观」页签的「剧情时间线（世界观记忆）」会自动记录故事发展线、也可手动编辑；「总结」可压缩上下文、勾选也能同时压缩角色记忆——时间线与总结都只给作者（玩家）看，角色看不到，防止剧情错乱，角色只记得自己经历或听说的剧情（重要剧情不会丢）。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名；经历影响自身的重大剧情后，角色会自主给「关键词」成长（不限于性格，时间 / 地点 / 物品 / 人物 / 事件等皆可，词长不限）。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）。\n· 「故事设置 → AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本故事生效。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘；还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，角色记忆也按时间顺序记录、只记 TA 亲身经历或被告知的事（不知情的情节不会被提起）。\n· 故事默认是「书本」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 垃圾桶 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 「垃圾桶」保留你最近删除的角色卡、世界书与聊天（最多 30 个），点「恢复」即可复原——聊天会按原样恢复（成员、消息、世界观、时间线都在），角色卡与世界书回到各自的库。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事；另有「新建攻略」「新建模拟」两个占位入口，对应后面将推出的攻略 / 模拟模式。\n· 「酒馆」里点「结识角色卡 / 收集世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入；「导出」时先选格式：md / markdown 是纯文本（方便阅读、编辑与分享），梦语 json 是完整备份（可原样导入回来，含头像）。\n· 上传图片做头像时会先让你裁剪：拖动图片调整位置、滑动缩放，还能「查看原图」；角色卡 / 世界书 / 群聊 / 成员头像都一样。\n· 「关于」页的 GitHub / 哔哩哔哩 / QQ 群链接，点一下会先弹窗确认，点「取消」就不会跳转。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书本图标）、单人描线是「私聊」，一眼区分。' },
+  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。「世界观」页签里的「剧情时间线（世界观记忆）」会随你们的对话自动记录推进线、也可手动编辑，「＋」里也有「时间线」小工具；时间线与「总结」都只给作者看，TA 看不到——TA 只记得自己经历过的对话，重大经历后也会在记忆提炼时自主成长「关键词」。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）/ 时间线与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 「智能体」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本私聊生效。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -2053,7 +2091,7 @@ function newConv(name, chars, history){
   chars.forEach(function(c){ if(typeof c.present==='undefined') c.present = true; if(typeof c.memory!=='string') c.memory=''; if(['main','minor','extra'].indexOf(c.role)===-1) c.role='minor'; assignId(c); });
   history.forEach(assignId);
   var now = Date.now();
-  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', worldMem:'', worldMemAt:0, player:'', breakPrompt:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, minReplyLen:DEFAULT_MINLEN, forceLen:0, forceOn:false, relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
+  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', worldMem:'', worldMemAt:0, player:'', breakPrompt:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, minReplyLen:DEFAULT_MINLEN, forceLen:0, forceOn:false, temperature:DEFAULT_TEMP, contTemp:DEFAULT_CONT_TEMP, thinkLevel:newChatThinkLevel(), relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
 }
 function load(){
   try{ settings = Object.assign({apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE}, JSON.parse(localStorage.getItem(LS.set)||'{}')); }catch(e){}
@@ -2099,6 +2137,10 @@ function load(){
     if(typeof cv.forceLen !== 'number' || isNaN(cv.forceLen) || cv.forceLen < 0) cv.forceLen = 0;
     if(typeof cv.forceOn !== 'boolean') cv.forceOn = false;
     if(typeof cv.breakPrompt !== 'string') cv.breakPrompt = '';
+    if(typeof cv.temperature !== 'number' || isNaN(cv.temperature) || cv.temperature < TEMP_MIN || cv.temperature > TEMP_MAX) cv.temperature = DEFAULT_TEMP;
+    if(typeof cv.contTemp !== 'number' || isNaN(cv.contTemp) || cv.contTemp < TEMP_MIN || cv.contTemp > TEMP_MAX) cv.contTemp = DEFAULT_CONT_TEMP;
+    // 老会话没有思考等级：按全局「深度思考」开关迁移，升级前后行为一致
+    if(['off','medium','high','max'].indexOf(cv.thinkLevel) === -1) cv.thinkLevel = newChatThinkLevel();
     if(!cv.avatar || typeof cv.avatar !== 'object' || !cv.avatar.mode) cv.avatar = null;
     if(typeof cv.compressMem !== 'boolean') cv.compressMem = false;
     if(!Array.isArray(cv.relations)) cv.relations = [];
@@ -2310,13 +2352,19 @@ function keyNote(cv){
 function apiUrl(cv){ return groupBase(cv) + '/chat/completions'; }
 /* 是否官方 DeepSeek 接口（深度思考 / 费用估算仅对它生效） */
 function isDeepseek(cv){ return String(groupBase(cv) || '').indexOf('api.deepseek.com') !== -1; }
+/* 每个聊天单独的对话温度（0.0-2.0，默认 0.9）与思考等级（off / medium / high / max） */
+function convTemp(cv){ var t = Number(cv && cv.temperature); return (isFinite(t) && t >= TEMP_MIN && t <= TEMP_MAX) ? Math.round(t * 10) / 10 : DEFAULT_TEMP; }
+function convContTemp(cv){ var t = Number(cv && cv.contTemp); return (isFinite(t) && t >= TEMP_MIN && t <= TEMP_MAX) ? Math.round(t * 10) / 10 : DEFAULT_CONT_TEMP; }
+function thinkLevelOf(cv){ var l = cv && cv.thinkLevel; return (l === 'medium' || l === 'high' || l === 'max') ? l : 'off'; }
+var THINK_LEVELS = { medium:'Medium', high:'High', max:'Max' };
+function newChatThinkLevel(){ return settings.thinking ? 'medium' : 'off'; }   // 全局「深度思考」作为新聊天的默认档位
 function stopAll(){
   stopFlag = true;
   Object.keys(activeCtrls).forEach(function(k){ try{ activeCtrls[k].abort(); }catch(e){} });
 }
 
 /* ---------- 会话列表 ---------- */
-/* 群聊 / 故事 / 私聊未自带头像时的默认头像：群聊=双人形描边图标，故事=书和笔，私聊=单人描线 */
+/* 群聊 / 故事 / 私聊未自带头像时的默认头像：群聊=双人形描边图标，故事=书本，私聊=单人描线 */
 function convDefaultAv(cv){
   return { mode:'svg', value: (cv && cv.mode === 'story') ? AV_STORY : (cv && cv.mode === 'dm') ? AV_DM : AV_CHAT };
 }
@@ -3700,11 +3748,12 @@ function generateReply(c, cv){
   activeCtrls[c.id] = ctrl;
 
   var body = { model:groupModel(cv), messages:msgs, stream:true };
+  var tLv = thinkLevelOf(cv);
   if(isDeepseek(cv)){
-    if(settings.thinking){ body.thinking = { type:'enabled' }; }
-    else { body.thinking = { type:'disabled' }; body.temperature = 0.9; }
+    if(tLv === 'off'){ body.thinking = { type:'disabled' }; body.temperature = convTemp(cv); }
+    else { body.thinking = { type:'enabled' }; body.reasoning_effort = tLv; }   // 思考模式不支持 temperature，故不发送
   } else {
-    body.temperature = 0.9;   // 非官方 DeepSeek 接口：不带 DeepSeek 特有的 thinking 字段
+    body.temperature = convTemp(cv);   // 非官方 DeepSeek 接口：不带 DeepSeek 特有的 thinking 字段
   }
 
   var hdrs = { 'Content-Type':'application/json' };
@@ -4139,6 +4188,9 @@ function importBackup(file){
       if(typeof conv.forceLen !== 'number' || isNaN(conv.forceLen) || conv.forceLen < 0) conv.forceLen = 0;
       if(typeof conv.forceOn !== 'boolean') conv.forceOn = false;
       if(typeof conv.breakPrompt !== 'string') conv.breakPrompt = '';
+      if(typeof conv.temperature !== 'number' || isNaN(conv.temperature) || conv.temperature < TEMP_MIN || conv.temperature > TEMP_MAX) conv.temperature = DEFAULT_TEMP;
+      if(typeof conv.contTemp !== 'number' || isNaN(conv.contTemp) || conv.contTemp < TEMP_MIN || conv.contTemp > TEMP_MAX) conv.contTemp = DEFAULT_CONT_TEMP;
+      if(['off','medium','high','max'].indexOf(conv.thinkLevel) === -1) conv.thinkLevel = newChatThinkLevel();
       if(typeof conv.randomOrder !== 'boolean') conv.randomOrder = false;
       if(!conv.avatar || typeof conv.avatar !== 'object' || !conv.avatar.mode) conv.avatar = null;
       if(typeof conv.compressMem !== 'boolean') conv.compressMem = false;
@@ -4247,7 +4299,7 @@ $('btnBackBoard').addEventListener('click', function(){ showPanelView('conv'); }
 $('btnBackAbout').addEventListener('click', function(){ showPanelView('conv'); });
 $('btnAddNote').addEventListener('click', addBoardNote);
 /* 关于面板的链接：点击先弹小窗确认，取消就不跳转 */
-var QQ_GROUP = '598382490';
+var QQ_GROUP_URL = 'https://qm.qq.com/q/JY41MrDQQy';
 var linkDraft = null;
 function openLinkConfirm(url, desc, after){
   linkDraft = { url:url, after:after || null };
@@ -4271,9 +4323,7 @@ $('aboutBili').addEventListener('click', function(){
   openLinkConfirm('https://space.bilibili.com/498726578', '将在新窗口打开作者的哔哩哔哩主页。');
 });
 $('aboutQQ').addEventListener('click', function(){
-  openLinkConfirm('https://qm.qq.com/cgi-bin/qm/qr?group_code=' + QQ_GROUP,
-    '将在新窗口尝试打开 QQ 群「' + QQ_GROUP + '」。若没有自动打开，群号已复制到剪贴板，可在 QQ 里搜索加入。',
-    function(){ copyText(QQ_GROUP); });
+  openLinkConfirm(QQ_GROUP_URL, '将在新窗口打开「梦语」的 QQ 群，可在群里反馈问题、提建议。');
 });
 $('aboutSite').addEventListener('click', function(){ showToast('官方网站暂未开放，敬请期待'); });
 function renderClList(){
@@ -4367,7 +4417,7 @@ function renderTavernPicks(){
   if(!cards.length){ cp.innerHTML = '<option value="">（暂无角色卡，先「结识角色卡」）</option>'; cp.disabled = true; }
   else { cp.disabled = false; cards.forEach(function(c){ cp.innerHTML += '<option value="'+c.id+'">'+esc(c.name)+'</option>'; }); }
   wp.innerHTML = '';
-  if(!worlds.length){ wp.innerHTML = '<option value="">（暂无世界书，先「结识世界书」）</option>'; wp.disabled = true; }
+  if(!worlds.length){ wp.innerHTML = '<option value="">（暂无世界书，先「收集世界书」）</option>'; wp.disabled = true; }
   else { wp.disabled = false; worlds.forEach(function(w){ wp.innerHTML += '<option value="'+w.id+'">'+esc(w.name)+'</option>'; }); }
   $('btnDeriveWorld').disabled = !cards.length;
   $('btnDeriveCard').disabled = !worlds.length;
@@ -4409,7 +4459,7 @@ function runTavern(mode, base, info){
     var hint = '';
     if(mode === 'world' && info){
       var wn = (info.name || '').trim(), wt = (info.type || '').trim(), wd = (info.desc || '').trim();
-      if(wn || wt || wd) hint = '客人想结识这样一部世界书：' + (wn ? '世界名「' + wn + '」' : '') + (wt ? '类型「' + wt + '」' : '') + (wd ? '大致世界观「' + wd + '」' : '') + '。请尽量贴合客人的构想：填了世界名就必须沿用这个名字，不要另起名；没填的部分由你自由发挥。\n\n';
+      if(wn || wt || wd) hint = '客人想收集这样一部世界书：' + (wn ? '世界名「' + wn + '」' : '') + (wt ? '类型「' + wt + '」' : '') + (wd ? '大致世界观「' + wd + '」' : '') + '。请尽量贴合客人的构想：填了世界名就必须沿用这个名字，不要另起名；没填的部分由你自由发挥。\n\n';
     }
     instr = hint + '请创作一部全新的、有氛围的世界书' + (mode === 'deriveWorld' ? '，其设定要与提供的角色卡高度配套、契合' : '') + '。要求：\n' +
       '1. 书名 2-10 个字' + (mode === 'world' && info && (info.name || '').trim() ? '（按上面客人填的世界名来）' : '，不要与已有书名重复') + '。\n' +
@@ -4456,7 +4506,7 @@ function runTavern(mode, base, info){
       lastMeet = { card:card, world:world };
       renderTavernResult(card, world);
       renderTavernPicks();
-      showToast(isCard ? '结识成功：「'+card.name+'」' : '结识成功：世界书《'+world.name+'》');
+      showToast(isCard ? '结识成功：「'+card.name+'」' : '收集成功：世界书《'+world.name+'》');
     })
     .catch(function(){ showToast('生成失败，请稍后再试'); })
     .then(function(){
@@ -5036,6 +5086,9 @@ function runContinue(){
   var worldLen = Math.max(50, Math.min(2000, parseInt($('contWorldLen').value, 10) || 300));
   var playerLen = Math.max(30, Math.min(500, parseInt($('contPlayerLen').value, 10) || 150));
   var summaryLen = Math.max(50, Math.min(1000, parseInt($('contSummaryLen').value, 10) || 200));
+  // 生成温度：和其它精炼度一样按输入框当前值即时生效（点「保存」后会记住）
+  var contT = Number($('contTemp').value);
+  if(!isFinite(contT) || contT < TEMP_MIN || contT > TEMP_MAX) contT = DEFAULT_CONT_TEMP;
   var perEl = document.querySelector('input[name="contPer"]:checked');
   var per = perEl && perEl.value === 'third' ? 'third' : 'first';
   var perText = per === 'third'
@@ -5060,7 +5113,7 @@ function runContinue(){
   var maxTok = scopeAll
     ? Math.min(32000, 8000 + charLen*6 + worldLen + playerLen + summaryLen + 1200)   // 所有角色：人物可能很多，放宽输出上限（+ 时间线）
     : Math.min(8000, 2000 + charLen*6 + worldLen + playerLen + summaryLen + 1200);
-  var body = { model: groupModel(cv), messages:msgs, stream:false, temperature:0.4, max_tokens:maxTok };
+  var body = { model: groupModel(cv), messages:msgs, stream:false, temperature:contT, max_tokens:maxTok };
   if(isDeepseek(cv)) body.thinking = { type:'disabled' };
   var hd = { 'Content-Type':'application/json' };
   var gk = groupKey(cv);
@@ -5385,6 +5438,36 @@ function updateKindLabels(cv){
   $('gsDelConv').textContent = '删除此' + kindLabel(cv);
   $('gsDelHint').textContent = '删除后该' + kindLabel(cv) + '将从主页列表消失，全部对话记录一并删除，不可恢复。确认需等待 5 秒。';
 }
+/* 温度滑杆：两个页签（AI成员 / 智能体）共用同一个 cv.temperature，始终保持同步 */
+var gsThinkDraft = 'off';
+function setTempInputs(cv){
+  var v = convTemp(cv);
+  $('gsTemp').value = v; $('gsTempVal').textContent = v.toFixed(1);
+  $('dmTemp').value = v; $('dmTempVal').textContent = v.toFixed(1);
+}
+function syncTempInputs(src){
+  var v = Number(src.value);
+  $('gsTemp').value = v; $('gsTempVal').textContent = v.toFixed(1);
+  $('dmTemp').value = v; $('dmTempVal').textContent = v.toFixed(1);
+}
+function renderThinkLevel(){
+  var box = $('gsThinkLevel');
+  Array.prototype.forEach.call(box.querySelectorAll('button'), function(b){
+    if(b.dataset.lv === gsThinkDraft) b.classList.add('on'); else b.classList.remove('on');
+  });
+  $('gsThinkHint').textContent = (gsThinkDraft === 'off')
+    ? '当前：关闭思考。本聊天回复更快，且「对话温度」正常生效；点上面任一档位即可开启。'
+    : '当前：「' + THINK_LEVELS[gsThinkDraft] + '」。本聊天已开启深度思考，回复前会先思考；思考模式下「对话温度」不起作用。';
+}
+$('gsTemp').addEventListener('input', function(){ syncTempInputs(this); });
+$('dmTemp').addEventListener('input', function(){ syncTempInputs(this); });
+$('contTemp').addEventListener('input', function(){ $('contTempVal').textContent = Number(this.value).toFixed(1); });
+$('gsThinkLevel').addEventListener('click', function(e){
+  var b = e.target.closest('button[data-lv]');
+  if(!b) return;
+  gsThinkDraft = (gsThinkDraft === b.dataset.lv) ? 'off' : b.dataset.lv;   // 再点一次已选中的档位＝关闭思考
+  renderThinkLevel();
+});
 function openGroupSettings(tab){
   var cv = current();
   if(!cv) return;
@@ -5409,6 +5492,10 @@ function openGroupSettings(tab){
   $('gsApiBase').value = cv.apiBase || '';
   $('gsModel').value = cv.model || '';
   $('gsAutoMem').checked = !!cv.autoMemory;
+  setTempInputs(cv);
+  $('contTemp').value = convContTemp(cv); $('contTempVal').textContent = convContTemp(cv).toFixed(1);
+  gsThinkDraft = thinkLevelOf(cv);
+  renderThinkLevel();
   gsAvatarDraft = (cv.avatar && cv.avatar.mode) ? { mode:cv.avatar.mode, value:cv.avatar.value||'' } : convDefaultAv(cv);
   setGsAvatarTab((gsAvatarDraft.mode === 'upload' || gsAvatarDraft.mode === 'url') ? 'upload' : 'emoji');
   if(gsAvatarDraft.mode === 'svg'){ var _i = ANIME_AVS.indexOf(gsAvatarDraft.value); if(_i >= 0) selectGsEmoji(_i); }
@@ -5457,9 +5544,13 @@ function saveGroupSettings(){
       ai.avatar = { mode:dmAvatarDraft.mode, value:dmAvatarDraft.value };
     }
     cv.autoMemory = $('dmAutoMem').checked;
+    cv.temperature = Number($('dmTemp').value);
   } else {
     cv.autoMemory = $('gsAutoMem').checked;
+    cv.temperature = Number($('gsTemp').value);
   }
+  cv.contTemp = Number($('contTemp').value);
+  cv.thinkLevel = gsThinkDraft;
   var nm = $('gsName').value.trim();
   if(nm) cv.name = nm.slice(0,20);
   cv.world = $('gsWorld').value.trim();
