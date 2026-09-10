@@ -281,7 +281,9 @@
   .rel-node-ring text{fill:var(--text);}
   .rel-node-center text{fill:var(--accent); font-weight:700;}
   .rel-edge-line{stroke:var(--accent); stroke-width:1.5; opacity:.8;}
-  .rel-edge-label{font-size:12px; fill:var(--muted); text-anchor:middle; stroke:var(--bg); stroke-width:3px; paint-order:stroke; stroke-linejoin:round;}
+  /* 关系名画在节点之上的独立图层（rel-lab-layer），否则会被角色头像盖住；长名字折成两行 */
+  .rel-lab-layer{pointer-events:none;}
+  .rel-edge-label{font-size:12px; fill:var(--muted); text-anchor:middle; stroke:var(--bg); stroke-width:3.5px; paint-order:stroke; stroke-linejoin:round; pointer-events:none;}
   .rel-loading{position:absolute; top:12px; left:50%; transform:translateX(-50%); font-size:13px; color:var(--muted); z-index:2;}
   .rel-note{position:absolute; top:12px; left:50%; transform:translateX(-50%); font-size:12px; color:var(--muted); text-align:center; max-width:82%; line-height:1.5; z-index:2;}
   .rel-av{pointer-events:none;}
@@ -299,6 +301,27 @@
   .switch span::after{content:''; position:absolute; width:16px; height:16px; border-radius:50%; background:#fff; top:2px; left:2px; transition:.2s; box-shadow:0 1px 2px rgba(0,0,0,.2);}
   .switch input:checked + span{background:#7a5cf0;}   /* 开启态用与图标同款的紫色 */
   .switch input:checked + span::after{left:16px;}
+
+  /* 头像裁剪：正方形取景框 + 可拖动图片 + 查看原图 */
+  .av-crop-stage{display:flex; justify-content:center; margin:10px 0;}
+  .av-crop-box{position:relative; width:240px; height:240px; overflow:hidden; border-radius:12px; border:1px solid var(--border); background:var(--panel); cursor:grab; touch-action:none;}
+  .av-crop-box.dragging{cursor:grabbing;}
+  .av-crop-box img{position:absolute; left:0; top:0; transform-origin:0 0; user-select:none; -webkit-user-drag:none; pointer-events:none;}
+  .av-crop-origin{margin-top:8px; text-align:center;}
+  .av-crop-origin img{max-width:100%; max-height:220px; border-radius:10px; border:1px solid var(--border);}
+  #avCropZoom{width:100%;}
+  .link-url{font-size:12px; color:var(--muted); word-break:break-all; margin:6px 0 0; line-height:1.5;}
+  .modal-actions-col{flex-direction:column; align-items:stretch;}
+  .modal-actions-col button{width:100%;}
+  /* 垃圾桶：已删除内容列表 */
+  .trash-list{display:flex; flex-direction:column; gap:8px; padding:12px; overflow-y:auto;}
+  .trash-row{display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--border); border-radius:12px; background:var(--panel);}
+  .trash-av{width:38px; height:38px; border-radius:10px; overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--bg);}
+  .trash-av img, .trash-av .av-svg{width:100%; height:100%; object-fit:cover; display:block;}
+  .trash-meta{flex:1; min-width:0;}
+  .trash-name{font-size:14px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .trash-sub{font-size:11px; color:var(--muted); margin-top:2px;}
+  .trash-kind{font-size:11px; color:var(--accent); border:1px solid var(--border); border-radius:6px; padding:1px 6px; flex-shrink:0;}
 
   .avatar-editor{border:1px solid var(--border); border-radius:12px; padding:12px;}
   .avatar-editor .tabs{margin-bottom:10px;}
@@ -757,6 +780,7 @@
     </div>
     <div class="rail-grow"></div>
     <div class="rail-dot" id="keyDot" title="全局 API Key 是否已配置"></div>
+    <button id="btnTrash" class="rail-btn" title="垃圾桶（恢复误删）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></button>
     <button id="btnBoard" class="rail-btn" title="黑板（便签）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg></button>
     <button id="btnTavern" class="rail-btn" title="酒馆（结识）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5z"/></svg></button>
     <button id="btnCards" class="rail-btn" title="角色卡库"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10h2"/><path d="M16 14h2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><circle cx="9" cy="11" r="2"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg></button>
@@ -858,6 +882,15 @@
       <div class="board-grid" id="boardGrid"></div>
     </div>
 
+    <div id="trashView" class="panel-view hidden">
+      <div class="panel-header">
+        <button class="icon-btn" id="btnBackTrash" title="返回会话">←</button>
+        <span class="panel-title">垃圾桶</span>
+      </div>
+      <p class="hint-text">这里保留你最近删除的角色卡、世界书与聊天（最多 30 个），点「恢复」即可复原。</p>
+      <div class="trash-list" id="trashList"></div>
+    </div>
+
     <div id="aboutView" class="panel-view hidden">
       <div class="panel-header">
         <button class="icon-btn" id="btnBackAbout" title="返回会话">←</button>
@@ -876,11 +909,11 @@
             </svg>
           </div>
           <div class="about-name">梦语 <span class="about-ver" id="aboutVer"></span></div>
-          <p class="about-intro">梦语是一款连接各家大模型接口的多 AI 人物群聊软件，纯浏览器本地运行：和多位 AI 角色在「群聊」聊天，或写下「故事」让它们一起演剧情，记录保存在本机。</p>
+          <p class="about-intro">梦语是一款连接各家大模型接口的多 AI 人物群聊软件，纯浏览器本地运行：和多位 AI 角色在「群聊」聊天，或写下「故事」让它们一起演绎剧情，记录保存在本机。</p>
           <div class="about-links">
             <button class="about-btn" id="aboutGithub" title="GitHub 仓库"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>GitHub</button>
             <button class="about-btn" id="aboutBili" title="哔哩哔哩主页"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z"/></svg>哔哩哔哩</button>
-            <button class="about-btn" id="aboutQQ" title="QQ群（暂未开放）"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.395 15.035a40 40 0 0 0-.803-2.264l-1.079-2.695c.001-.032.014-.562.014-.836C19.526 4.632 17.351 0 12 0S4.474 4.632 4.474 9.241c0 .274.013.804.014.836l-1.08 2.695a39 39 0 0 0-.802 2.264c-1.021 3.283-.69 4.643-.438 4.673.54.065 2.103-2.472 2.103-2.472 0 1.469.756 3.387 2.394 4.771-.612.188-1.363.479-1.845.835-.434.32-.379.646-.301.778.343.578 5.883.369 7.482.189 1.6.18 7.14.389 7.483-.189.078-.132.132-.458-.301-.778-.483-.356-1.233-.646-1.846-.836 1.637-1.384 2.393-3.302 2.393-4.771 0 0 1.563 2.537 2.103 2.472.251-.03.581-1.39-.438-4.673"/></svg>QQ群</button>
+            <button class="about-btn" id="aboutQQ" title="QQ群 598382490"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.395 15.035a40 40 0 0 0-.803-2.264l-1.079-2.695c.001-.032.014-.562.014-.836C19.526 4.632 17.351 0 12 0S4.474 4.632 4.474 9.241c0 .274.013.804.014.836l-1.08 2.695a39 39 0 0 0-.802 2.264c-1.021 3.283-.69 4.643-.438 4.673.54.065 2.103-2.472 2.103-2.472 0 1.469.756 3.387 2.394 4.771-.612.188-1.363.479-1.845.835-.434.32-.379.646-.301.778.343.578 5.883.369 7.482.189 1.6.18 7.14.389 7.483-.189.078-.132.132-.458-.301-.778-.483-.356-1.233-.646-1.846-.836 1.637-1.384 2.393-3.302 2.393-4.771 0 0 1.563 2.537 2.103 2.472.251-.03.581-1.39-.438-4.673"/></svg>QQ群 598382490</button>
             <button class="about-btn" id="aboutSite" title="官方网站（暂未开放）"><span class="ab-ico">🌐</span>官方网站</button>
           </div>
         </div>
@@ -1136,7 +1169,7 @@
       <input type="number" class="gs-num" id="contPlayerLen" value="150" min="30" max="500" autocomplete="off">
       <label>总结精炼度（剧情流程总结最低字数）</label>
       <input type="number" class="gs-num" id="contSummaryLen" value="200" min="50" max="1000" autocomplete="off">
-      <p class="hint-text" id="contHint">生成的内容会忠于原文，不会编造剧情里没有的人物与设定；剧情流程总结会写入会话「总结」，续写时不会遗忘原剧情走向。生成成功后本会话立即生效，最后记得点「保存」保存其它设置。</p>
+      <p class="hint-text" id="contHint">生成的内容会忠于原文，不会编造剧情里没有的人物与设定；剧情流程总结会写入会话「总结」，同时按发生顺序整理出一条「剧情时间线（世界观记忆）」，续写时不会遗忘原剧情走向、事件先后也有据可依。角色记忆会按时间顺序记录，且只记 TA 亲身经历或被告知的事。生成成功后本会话立即生效，最后记得点「保存」保存其它设置。</p>
       <div class="modal-actions"><button class="btn-primary" id="btnContGo">开始生成</button></div>
     </div>
 
@@ -1451,6 +1484,53 @@
   </div>
 </div>
 
+<!-- 导出角色卡 / 世界书：选择文件格式 -->
+<div id="exportModal" class="modal-overlay hidden">
+  <div class="modal small">
+    <h3>导出<span id="exportKind">角色卡</span></h3>
+    <p class="hint-text" id="exportName"></p>
+    <p class="hint-text">选择导出的文件格式：md / markdown 是纯文本格式，方便阅读、编辑与分享（头像与人设中的换行不会保留）；梦语 json 是本软件的完整备份，可原样导入回来（含头像）。</p>
+    <div class="modal-actions modal-actions-col">
+      <button class="btn-primary" id="btnExportMd">导出为 .md 文件</button>
+      <button class="btn-primary" id="btnExportMarkdown">导出为 .markdown 文件</button>
+      <button class="btn-ghost" id="btnExportJson">导出为梦语 json 文件</button>
+      <button class="btn-ghost" id="btnExportCancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 头像裁剪（上传图片：拖动 + 缩放，可查看原图） -->
+<div id="avCropModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>裁剪头像</h3>
+    <div class="av-crop-stage">
+      <div class="av-crop-box" id="avCropBox"><img id="avCropImg" alt=""></div>
+    </div>
+    <label>缩放</label>
+    <input type="range" id="avCropZoom" min="100" max="400" value="100">
+    <p class="hint-text">按住图片拖动可调整位置；若头像主体不在正中间，先缩放再拖动。</p>
+    <button class="btn-ghost" id="btnAvCropOrigin">查看原图</button>
+    <div class="av-crop-origin hidden" id="avCropOriginBox"><img id="avCropOriginImg" alt=""></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btnAvCropCancel">取消</button>
+      <button class="btn-primary" id="btnAvCropOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 外部链接跳转确认 -->
+<div id="linkModal" class="modal-overlay hidden">
+  <div class="modal small">
+    <h3>打开外部链接</h3>
+    <p class="hint-text" id="linkDesc"></p>
+    <p class="link-url" id="linkUrl"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="linkCancel">取消</button>
+      <button class="btn-primary" id="linkGo">打开</button>
+    </div>
+  </div>
+</div>
+
 <!-- 消息搜索 -->
 <div id="searchModal" class="modal-overlay hidden">
   <div class="modal">
@@ -1577,13 +1657,24 @@
 (function(){
 'use strict';
 
-var LS = { set:'ds_settings', convs:'ds_convs', chars:'ds_chars', hist:'ds_history', cards:'ds_cards', worlds:'ds_worlds', board:'ds_board', boardTut:'ds_board_tut' };
+var LS = { set:'ds_settings', convs:'ds_convs', chars:'ds_chars', hist:'ds_history', cards:'ds_cards', worlds:'ds_worlds', board:'ds_board', boardTut:'ds_board_tut', trash:'ds_trash' };
+var TRASH_MAX = 30;   // 垃圾桶最多保留最近删除的 30 项
 var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.4.4';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.4.5';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.4.5', date:'2026-09-10', title:'垃圾桶恢复 · 导出选格式 · 续写剧情带时间线 · 头像裁剪 · 关系图关系名 · 关于链接确认', items:[
+    '主页侧边栏「黑板」上方新增「垃圾桶」：删除的角色卡、世界书、聊天都会先收进这里（最多保留最近 30 个），点「恢复」就能复原——聊天按原样恢复（成员、消息、世界观、时间线都在），角色卡与世界书回到各自的库',
+    '导出角色卡 / 世界书时先弹出小窗选择文件格式：md / markdown 是纯文本格式，方便阅读、编辑与分享；梦语 json 是完整备份，可原样导入回来（含头像）',
+    '「续写剧情」现在会把原文的剧情按发生顺序整理成一条「剧情时间线（世界观记忆）」，接着往下续写时事件先后有据可依；角色卡成员的记忆也改为按时间顺序记录，并且只记 TA 亲身经历或被告知的事',
+    '角色的记忆与发言加入时间顺序约束：越早发生的事记在越前面，提到过去的事先后不会颠倒；角色不会知道、也不会提起自己没参与也没人告诉过 TA 的事',
+    '关系图里连线上的「关系名」改为画在角色头像之上（原来会被头像挡住看不到），关系名较长时会自动折成两行显示',
+    '上传图片做头像时可以先裁剪：拖动图片调整位置、滑动缩放，还能「查看原图」；头像导出分辨率提高，不再模糊（透明图保留透明、照片存为较小的 JPEG）',
+    '「关于」页面：QQ 群链接补上（群号 598382490，点击后会复制群号，便于在 QQ 里搜索加入）；简介「让它们一起演剧情」改为「让它们一起演绎剧情」',
+    '「关于」页面的 GitHub / 哔哩哔哩 / QQ 群链接，点击后先弹小窗确认，点「取消」不会跳转'
+  ]},
   { v:'0.4.4', date:'2026-09-07', title:'剧情时间线（世界观记忆）· 关键词自主成长 · 总结仅作者可见 · 安卓返回键', items:[
     '三个模式的世界观都加上了「剧情时间线（世界观记忆）」：在设置页的「世界观」里可以手动编辑，AI 也会每过一段时间把一路推进的剧情自动续写进去；消息区「＋」新增「时间线」小工具，随时查看 / 复制这条线。它只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱；随「记忆转移」一起备份',
     '「总结」改为只给作者（玩家）看：不再注入给角色，防止故事剧情发生错乱——角色只记得自己亲身经历或听说的剧情（他们的「记忆」）；「同时压缩角色记忆」现在只精简角色自己的记忆，重要剧情与关键信息会保留、不会丢',
@@ -1892,15 +1983,16 @@ var cmAction = null;
 var cards = [];
 var worlds = [];
 var board = [];
+var trash = [];   // 垃圾桶：{ id, kind:'card'|'world'|'conv', name, at, data }
 var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 20;
+var BOARD_TUT_VERSION = 21;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。「世界观」页签里的「剧情时间线（世界观记忆）」会自动记录剧情发展、也可手动编辑；时间线与「总结」都只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆；经历影响自身塑造的重大剧情后，TA 还会在记忆提炼时自主新增「关键词」——关键词不限于性格，也可以是某个时间 / 地点 / 物品 / 人物 / 事件 / 身份 / 关系等，词长不限，只按重要程度给数量。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图 / 时间线小工具（时间线即世界观记忆，随时查看 / 复制发展线）；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「世界观」页签的「剧情时间线（世界观记忆）」会自动记录故事发展线、也可手动编辑；「总结」可压缩上下文、勾选也能同时压缩角色记忆——时间线与总结都只给作者（玩家）看，角色看不到，防止剧情错乱，角色只记得自己经历或听说的剧情（重要剧情不会丢）。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名；经历影响自身的重大剧情后，角色会自主给「关键词」成长（不限于性格，时间 / 地点 / 物品 / 人物 / 事件等皆可，词长不限）。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事；另有「新建攻略」「新建模拟」两个占位入口，对应后面将推出的攻略 / 模拟模式。\n· 「酒馆」里点「结识角色卡 / 结识世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。「世界观」页签里的「剧情时间线（世界观记忆）」会自动记录剧情发展、也可手动编辑；时间线与「总结」都只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆；经历影响自身塑造的重大剧情后，TA 还会在记忆提炼时自主新增「关键词」——关键词不限于性格，也可以是某个时间 / 地点 / 物品 / 人物 / 事件 / 身份 / 关系等，词长不限，只按重要程度给数量。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图 / 时间线小工具（时间线即世界观记忆，随时查看 / 复制发展线）；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。连线上的「关系名」画在角色头像之上（不会被头像挡住），名字较长时会自动折成两行。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；同时还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，接着往下续写时事件先后有据可依——角色记忆也按时间顺序记录，且只记 TA 亲身经历或被告知的事，TA 不知情的情节不会写进记忆、也不会被提起；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「世界观」页签的「剧情时间线（世界观记忆）」会自动记录故事发展线、也可手动编辑；「总结」可压缩上下文、勾选也能同时压缩角色记忆——时间线与总结都只给作者（玩家）看，角色看不到，防止剧情错乱，角色只记得自己经历或听说的剧情（重要剧情不会丢）。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名；经历影响自身的重大剧情后，角色会自主给「关键词」成长（不限于性格，时间 / 地点 / 物品 / 人物 / 事件等皆可，词长不限）。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘；还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，角色记忆也按时间顺序记录、只记 TA 亲身经历或被告知的事（不知情的情节不会被提起）。\n· 故事默认是「书和笔」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 垃圾桶 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 「垃圾桶」保留你最近删除的角色卡、世界书与聊天（最多 30 个），点「恢复」即可复原——聊天会按原样恢复（成员、消息、世界观、时间线都在），角色卡与世界书回到各自的库。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事；另有「新建攻略」「新建模拟」两个占位入口，对应后面将推出的攻略 / 模拟模式。\n· 「酒馆」里点「结识角色卡 / 结识世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入；「导出」时先选格式：md / markdown 是纯文本（方便阅读、编辑与分享），梦语 json 是完整备份（可原样导入回来，含头像）。\n· 上传图片做头像时会先让你裁剪：拖动图片调整位置、滑动缩放，还能「查看原图」；角色卡 / 世界书 / 群聊 / 成员头像都一样。\n· 「关于」页的 GitHub / 哔哩哔哩 / QQ 群链接，点一下会先弹窗确认，点「取消」就不会跳转。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书和笔）、单人描线是「私聊」，一眼区分。' },
   { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。「世界观」页签里的「剧情时间线（世界观记忆）」会随你们的对话自动记录推进线、也可手动编辑，「＋」里也有「时间线」小工具；时间线与「总结」都只给作者看，TA 看不到——TA 只记得自己经历过的对话，重大经历后也会在记忆提炼时自主成长「关键词」。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）/ 时间线与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
@@ -2039,6 +2131,18 @@ function load(){
     assignId(c);
   });
   try{ worlds = JSON.parse(localStorage.getItem(LS.worlds)||'[]'); }catch(e){ worlds = []; }
+  // 垃圾桶必须在下面任何一次 save() 之前读出来，否则会被空的 trash 覆盖掉
+  try{ trash = JSON.parse(localStorage.getItem(LS.trash)||'[]'); }catch(e){ trash = []; }
+  if(!Array.isArray(trash)) trash = [];
+  trash = trash.filter(function(t){
+    return t && typeof t === 'object' && t.data && typeof t.data === 'object' &&
+      (t.kind === 'card' || t.kind === 'world' || t.kind === 'conv');
+  }).slice(0, TRASH_MAX);
+  trash.forEach(function(t){
+    if(typeof t.id !== 'number') t.id = seq++;
+    if(typeof t.name !== 'string') t.name = '未命名';
+    if(typeof t.at !== 'number') t.at = Date.now();
+  });
   var boardRaw = null;
   try{ boardRaw = localStorage.getItem(LS.board); }catch(e){}
   try{ board = boardRaw === null ? null : JSON.parse(boardRaw); }catch(e){ board = null; }
@@ -2100,7 +2204,86 @@ function save(){
   try{ localStorage.setItem(LS.cards, JSON.stringify(cards)); }catch(e){}
   try{ localStorage.setItem(LS.worlds, JSON.stringify(worlds)); }catch(e){}
   try{ localStorage.setItem(LS.board, JSON.stringify(board)); }catch(e){}
+  try{ localStorage.setItem(LS.trash, JSON.stringify(trash)); }catch(e){}
 }
+/* ---------- 垃圾桶：记住最近删除的角色卡 / 世界书 / 聊天，可一键恢复 ---------- */
+var TRASH_KIND = { card:'角色卡', world:'世界书', conv:'聊天' };
+function pushTrash(kind, item){
+  if(!item) return;
+  try{
+    trash.unshift({
+      id: seq++,
+      kind: kind,
+      name: String(item.name || '未命名'),
+      at: Date.now(),
+      data: JSON.parse(JSON.stringify(item))
+    });
+  }catch(e){ return; }   // 个别超大对象序列化失败时不影响删除本身
+  if(trash.length > TRASH_MAX) trash = trash.slice(0, TRASH_MAX);
+  save();
+}
+function trashIdx(id){ for(var i=0;i<trash.length;i++){ if(trash[i].id === id) return i; } return -1; }
+function fmtTrashTs(t){
+  if(!t) return '';
+  var d = new Date(t), p = function(n){ return (n<10?'0':'')+n; };
+  return (d.getMonth()+1)+'/'+d.getDate()+' '+p(d.getHours())+':'+p(d.getMinutes());
+}
+function restoreTrash(id){
+  var i = trashIdx(id);
+  if(i < 0) return;
+  var t = trash[i], d = JSON.parse(JSON.stringify(t.data));
+  if(t.kind === 'card'){
+    d.id = seq++;
+    d.memory = '';   // 角色卡不带记忆（与导入规则一致）
+    cards.push(d);
+    renderCardPanel();
+  } else if(t.kind === 'world'){
+    d.id = seq++;
+    worlds.push(d);
+    renderWorldPanel();
+  } else {
+    // 聊天：直接复原（会话内部成员 / 消息的相对引用自洽，换一个新会话 id 即可）
+    d.id = seq++;
+    convs.push(d);
+    renderConvList();
+    if(window.innerWidth <= 780) document.body.classList.remove('chat-open');
+  }
+  trash.splice(i, 1);
+  save();
+  renderTrash();
+  showToast('已恢复' + TRASH_KIND[t.kind] + '「' + t.name + '」');
+}
+function renderTrash(){
+  var box = $('trashList');
+  if(!box) return;
+  box.innerHTML = '';
+  if(!trash.length){
+    box.innerHTML = '<div class="lib-empty">垃圾桶是空的。<br>删除的角色卡、世界书与聊天会先放到这里，随时可以恢复。</div>';
+    return;
+  }
+  trash.forEach(function(t){
+    var av = t.kind === 'conv' ? (t.data.avatar || null) : t.data.avatar;
+    var row = document.createElement('div');
+    row.className = 'trash-row';
+    row.dataset.id = t.id;
+    row.innerHTML =
+      '<div class="trash-av">' + (t.kind === 'conv' ? convAvatarInner(t.data) : avatarHtml({ avatar: av })) + '</div>' +
+      '<div class="trash-meta">' +
+        '<div class="trash-name">' + esc(t.name) + '</div>' +
+        '<div class="trash-sub">' + fmtTrashTs(t.at) + '</div>' +
+      '</div>' +
+      '<span class="trash-kind">' + TRASH_KIND[t.kind] + '</span>' +
+      '<button class="btn-ghost" data-act="restore">恢复</button>';
+    box.appendChild(row);
+  });
+}
+$('trashList').addEventListener('click', function(e){
+  var b = e.target.closest('[data-act="restore"]');
+  if(!b) return;
+  restoreTrash(Number(b.closest('.trash-row').dataset.id));
+});
+$('btnTrash').addEventListener('click', function(){ enterMobilePanel(); showPanelView('trash'); });
+$('btnBackTrash').addEventListener('click', function(){ showPanelView('conv'); });
 function avatarHtml(c){
   if(!c) return '<span>🤖</span>';
   var a = c.avatar || defaultAvatar();
@@ -2218,6 +2401,7 @@ function deleteConv(id){
   if(!cv) return;
   stopAll();
   var last = convs.length === 1;
+  pushTrash('conv', cv);   // 先存进垃圾桶再删，可恢复
   convs = convs.filter(function(c){ return c.id !== id; });
   if(!convs.length){ activeId = null; }   // 删光最后一个：保持空，不自动新建
   else if(activeId === id){ activeId = null; if(window.innerWidth <= 780) document.body.classList.remove('chat-open'); }   // 删除后回到主页，不自动跳第一个群聊
@@ -3470,6 +3654,10 @@ function buildMessages(c, cv){
       '5. 回复要自然、简洁，像真人聊天一样。' +
       replyLenRule(cv, false);
   }
+  // 记忆与时间顺序：三种模式统一追加，保证角色对「事情先来后到」的认知一致
+  sys += '\n\n【记忆与时间顺序】\n' +
+    '1. 上面「你的记忆」是按时间先后记的，越靠前的事发生得越早；提到过去的事时，先后顺序要与之一致，不要颠倒。\n' +
+    '2. 你只知道「你的记忆」里记着的事，以及这段对话里正在发生、你亲身在场的事。你没参与、也没人告诉过你的事，你并不知情——不要凭空知道这些事，也不要提起它们。';
   var ctx = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-40);
   var kwBlock = kwBlockFor(c, cv, ctx);
   if(kwBlock) sys += kwBlock;
@@ -3622,7 +3810,7 @@ function updateMemory(c, cv){
     if(m.speakerId === 'user') msgs.push({ role:'user', content:'我：'+m.text });
     else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
-  msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。只挑「你亲身经历、亲眼所见，或别人直接告诉你」的事；这段对话里发生在你没参与、你并不知晓的时刻的情节，不要当成你自己的记忆写进去。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。\n'+roleInstr(c) +
+  msgs.push({ role:'user', content:'请从上面这段对话里，挑出值得长期记住的事实（人物关系、说过的重要的话、玩家的偏好、重要事件等），与已有记忆合并，输出更新后的记忆。只挑「你亲身经历、亲眼所见，或别人直接告诉你」的事；这段对话里发生在你没参与、你并不知晓的时刻的情节，不要当成你自己的记忆写进去。记忆要按事件发生的先后顺序排列——越早发生的写在越前面，合并新内容后也要保持这个顺序，不要打乱已有记忆的先后。直接输出要点式内容即可，不要其它说明；如果没什么值得记的，就原样输出当前记忆。\n'+roleInstr(c) +
     '\n\n另外，对照上面这段对话检查你的「关键词」（关键词不限于性格：也可以是某个时间、地点、物品、人物、事件、身份、目标、关系等，词长不限，不必是四个字，每个关键词带一句详情）：\n' +
     '- 更新：某个现有关键词代表的情况发生了变化（例如关键词「杀父之仇」，现已报仇，详情更新成「已复仇，放下了心结」）。\n' +
     '- 新增：这段剧情里发生了对你的塑造有长期重大影响的新事项（比如结识了某个重要的人、获得或失去了重要的东西、改变了人生的重大事件、立下新的目标、身份转变等），就把它新增为一个关键词。新增只挑真正重要、足以改变你的，数量按剧情自由、不要凑数；若你的关键词已接近 40 个，就只更新、不要再新增；新词不要与现有关键词重复或意思相近。\n' +
@@ -3893,7 +4081,7 @@ $('gsClearRec').addEventListener('click', function(){
 $('gsDelConv').addEventListener('click', function(){
   var cv = current();
   if(!cv) return;
-  openConfirm('删除'+kindLabel(cv), '确定删除「'+cv.name+'」这个'+kindLabel(cv)+'吗？其中的全部对话记录也会一并删除，不可恢复。', function(){
+  openConfirm('删除'+kindLabel(cv), '确定删除「'+cv.name+'」这个'+kindLabel(cv)+'吗？其中的全部对话记录也会一并移出列表；删除后会放进主页侧边栏的「垃圾桶」，随时可以整份恢复。', function(){
     deleteConv(cv.id);
   });
 });
@@ -3993,17 +4181,20 @@ function showPanelView(v){
   $('worldView').classList.toggle('hidden', v!=='worlds');
   $('tavernView').classList.toggle('hidden', v!=='tavern');
   $('boardView').classList.toggle('hidden', v!=='board');
+  $('trashView').classList.toggle('hidden', v!=='trash');
   $('aboutView').classList.toggle('hidden', v!=='about');
   $('logView').classList.toggle('hidden', v!=='log');
   $('btnCards').classList.toggle('on', v==='cards');
   $('btnWorlds').classList.toggle('on', v==='worlds');
   $('btnTavern').classList.toggle('on', v==='tavern');
   $('btnBoard').classList.toggle('on', v==='board');
+  $('btnTrash').classList.toggle('on', v==='trash');
   $('btnAbout').classList.toggle('on', v==='about');
   if(v==='cards') renderCardPanel();
   if(v==='worlds') renderWorldPanel();
   if(v==='tavern') renderTavern();
   if(v==='board') renderBoard();
+  if(v==='trash') renderTrash();
 }
 function enterMobilePanel(){ if(window.innerWidth <= 780) document.body.classList.remove('chat-open'); }
 $('btnTavern').addEventListener('click', function(){ enterMobilePanel(); showPanelView('tavern'); });
@@ -4055,9 +4246,35 @@ $('btnBackWorld').addEventListener('click', function(){ showPanelView('conv'); }
 $('btnBackBoard').addEventListener('click', function(){ showPanelView('conv'); });
 $('btnBackAbout').addEventListener('click', function(){ showPanelView('conv'); });
 $('btnAddNote').addEventListener('click', addBoardNote);
-$('aboutGithub').addEventListener('click', function(){ window.open('https://github.com/mingyuezai0/Dreamchat','_blank'); });
-$('aboutBili').addEventListener('click', function(){ window.open('https://space.bilibili.com/498726578','_blank'); });
-$('aboutQQ').addEventListener('click', function(){ showToast('QQ群暂未开放，敬请期待'); });
+/* 关于面板的链接：点击先弹小窗确认，取消就不跳转 */
+var QQ_GROUP = '598382490';
+var linkDraft = null;
+function openLinkConfirm(url, desc, after){
+  linkDraft = { url:url, after:after || null };
+  $('linkDesc').textContent = desc;
+  $('linkUrl').textContent = url;
+  $('linkModal').classList.remove('hidden');
+}
+function closeLinkConfirm(){ $('linkModal').classList.add('hidden'); linkDraft = null; }
+$('linkCancel').addEventListener('click', closeLinkConfirm);
+$('linkGo').addEventListener('click', function(){
+  if(!linkDraft) return;
+  var d = linkDraft;
+  closeLinkConfirm();
+  if(d.after) d.after();
+  window.open(d.url, '_blank');
+});
+$('aboutGithub').addEventListener('click', function(){
+  openLinkConfirm('https://github.com/mingyuezai0/Dreamchat', '将在新窗口打开「梦语」的开源仓库（GitHub）。');
+});
+$('aboutBili').addEventListener('click', function(){
+  openLinkConfirm('https://space.bilibili.com/498726578', '将在新窗口打开作者的哔哩哔哩主页。');
+});
+$('aboutQQ').addEventListener('click', function(){
+  openLinkConfirm('https://qm.qq.com/cgi-bin/qm/qr?group_code=' + QQ_GROUP,
+    '将在新窗口尝试打开 QQ 群「' + QQ_GROUP + '」。若没有自动打开，群号已复制到剪贴板，可在 QQ 里搜索加入。',
+    function(){ copyText(QQ_GROUP); });
+});
 $('aboutSite').addEventListener('click', function(){ showToast('官方网站暂未开放，敬请期待'); });
 function renderClList(){
   var box = $('clList');
@@ -4284,13 +4501,18 @@ function wireGrid(id, kind){
     var itemId = Number(tile.dataset.id);
     if(actBtn){
       if(actBtn.dataset.act === 'export'){
-        if(kind==='card'){ var c = getCard(itemId); if(c) exportCard(c); }
-        else { var w = getWorld(itemId); if(w) exportWorld(w); }
+        var exItem = kind==='card' ? getCard(itemId) : getWorld(itemId);
+        if(exItem) openExportModal(kind, exItem);
       } else if(actBtn.dataset.act === 'del'){
         var nm = kind==='card' ? (getCard(itemId)||{}).name : (getWorld(itemId)||{}).name;
-        if(confirm('确定删除'+(kind==='card'?'角色卡':'世界书')+'「'+nm+'」吗？')){
-          if(kind==='card'){ cards = cards.filter(function(x){ return x.id!==itemId; }); renderCardPanel(); }
-          else { worlds = worlds.filter(function(x){ return x.id!==itemId; }); renderWorldPanel(); }
+        if(confirm('确定删除'+(kind==='card'?'角色卡':'世界书')+'「'+nm+'」吗？\n删除后会放进主页侧边栏的「垃圾桶」，随时可以恢复。')){
+          if(kind==='card'){
+            pushTrash('card', getCard(itemId));   // 先存进垃圾桶再删，可恢复
+            cards = cards.filter(function(x){ return x.id!==itemId; }); renderCardPanel();
+          } else {
+            pushTrash('world', getWorld(itemId));
+            worlds = worlds.filter(function(x){ return x.id!==itemId; }); renderWorldPanel();
+          }
           save();
         }
       }
@@ -4382,6 +4604,61 @@ function exportWorld(w){
   downloadFile('梦语-世界书-' + (w.name||'未命名').replace(/[\\/:*?"<>|]/g,'_') + '.json',
     { __mengyu_world__:true, version:1, app:'梦语', world: JSON.parse(JSON.stringify(w)) });
 }
+/* ---------- 导出角色卡 / 世界书：先选文件格式（md / markdown / 梦语 json） ---------- */
+var exportDraft = null;   // { kind:'card'|'world', item:对象 }
+function safeFileName(name){ return String(name||'未命名').replace(/[\\/:*?"<>|]/g,'_'); }
+function safeText(s){ return String(s == null ? '' : s).replace(/\r\n?/g, '\n').trim(); }
+function kwText(list){
+  if(!Array.isArray(list) || !list.length) return '（无）';
+  return list.map(function(k){ return '- ' + safeText(k && k.key) + '：' + (safeText(k && k.detail) || '（无详情）'); }).join('\n');
+}
+/* md / markdown：纯文本，方便阅读编辑与分享；导入时走「AI 整理」路径可还原成角色卡 / 世界书 */
+function libMarkdown(kind, item){
+  var name = safeText(item.name) || '未命名';
+  if(kind === 'card'){
+    return '# ' + name + '\n\n' +
+      '## 人设\n' + (safeText(item.persona) || '（无）') + '\n\n' +
+      '## 关键词\n' + kwText(item.keywords) + '\n';
+  }
+  return '# ' + name + '\n\n' +
+    '## 世界观\n' + (safeText(item.world) || '（无）') + '\n\n' +
+    '## 关键词\n' + kwText(item.keywords) + '\n';
+}
+function downloadText(name, text){
+  var blob = new Blob([text], { type:'text/plain;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+}
+function openExportModal(kind, item){
+  if(!item) return;
+  exportDraft = { kind:kind, item:item };
+  $('exportKind').textContent = kind === 'card' ? '角色卡' : '世界书';
+  $('exportName').textContent = '「' + (safeText(item.name) || '未命名') + '」';
+  $('exportModal').classList.remove('hidden');
+}
+function closeExportModal(){ $('exportModal').classList.add('hidden'); exportDraft = null; }
+function doExport(ext){
+  if(!exportDraft) return;
+  var kind = exportDraft.kind, item = exportDraft.item;
+  var base = '梦语-' + (kind === 'card' ? '角色卡' : '世界书') + '-' + safeFileName(item.name);
+  if(ext === 'json'){
+    if(kind === 'card') exportCard(item); else exportWorld(item);
+  } else {
+    downloadText(base + '.' + ext, libMarkdown(kind, item));
+  }
+  closeExportModal();
+  showToast('已导出「' + (safeText(item.name) || '未命名') + '」（' + ext + '）');
+}
+$('btnExportMd').addEventListener('click', function(){ doExport('md'); });
+$('btnExportMarkdown').addEventListener('click', function(){ doExport('markdown'); });
+$('btnExportJson').addEventListener('click', function(){ doExport('json'); });
+$('btnExportCancel').addEventListener('click', closeExportModal);
 function importLibFile(file, kind){
   var reader = new FileReader();
   reader.onload = function(){
@@ -4766,21 +5043,23 @@ function runContinue(){
     : '选择了第一人称：主角由玩家扮演，不生成主角的 AI 成员角色卡（主角不要放进 members），「玩家设定」就是主角设定（至少 ' + playerLen + ' 字：身份、性格、经历、与成员的关系）。';
   var scopeEl = document.querySelector('input[name="contScope"]:checked');
   var scopeAll = scopeEl && scopeEl.value === 'all';
+  var memSpec = '记忆（按事件发生的时间顺序、要点式记录 TA 亲身经历过或别人当面告诉过 TA 的关键事件与人物关系，越早发生的写在越前面；TA 没有参与、并不知情的事不要写进 TA 的记忆）、关键词（可以是性格、身份、目标、关系，也可以是某个时间、地点、物品、人物、事件等，词长不限，不必是四个字；每个词配一句详情；数量按这个角色在剧情中的重要程度自由决定，可能一个都没有——那时 keywords 用空数组 []，也可能有多个）。';
   var scopeText = scopeAll
-    ? '选择了「生成所有角色」：把剧情中所有出现过的角色（无论戏份多少）都作为 AI 成员生成出来，人数不限、不要遗漏。每个成员给出：姓名（2-8 个字）、人设（主要 / 次要角色至少 ' + charLen + ' 字：身份、性格、目标、立场；路人角色 1-2 句话简述即可）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词（可以是性格、身份、目标、关系，也可以是某个时间、地点、物品、人物、事件等，词长不限，不必是四个字；每个词配一句详情；数量按这个角色在剧情中的重要程度自由决定，可能一个都没有——那时 keywords 用空数组 []，也可能有多个）。'
-    : '选择了「生成重要角色」：只挑出对剧情有影响的重要角色——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、记忆（按剧情要点式记录 TA 经历过的关键事件与人物关系）、关键词（可以是性格、身份、目标、关系，也可以是某个时间、地点、物品、人物、事件等，词长不限，不必是四个字；每个词配一句详情；数量按这个角色在剧情中的重要程度自由决定，可能一个都没有——那时 keywords 用空数组 []，也可能有多个）。';
+    ? '选择了「生成所有角色」：把剧情中所有出现过的角色（无论戏份多少）都作为 AI 成员生成出来，人数不限、不要遗漏。每个成员给出：姓名（2-8 个字）、人设（主要 / 次要角色至少 ' + charLen + ' 字：身份、性格、目标、立场；路人角色 1-2 句话简述即可）、' + memSpec
+    : '选择了「生成重要角色」：只挑出对剧情有影响的重要角色——主要角色 1-3 位、次要角色 2-5 位、路人角色按需最多 2 位，合计不要超过 8 位。每个成员给出：姓名（2-8 个字）、人设（至少 ' + charLen + ' 字：身份、性格、目标、立场）、' + memSpec;
   var sys = '你是「梦语」的续写剧情助手，擅长从小说 / 剧情文本中分析人物、世界观与玩家身份，生成可直接用于续写的设定包。';
   var instr = '请阅读下面这段剧情文本，忠实于原文内容（不要编造原文没有的人物与设定），生成一份可直接用于续写的设定包：\n' +
     '1. AI 成员：' + scopeText + '\n' +
     '2. 世界观：概括这段剧情的世界（至少 ' + worldLen + ' 字：背景时代、地理与势力、核心规则或力量体系、氛围基调），另给世界观关键词（可以是这个世界里某个重要的时间、地点、物品、人物、事件、势力、关系等，词长不限，不必是四个字；各配一句详情；数量按这个世界观要素在剧情里的重要程度自由决定，可能没有——那时 keywords 用空数组 []，也可能有多个）。\n' +
     '3. 叙述视角：' + perText + '\n' +
     '4. 剧情总结：把整段文本的剧情流程概括成一段总结（至少 ' + summaryLen + ' 字：按时间顺序梳理关键剧情走向、重要事件与伏笔悬念，供后续续写引用），输出到 "summary" 字段，让原剧情流程在续写时不会被遗忘。\n' +
+    '5. 剧情时间线：把整段文本里发生过的剧情，按时间先后拆成一条条简短条目（一件重要的事一条，一行一条，6-20 条；越早发生的排在越前面，用旁观者视角叙述），输出到 "timeline" 字段。这条时间线是后续续写时的事件先后依据，务必与原文一致。\n' +
     '只输出一个 JSON 对象，不要任何说明文字，格式为：\n' +
-    '{"members":[{"name":"角色名","role":"main|minor|extra","persona":"人设","memory":"记忆","keywords":[{"key":"关键词","detail":"详情"}]}],"world":{"world":"世界观描述","keywords":[{"key":"世界观关键词","detail":"详情"}]},"player":"玩家设定（第三人称时为空字符串）","summary":"剧情总结"}\n\n剧情文本：\n' + text;
+    '{"members":[{"name":"角色名","role":"main|minor|extra","persona":"人设","memory":"记忆","keywords":[{"key":"关键词","detail":"详情"}]}],"world":{"world":"世界观描述","keywords":[{"key":"世界观关键词","detail":"详情"}]},"player":"玩家设定（第三人称时为空字符串）","summary":"剧情总结","timeline":"第一件事\\n第二件事\\n第三件事"}\n\n剧情文本：\n' + text;
   var msgs = [{ role:'system', content:sys }, { role:'user', content:instr }];
   var maxTok = scopeAll
-    ? Math.min(32000, 8000 + charLen*6 + worldLen + playerLen + summaryLen)   // 所有角色：人物可能很多，放宽输出上限
-    : Math.min(8000, 2000 + charLen*6 + worldLen + playerLen + summaryLen);
+    ? Math.min(32000, 8000 + charLen*6 + worldLen + playerLen + summaryLen + 1200)   // 所有角色：人物可能很多，放宽输出上限（+ 时间线）
+    : Math.min(8000, 2000 + charLen*6 + worldLen + playerLen + summaryLen + 1200);
   var body = { model: groupModel(cv), messages:msgs, stream:false, temperature:0.4, max_tokens:maxTok };
   if(isDeepseek(cv)) body.thinking = { type:'disabled' };
   var hd = { 'Content-Type':'application/json' };
@@ -4824,6 +5103,11 @@ function runContinue(){
       cv.worldKeywords = wkw;
       cv.player = per === 'third' ? '' : (typeof data.player === 'string' ? data.player : '').trim();
       if(typeof data.summary === 'string' && data.summary.trim()) cv.summary = data.summary.trim();
+      // 剧情时间线（世界观记忆）：由原文顺序生成，方便接着往下续写；只给作者看，角色看不到。
+      if(typeof data.timeline === 'string' && data.timeline.trim()){
+        cv.worldMem = data.timeline.trim().slice(0, 8000);
+        cv.worldMemAt = 0;   // 新时间线从零开始，之后按剧情自动续写
+      }
       save();
       $('gsWorld').value = cv.world;
       gsKwDraft = kwDraftFrom(cv.worldKeywords);
@@ -5312,24 +5596,138 @@ function setAvatarTab(tab){
 function updatePreview(){
   $('emPreview').innerHTML = avatarHtml({ avatar:avatarDraft, name:$('emName').value });
 }
-function fileToAvatar(file, cb){
+/* ---------- 上传头像：先裁剪（正方形取景 + 拖动 / 缩放 + 查看原图），再按高分辨率导出 ----------
+   输出 320×320：比早先的 128 清晰得多（头像框最大显示约 160px，2 倍屏也够用），
+   同时体积可控（不透明图走 JPEG，透明图走 PNG，避免相册照把 localStorage 撑爆）。 */
+var AV_CROP_BOX = 240;      // 取景框边长（与 CSS .av-crop-box 一致）
+var AV_CROP_OUT = 320;      // 导出边长
+var avCrop = null;          // { img, iw, ih, base, zoom, tx, ty, cb }
+function avCropEls(){ return { box:$('avCropBox'), img:$('avCropImg'), zoom:$('avCropZoom') }; }
+function avCropApply(){
+  if(!avCrop) return;
+  var e = avCropEls();
+  var w = avCrop.iw * avCrop.base * avCrop.zoom;
+  var h = avCrop.ih * avCrop.base * avCrop.zoom;
+  avCrop.tx = Math.min(0, Math.max(AV_CROP_BOX - w, avCrop.tx));   // 保证图片始终盖满取景框
+  avCrop.ty = Math.min(0, Math.max(AV_CROP_BOX - h, avCrop.ty));
+  e.img.style.width = w + 'px';
+  e.img.style.height = h + 'px';
+  e.img.style.transform = 'translate(' + avCrop.tx + 'px, ' + avCrop.ty + 'px)';
+}
+/* 改变缩放时以取景框中心为锚点，画面不会跳 */
+function avCropZoomTo(z){
+  if(!avCrop) return;
+  var old = avCrop.zoom;
+  z = Math.max(1, Math.min(4, z));
+  if(z === old) return;
+  var cx = (AV_CROP_BOX / 2 - avCrop.tx) / old;   // 取景框中心在「原始缩放」坐标系里的位置
+  var cy = (AV_CROP_BOX / 2 - avCrop.ty) / old;
+  avCrop.zoom = z;
+  avCrop.tx = AV_CROP_BOX / 2 - cx * z;
+  avCrop.ty = AV_CROP_BOX / 2 - cy * z;
+  avCropApply();
+}
+function openAvatarCrop(file, cb){
+  if(!file) return;
   var reader = new FileReader();
   reader.onload = function(){
+    var dataUrl = String(reader.result || '');
     var img = new Image();
     img.onload = function(){
-      var size = 128;
-      var scale = Math.min(size/img.width, size/img.height, 1);
-      var canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      cb(canvas.toDataURL('image/png'));
+      if(!img.width || !img.height){ cb(null); return; }
+      var base = Math.max(AV_CROP_BOX / img.width, AV_CROP_BOX / img.height);   // 最小缩放：恰好盖满取景框
+      var e = avCropEls();
+      avCrop = { img:img, iw:img.width, ih:img.height, base:base, zoom:1, tx:0, ty:0, cb:cb };
+      e.img.src = dataUrl;
+      e.zoom.value = '100';
+      avCrop.tx = (AV_CROP_BOX - img.width * base) / 2;   // 初始居中
+      avCrop.ty = (AV_CROP_BOX - img.height * base) / 2;
+      avCropApply();
+      var ob = $('avCropOriginBox');
+      ob.classList.add('hidden');
+      $('avCropOriginImg').src = dataUrl;
+      $('avCropModal').classList.remove('hidden');
     };
     img.onerror = function(){ cb(null); };
-    img.src = reader.result;
+    img.src = dataUrl;
   };
+  reader.onerror = function(){ cb(null); };
   reader.readAsDataURL(file);
 }
+function closeAvatarCrop(){
+  $('avCropModal').classList.add('hidden');
+  $('avCropOriginBox').classList.add('hidden');
+  avCrop = null;
+}
+/* 是否含透明像素：决定导出 PNG（保留透明）还是 JPEG（体积小得多） */
+function avCropHasAlpha(img, sx, sy, sw, sh){
+  try{
+    var c = document.createElement('canvas');
+    c.width = 32; c.height = 32;
+    var cx = c.getContext('2d');
+    cx.drawImage(img, sx, sy, sw, sh, 0, 0, 32, 32);
+    var d = cx.getImageData(0, 0, 32, 32).data;
+    for(var i = 3; i < d.length; i += 4){ if(d[i] < 250) return true; }
+  }catch(e){ return true; }   // 取不到像素（跨域等）时保守用 PNG
+  return false;
+}
+function avCropExport(){
+  if(!avCrop) return null;
+  var k = avCrop.base * avCrop.zoom;                          // 显示尺寸 = 原始尺寸 × k
+  var sx = -avCrop.tx / k, sy = -avCrop.ty / k;
+  var sw = AV_CROP_BOX / k, sh = AV_CROP_BOX / k;
+  var canvas = document.createElement('canvas');
+  canvas.width = AV_CROP_OUT; canvas.height = AV_CROP_OUT;
+  var cx = canvas.getContext('2d');
+  var alpha = avCropHasAlpha(avCrop.img, sx, sy, sw, sh);
+  if(!alpha){ cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, AV_CROP_OUT, AV_CROP_OUT); }   // JPEG 无透明通道，先铺白底
+  cx.drawImage(avCrop.img, sx, sy, sw, sh, 0, 0, AV_CROP_OUT, AV_CROP_OUT);
+  return alpha ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.9);
+}
+/* 所有头像上传（成员 / 群聊 / 私聊 / 角色卡 / 世界书）统一走这里：先裁剪，再回填草稿 */
+function fileToAvatar(file, cb){
+  openAvatarCrop(file, function(dataUrl){
+    if(dataUrl){ cb(dataUrl); return; }
+    cb(null);
+  });
+}
+$('avCropZoom').addEventListener('input', function(){ avCropZoomTo(parseInt(this.value, 10) / 100); });
+$('btnAvCropOrigin').addEventListener('click', function(){
+  var ob = $('avCropOriginBox');
+  var show = ob.classList.contains('hidden');
+  ob.classList.toggle('hidden', !show);
+  this.textContent = show ? '收起原图' : '查看原图';
+});
+$('btnAvCropCancel').addEventListener('click', closeAvatarCrop);
+$('btnAvCropOk').addEventListener('click', function(){
+  if(!avCrop) return;
+  var cb = avCrop.cb;
+  var out = avCropExport();
+  closeAvatarCrop();
+  if(out) cb(out); else cb(null);
+});
+(function(){
+  var box = $('avCropBox');
+  var drag = null;
+  box.addEventListener('pointerdown', function(e){
+    if(!avCrop) return;
+    e.preventDefault();
+    drag = { x:e.clientX, y:e.clientY, tx:avCrop.tx, ty:avCrop.ty };
+    box.classList.add('dragging');
+    if(box.setPointerCapture) try{ box.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  box.addEventListener('pointermove', function(e){
+    if(!drag || !avCrop) return;
+    e.preventDefault();
+    avCrop.tx = drag.tx + (e.clientX - drag.x);
+    avCrop.ty = drag.ty + (e.clientY - drag.y);
+    avCropApply();
+  });
+  function endDrag(){ drag = null; box.classList.remove('dragging'); }
+  box.addEventListener('pointerup', endDrag);
+  box.addEventListener('pointercancel', endDrag);
+  box.addEventListener('pointerleave', endDrag);
+})();
 /* ---------- 关键词编辑（成员 / 世界观 / 角色卡 / 世界书 通用） ---------- */
 var editKwDraft = [], gsKwDraft = [], libKwDraft = [];
 function kwRowHtml(k){
@@ -5910,7 +6308,7 @@ function renderRelGraph(){
   relState.lineEls = [];
   relState.labEls = [];
   relState.nodeEls = {};
-  // 先画边（在节点下层）
+  // 先画边（在节点下层）：只画线，关系名另外放一层
   relState.edges.forEach(function(e){
     var g = document.createElementNS(ns, 'g');
     g.setAttribute('class', 'rel-edge');
@@ -5918,11 +6316,6 @@ function renderRelGraph(){
     line.setAttribute('class', 'rel-edge-line');
     g.appendChild(line);
     relState.lineEls.push(line);
-    var lab = document.createElementNS(ns, 'text');
-    lab.setAttribute('class', 'rel-edge-label');
-    lab.textContent = e.rel;
-    g.appendChild(lab);
-    relState.labEls.push(lab);
     svg.appendChild(g);
   });
   // 再画节点（盖住线头）；头像模式：圆内嵌角色头像，名字在圆下方；名字模式：圆内直接显示名字
@@ -5962,6 +6355,40 @@ function renderRelGraph(){
     svg.appendChild(g);
     relState.nodeEls[n.name] = { g:g, c:c, t:t, av:av };
   });
+  // 关系名单独放最上层（节点之后追加），否则会被角色头像盖住
+  var labLayer = document.createElementNS(ns, 'g');
+  labLayer.setAttribute('class', 'rel-lab-layer');
+  relState.edges.forEach(function(e){
+    var lab = document.createElementNS(ns, 'text');
+    lab.setAttribute('class', 'rel-edge-label');
+    relLabelLines(e.rel).forEach(function(ln, i){
+      var ts = document.createElementNS(ns, 'tspan');
+      ts.setAttribute('x', 0);
+      ts.setAttribute('dy', i === 0 ? 0 : '1.15em');
+      ts.textContent = ln;
+      lab.appendChild(ts);
+    });
+    relState.labEls.push(lab);
+    labLayer.appendChild(lab);
+  });
+  svg.appendChild(labLayer);
+}
+/* 关系名过长时折成两行（SVG 里手动折行，按中点就近断句） */
+function relLabelLines(rel){
+  var s = String(rel || '').trim();
+  if(s.length <= 6) return [s];
+  var mid = Math.ceil(s.length / 2);
+  var cut = -1;
+  // 优先在中点附近的标点/空格处断行，让两行更自然
+  for(var d = 0; d < 4; d++){
+    [mid - d, mid + d].forEach(function(i){
+      if(cut >= 0 || i <= 1 || i >= s.length) return;
+      if('，、。；：· 　'.indexOf(s.charAt(i - 1)) >= 0) cut = i;
+    });
+    if(cut >= 0) break;
+  }
+  if(cut < 0) cut = mid;
+  return [s.slice(0, cut), s.slice(cut)];
 }
 function relAvatarOf(name){
   var cv = current();
@@ -6049,8 +6476,15 @@ function updateRelGraph(){
     var mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
     var dx = p2.x - p1.x, dy = p2.y - p1.y, L = Math.hypot(dx, dy) || 1;
     var px = -dy / L * 10, py = dx / L * 10;
-    lab.setAttribute('x', mx + px);
-    lab.setAttribute('y', my + py - 3);
+    var labX = mx + px, labY = my + py - 3;
+    lab.setAttribute('x', labX);
+    lab.setAttribute('y', labY);
+    // 两行时让两行整体以连线中点为中轴：首行上移半行
+    for(var ti = 0; ti < lab.childNodes.length; ti++){
+      var ts = lab.childNodes[ti];
+      ts.setAttribute('x', labX);
+      ts.setAttribute('dy', ti === 0 ? (lab.childNodes.length > 1 ? '-0.575em' : '0') : '1.15em');
+    }
   });
 }
 function relNodeClick(name){
