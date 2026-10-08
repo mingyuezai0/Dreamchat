@@ -6258,18 +6258,28 @@ function applyTheme(theme){
 }
 /* 手机端状态栏 / 浏览器界面条的颜色跟随当前主题（三主题各自的底色） */
 var THEME_CHROME = { default:'#eef1f6', dark:'#12141a', scroll:'#eee2c8' };
+function statusBarPlugin(){
+  try{
+    var C = window.Capacitor;
+    if(!C) return null;
+    if(C.Plugins && C.Plugins.StatusBar) return C.Plugins.StatusBar;
+    if(typeof C.registerPlugin === 'function') return C.registerPlugin('StatusBar');
+  }catch(e){}
+  return null;
+}
 function syncStatusBarColor(theme){
   var c = THEME_CHROME[theme] || THEME_CHROME['default'];
   var m = document.getElementById('metaTheme');
   if(m) m.setAttribute('content', c);
-  // 安卓壳：状态栏样式跟随主题（深色主题用浅色图标）。没有插件时静默跳过。
-  try{
-    var sb = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar;
-    if(sb){
-      sb.setBackgroundColor({ color: c });
-      sb.setStyle({ style: (theme === 'default') ? 'LIGHT' : 'DARK' });
-    }
-  }catch(e){}
+  // 安卓壳：状态栏底色与图标明暗跟随主题（浅色主题用深色图标，深色主题用浅色图标）
+  var sb = statusBarPlugin();
+  if(!sb) return;
+  var call = function(name, arg){
+    try{ var p = sb[name] && sb[name].call(sb, arg); if(p && p.catch) p.catch(function(){}); }catch(e){}
+  };
+  call('setOverlaysWebView', { overlay:true });
+  call('setBackgroundColor', { color:c });
+  call('setStyle', { style:(theme === 'dark' ? 'DARK' : 'LIGHT') });
 }
 /* 弹窗底部按钮固定：把除标题 / 页签 / 操作栏之外的内容包进可滚动区，按钮永远贴在弹窗底部 */
 function fixModalFooters(){
@@ -7542,6 +7552,7 @@ load();
 applyTheme(settings.theme);
 fixModalFooters();
 initScrollWatch();
+setTimeout(function(){ syncStatusBarColor(settings.theme); }, 700);   // 安卓壳的桥可能晚一点才就绪，就绪后再同步一次状态栏
 buildEmojiGrid();
 buildGsEmojiGrid();
 buildDmEmojiGrid();
