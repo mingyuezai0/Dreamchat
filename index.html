@@ -19,12 +19,15 @@
   button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; -webkit-tap-highlight-color:transparent;}
   input,textarea,select{font-family:inherit; font-size:14px; color:var(--text);}
 
-  /* 手机端：状态栏 / home 条安全区。让内容缩进安全区内，背景色（=当前主题的 --bg）自然填满刘海与手势条区域 */
+  /* 手机端：状态栏 / home 条安全区。让内容缩进安全区内，背景色（=当前主题的 --bg）自然填满刘海与手势条区域。
+     安卓壳里由 Capacitor 的 adjustMarginsForEdgeToEdge=force 把 WebView 让出系统条的高度（html.native 时不重复缩进），
+     因为老版本安卓 WebView 的 env(safe-area-inset-*) 恒为 0，只靠它会被系统栏盖住。 */
   .app{display:flex; height:100vh; height:100dvh;
     padding-top:env(safe-area-inset-top);
     padding-bottom:env(safe-area-inset-bottom);
     padding-left:env(safe-area-inset-left);
     padding-right:env(safe-area-inset-right);}
+  html.native .app{padding:0;}
 
   /* ---------- Rail ---------- */
   .rail{width:68px; min-width:68px; background:#e8ebf2; border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; padding:18px 0;}
@@ -158,7 +161,7 @@
 
   /* ---------- 消息区右下角「＋」更多工具 ---------- */
   .fab{position:absolute; right:14px; bottom:100%; margin-bottom:10px; z-index:40; display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
-  .fab-btn{width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; font-size:20px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 14px rgba(79,110,247,.35); transition:.15s;}
+  .fab-btn{width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; font-size:20px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 14px rgba(79,110,247,.35); transition:transform .1s ease;}
   .fab-btn svg{width:20px; height:20px;}
   .fab-btn:hover{filter:brightness(1.08);}
   .fab-menu{background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:0 10px 28px rgba(31,36,48,.16); padding:6px; display:flex; flex-direction:column; gap:2px;}
@@ -231,6 +234,7 @@
   .modal-overlay{position:fixed; inset:0; background:rgba(15,20,35,.45); display:flex; align-items:center; justify-content:center; z-index:50;
     padding-top:calc(20px + env(safe-area-inset-top)); padding-bottom:calc(20px + env(safe-area-inset-bottom));
     padding-left:calc(20px + env(safe-area-inset-left)); padding-right:calc(20px + env(safe-area-inset-right));}
+  html.native .modal-overlay{padding:20px;}   /* 安卓壳同理：系统条的高度已经由 Capacitor 让出来了 */
   .modal-overlay.hidden{display:none;}
   .modal{background:var(--modal-bg); border-radius:18px; width:460px; max-width:100%; max-height:90vh; overflow-y:auto; padding:22px 24px; box-shadow:0 20px 60px rgba(0,0,0,.25);}
   .modal.wide{width:580px;}
@@ -436,13 +440,13 @@
   html[data-theme="dark"] .scroll-down{box-shadow:0 6px 18px rgba(0,0,0,.5);}
   .scroll-down:active{transform:translateX(-50%) scale(.9);}
 
-  /* ---------- 发图片：待发送图片预览条 ---------- */
-  #imgBar{display:none; align-items:center; gap:10px; margin:0 0 8px; padding:6px 10px; background:var(--panel); border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--text);}
-  #imgBar img{width:44px; height:44px; object-fit:cover; border-radius:8px; border:1px solid var(--border); flex-shrink:0;}
-  #imgBar #imgName{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  #imgBar .attach-x{margin-left:auto;}
-  html[data-theme="dark"] #imgBar{background:#1e222c;}
-  html[data-theme="scroll"] #imgBar{background:#f7efda;}
+  /* ---------- 发图片：待发送图片预览（最多 5 张，右上角小 ✕ 删除） ---------- */
+  #imgBar{display:none; gap:8px; margin:0 0 8px; flex-wrap:wrap;}
+  #imgBar.on{display:flex;}
+  .img-thumb{position:relative; width:62px; height:62px; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:var(--panel);}
+  .img-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .img-x{position:absolute; top:3px; right:3px; width:18px; height:18px; border-radius:50%; padding:0; line-height:1;
+    background:rgba(0,0,0,.45); color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center;}
   .msg-imgs{display:flex; flex-wrap:wrap; gap:8px; margin:2px 0 6px;}
   .msg-imgs img{max-width:220px; max-height:220px; border-radius:12px; border:1px solid var(--border); display:block; cursor:zoom-in; object-fit:cover;}
   /* 图片查看：点消息里的图片放大 */
@@ -470,32 +474,32 @@
   html[data-theme="dark"] .cal-cell:hover{background:#232833;}
   html[data-theme="scroll"] .cal-cell:hover{background:#fbf3e1;}
 
-  /* ---------- UI 动画（按钮 / 弹窗 / 面板，三主题通用） ---------- */
-  button{transition:transform .12s ease, background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease, opacity .16s ease;}
-  button:active{transform:scale(.96);}
-  .rail-btn, .icon-btn, .back-btn, .fab-btn, .chip, .menu-item, .conv-item, .lib-card, .fab-item, .btn-primary, .btn-ghost, .btn-danger, .btn-add, .sum-opt, .style-opts button, .tabs button, .text-btn{
-    transition:transform .12s ease, background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease, opacity .16s ease, filter .16s ease;}
+  /* ---------- UI 动画（按钮 / 弹窗 / 面板，三主题通用） ----------
+     只过渡 transform / opacity 这类走合成器的属性；background-color / box-shadow / filter 一律不进过渡列表
+     —— 那几样每次都要重绘，低端安卓 WebView 上按一下按钮就掉帧。 */
+  button{transition:transform .1s ease, opacity .12s ease;}
+  button:active{transform:scale(.97);}
+  .rail-btn, .icon-btn, .back-btn, .fab-btn, .chip, .menu-item, .fab-item, .btn-primary, .btn-ghost, .btn-danger, .btn-add, .sum-opt, .style-opts button, .tabs button, .text-btn{
+    transition:transform .1s ease, opacity .12s ease;}
   .rail-btn:active, .icon-btn:active, .back-btn:active, .menu-item:active, .fab-item:active,
-  .btn-primary:active, .btn-ghost:active, .btn-danger:active, .btn-add:active, .sum-opt:active, .text-btn:active{transform:scale(.94);}
-  .conv-item:active, .lib-card:active{transform:scale(.985);}
-  .fab-btn:active{transform:scale(.9);}
+  .btn-primary:active, .btn-ghost:active, .btn-danger:active, .btn-add:active, .sum-opt:active, .text-btn:active{transform:scale(.95);}
+  .fab-btn:active{transform:scale(.92);}
+  /* 大行（会话条 / 书卡）不做缩放：整行建图层太贵，改成轻微变暗 */
+  .conv-item:active, .lib-card:active{transform:none; opacity:.72;}
   /* 弹窗淡入 + 轻微放大 */
   @keyframes myOverlayIn{from{opacity:0;} to{opacity:1;}}
-  @keyframes myModalIn{from{opacity:0; transform:translateY(10px) scale(.97);} to{opacity:1; transform:none;}}
-  .modal-overlay:not(.hidden){animation:myOverlayIn .16s ease both;}
-  .modal-overlay:not(.hidden) > .modal{animation:myModalIn .2s cubic-bezier(.22,.9,.3,1) both;}
+  @keyframes myModalIn{from{opacity:0; transform:translateY(8px) scale(.98);} to{opacity:1; transform:none;}}
+  .modal-overlay:not(.hidden){animation:myOverlayIn .13s ease both;}
+  .modal-overlay:not(.hidden) > .modal{animation:myModalIn .16s cubic-bezier(.22,.9,.3,1) both;}
   /* 页面 / 面板切换时内容轻微上浮 */
-  @keyframes myPaneIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
-  .panel-view:not(.hidden), .gs-pane:not(.hidden), .tabpane:not(.hidden){animation:myPaneIn .18s ease both;}
-  /* 主题切换时颜色平滑过渡，不闪白 */
-  body, .rail, .sidebar, .main, .modal, .msg, .bubble, .panel-view, .chat-header, .input-area{
-    transition:background-color .22s ease, color .22s ease, border-color .22s ease;}
+  @keyframes myPaneIn{from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:none;}}
+  .panel-view:not(.hidden), .gs-pane:not(.hidden), .tabpane:not(.hidden){animation:myPaneIn .15s ease both;}
   /* 系统开启「减少动态效果」时全部关掉 */
   @media (prefers-reduced-motion: reduce){
     *, *::before, *::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
     button:active, .rail-btn:active, .icon-btn:active, .back-btn:active, .menu-item:active, .fab-item:active,
     .btn-primary:active, .btn-ghost:active, .btn-danger:active, .btn-add:active, .sum-opt:active, .text-btn:active,
-    .conv-item:active, .lib-card:active, .fab-btn:active, .scroll-down:active, .cal-cell:active{transform:none;}
+    .fab-btn:active, .scroll-down:active, .cal-cell:active{transform:none;}
   }
   .btn-primary{background:var(--accent); color:#fff; padding:9px 20px; border-radius:10px; font-size:14px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; gap:6px;}
   .btn-primary:hover{filter:brightness(1.05);}
@@ -1094,9 +1098,9 @@
           <div id="chipExpandBox" class="chip-expand-box hidden"></div>
         </div>
         <div id="attachBar"><span>📎</span><span id="attachName"></span><span id="attachX" class="attach-x">移除</span></div>
-        <div id="imgBar"><img id="imgThumb" alt=""><span id="imgName"></span><span id="imgX" class="attach-x">移除</span></div>
+        <div id="imgBar"></div>
         <input type="file" id="attachFile" accept=".txt,.md,.markdown,.csv,.json,.log,.xml,.html,.js,.py,.java,.go,.c,.cpp,.h,.css,.yml,.yaml,.ini,.sh,.bat" style="display:none;">
-        <input type="file" id="imgFile" accept="image/*" style="display:none;">
+        <input type="file" id="imgFile" accept="image/*" multiple style="display:none;">
         <div class="hint" id="inputHint">Enter 发送 · Shift+Enter 换行 · 多人回复时会按顺序轮流发言</div>
         <div class="input-row">
           <textarea id="input" placeholder="输入消息…"></textarea>
@@ -1146,8 +1150,8 @@
       <input type="text" id="stModelText" placeholder="模型名，如 deepseek-v4-flash" autocomplete="off" spellcheck="false">
       <p class="hint-text">手填模型名，各家格式不同（如 deepseek-v4-flash、gpt-4o、glm-4-flash 等）。</p>
       <label>上下文长度（字数）</label>
-      <input type="text" id="stCtxLen" inputmode="numeric" placeholder="默认 128000" autocomplete="off" spellcheck="false">
-      <p class="hint-text">本模型一次能容纳的上下文总量，按字数估算。「总结」窗口右上角的上下文百分比就按它计算；留空用默认 128000。各聊天也可在「设置 → API」里单独填。</p>
+      <input type="text" id="stCtxLen" placeholder="默认 128000，可填 128k / 1m" autocomplete="off" spellcheck="false">
+      <p class="hint-text">本模型一次能容纳的上下文总量，按字数估算（128000 = 128k = 0.128m）。「总结」窗口右上角的上下文百分比、以及自动总结的 50% / 75% / 100% 都按它计算；留空用默认 128000。各聊天也可在「设置 → API」里单独填。</p>
       <label class="switch-row">深度思考模式（thinking）
         <span class="switch"><input type="checkbox" id="stThinking"><span></span></span>
       </label>
@@ -1334,8 +1338,8 @@
       <label>模型名称（可选）</label>
       <input type="text" id="gsModel" placeholder="如 deepseek-v4-flash，留空用全局" autocomplete="off">
       <label>上下文长度（字数，可选）</label>
-      <input type="text" id="gsCtxLen" inputmode="numeric" placeholder="留空用全局设置" autocomplete="off" spellcheck="false">
-      <p class="hint-text">只影响本聊天的「总结」百分比计算；留空则用全局设置的上下文长度。</p>
+      <input type="text" id="gsCtxLen" placeholder="留空用全局，可填 128k / 1m" autocomplete="off" spellcheck="false">
+      <p class="hint-text">只影响本聊天的「总结」百分比与自动总结阈值计算；留空则用全局设置的上下文长度。</p>
       <p class="hint-text">本群填了 API Key 才用自己的 API：此时接口地址 / 模型名称（留空则用全局）一起对本群生效；本群 Key 留空则完全用全局设置。</p>
       <label>思考等级（thinking）</label>
       <div class="style-opts" id="gsThinkLevel">
@@ -1388,9 +1392,9 @@
     <div id="sumAutoArea" class="hidden">
       <p class="hint-text" style="margin:10px 0 6px;">开启自动总结：当上下文达到以下量时，发送消息前会自动压缩：</p>
       <div class="sum-opts">
-        <button class="sum-opt" data-t="30000">30k</button>
-        <button class="sum-opt" data-t="50000">50k</button>
-        <button class="sum-opt" data-t="70000">70k</button>
+        <button class="sum-opt" data-t="50">50%</button>
+        <button class="sum-opt" data-t="75">75%</button>
+        <button class="sum-opt" data-t="100">100%</button>
       </div>
       <button class="btn-ghost" id="btnSumAutoOff" style="width:100%; margin-top:10px;">关闭自动总结（回到手动）</button>
     </div>
@@ -1871,6 +1875,14 @@
 (function(){
 'use strict';
 
+// 安卓壳里系统条的高度由 Capacitor 让出来（adjustMarginsForEdgeToEdge=force），
+// 此时 CSS 的 env(safe-area-inset-*) 若再缩进一次就重复了 —— 用 html.native 把它们区分开。
+try{
+  if(window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() !== 'web'){
+    document.documentElement.classList.add('native');
+  }
+}catch(e){}
+
 var LS = { set:'ds_settings', convs:'ds_convs', chars:'ds_chars', hist:'ds_history', cards:'ds_cards', worlds:'ds_worlds', board:'ds_board', boardTut:'ds_board_tut', trash:'ds_trash' };
 var TRASH_MAX = 30;   // 垃圾桶最多保留最近删除的 30 项
 var DEFAULT_BASE = 'https://api.deepseek.com/v1';
@@ -1879,15 +1891,16 @@ var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
 var APP_VERSION = '0.4.7';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
-  { v:'0.4.7', date:'2026-09-10', title:'发图片 · 剧情日历 · 人物详情 · 上下文长度 · 回到底部 · 手机安全区 · 动效', items:[
-    '「＋」里新增「图片」：三个模式都能选一张图，配着你写的文字一起发给 AI；图片会显示在消息里，点一下可以放大看',
+  { v:'0.4.7', date:'2026-09-10', title:'发图片 · 剧情日历 · 人物详情 · 上下文长度 · 回到底部 · 手机状态栏适配 · 动效', items:[
+    '「＋」里新增「图片」：三个模式都能选图（一次最多 5 张，点缩略图右上角的小 ✕ 可单独删掉），配着你写的文字一起发给 AI；图片会显示在消息里，点一下可以放大看',
     '消息区新增「剧情日历」：在「＋」→「时间线」右上角点日历图标，就能看年月日与星期（正常月历排布）。剧情第一次发言时会按角色卡 / 世界观推导出当天日期，之后随剧情推进自动改（你提到「三天后」这类说法就会往后走），也可以自己点某一天改日期；AI 角色会照着日期与星期行事（学生周末不上学、深夜会犯困等）',
     '点消息里 AI 的头像或名字，就能查看 TA 的人物详情——人设、记忆、关键词一屏看完（只读，不给改），要修改仍到设置里',
-    '「总结」窗口右上角新增上下文百分比；「全局设置 → 模型配置」与各聊天的「设置 → API」都能填「上下文长度」，百分比就按它算（全局留空用默认 128000）',
+    '「总结」窗口右上角新增上下文百分比；「全局设置 → 模型配置」与各聊天的「设置 → API」都能填「上下文长度」，支持 128000 / 128k / 1m 三种写法；自动总结改为按上下文长度的 50% / 75% / 100% 触发（老版本填过的绝对字数会自动换算）',
     '生成回复时视图默认停在回复开头，不再跟着最新内容一路往下滚（可在「全局设置 → 界面设置」关掉）；不管开关如何，只要没停在最底部，对话区底部中间就会出现「回到底部」箭头，点一下平滑回到最新',
-    '手机端：状态栏与 home 条（手势条）适配当前界面风格，内容自动缩进安全区不被挡住；点击界面不再出现蓝色半透明高亮块；点设置里的「详情」不再自动弹出输入法，要点文本框才弹',
+    '手机端系统栏适配：状态栏不再盖住主页顶部，home 三键（手势条）与状态栏的底色、图标明暗都跟随当前界面风格（三主题各自配色）',
+    '手机端点击界面不再出现蓝色半透明高亮块；点设置里的「详情」不再自动弹出输入法，要点文本框才弹',
     '所有设置窗口的底部「取消 / 保存」固定在窗口最下方，内容再长也随时点得到；界面上不再显示具体网址（跳转功能不变）',
-    '界面动效优化：按钮点击有轻微反馈、弹窗与面板切换更顺滑，三种界面风格都适配；系统开启「减少动态效果」时会自动关掉动画'
+    '界面动效调轻：按钮点击只做位移与透明度变化（不再过渡背景色、阴影这些每次都要重绘的属性），滚动与流式输出的回调也改到动画帧里执行，低端机上不再卡顿；三种界面风格都适配，系统开启「减少动态效果」时会自动关掉动画'
   ]},
   { v:'0.4.6', date:'2026-09-10', title:'对话温度 · 思考等级 · 续写生成温度 · 酒馆措辞 · 故事头像 · QQ 群链接', items:[
     '「AI成员 / 智能体」页签最下方新增「对话温度」滑杆（0.0–2.0，默认 0.9）：控制本聊天里 AI 回复的随机性，越低越稳定保守、越高越有创意，每个聊天单独设置',
@@ -2224,12 +2237,12 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 23;
+var BOARD_TUT_VERSION = 24;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；「AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9，越低越稳定保守、越高越有创意），「API」页签最下方可设「思考等级」（Medium / High / Max，会真实作用在请求上；再点一次已选中的档位就是关闭思考，回复更快、温度也生效），两者都每个聊天单独设置；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。「世界观」页签里的「剧情时间线（世界观记忆）」会自动记录剧情发展、也可手动编辑；时间线与「总结」都只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆；经历影响自身塑造的重大剧情后，TA 还会在记忆提炼时自主新增「关键词」——关键词不限于性格，也可以是某个时间 / 地点 / 物品 / 人物 / 事件 / 身份 / 关系等，词长不限，只按重要程度给数量。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图 / 时间线 / 图片小工具（时间线即世界观记忆，随时查看 / 复制发展线，右上角还有「日历」入口：看剧情是几月几号、星期几，点某一天就能改日期）；「图片」选一张图会随你写的文字一起发给 AI，消息里的图点一下可放大。剧情日期会在第一次发言时按角色卡 / 世界观推导出来，之后随剧情自然推进（你提到「三天后」这类说法就会往后走），角色会照着日期与星期行事（学生周末不上学、深夜会犯困等）。生成回复时视图默认停在回复开头（可在全局设置里关掉）；没停在最底部时，对话区底部中间会出现「回到底部」箭头。每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。连线上的「关系名」画在角色头像之上（不会被头像挡住），名字较长时会自动折成两行。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；同时还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，接着往下续写时事件先后有据可依——角色记忆也按时间顺序记录，且只记 TA 亲身经历或被告知的事，TA 不知情的情节不会写进记忆、也不会被提起；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）；「生成温度」（默认 0.7）控制生成设定时的随机性，越低越忠于原文、越高人设越放得开。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「世界观」页签的「剧情时间线（世界观记忆）」会自动记录故事发展线、也可手动编辑；「总结」可压缩上下文、勾选也能同时压缩角色记忆——时间线与总结都只给作者（玩家）看，角色看不到，防止剧情错乱，角色只记得自己经历或听说的剧情（重要剧情不会丢）。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名；经历影响自身的重大剧情后，角色会自主给「关键词」成长（不限于性格，时间 / 地点 / 物品 / 人物 / 事件等皆可，词长不限）。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）；「＋」里还有「图片」（选图随你的文字一起发给 AI，消息里的图点一下可放大）与「时间线」（右上角「日历」可看 / 改剧情日期，角色会按日期与星期行事）。\n· 点消息里 AI 的头像或名字，可以看 TA 的人物详情（只读：人设、记忆、关键词），要修改请到设置里。\n· 生成回复时视图默认停在回复开头（可在全局设置里关掉）；没停在最底部时，对话区底部中间会出现「回到底部」箭头。\n· 「故事设置 → AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本故事生效。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘；还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，角色记忆也按时间顺序记录、只记 TA 亲身经历或被告知的事（不知情的情节不会被提起）。\n· 故事默认是「书本」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 垃圾桶 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 「垃圾桶」保留你最近删除的角色卡、世界书与聊天（最多 30 个），点「恢复」即可复原——聊天会按原样恢复（成员、消息、世界观、时间线都在），角色卡与世界书回到各自的库。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事；另有「新建攻略」「新建模拟」两个占位入口，对应后面将推出的攻略 / 模拟模式。\n· 「酒馆」里点「结识角色卡 / 收集世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入；「导出」时先选格式：md / markdown 是纯文本（方便阅读、编辑与分享），梦语 json 是完整备份（可原样导入回来，含头像）。\n· 上传图片做头像时会先让你裁剪：拖动图片调整位置、滑动缩放，还能「查看原图」；角色卡 / 世界书 / 群聊 / 成员头像都一样。\n· 「关于」页的 GitHub / 哔哩哔哩 / QQ 群链接，点一下会先弹窗确认，点「取消」就不会跳转；页面上不显示具体网址。\n· 所有设置窗口的「取消 / 保存」都固定在窗口最下方，内容再多、滚到哪里都点得到。\n· 「全局设置 → 模型配置」可以填「上下文长度」，各聊天的「设置 → API」也能单独填；「总结」窗口右上角会显示当前上下文占它的百分比。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书本图标）、单人描线是「私聊」，一眼区分。' },
-  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。「世界观」页签里的「剧情时间线（世界观记忆）」会随你们的对话自动记录推进线、也可手动编辑，「＋」里也有「时间线」小工具；时间线与「总结」都只给作者看，TA 看不到——TA 只记得自己经历过的对话，重大经历后也会在记忆提炼时自主成长「关键词」。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）/ 时间线 / 图片与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你；「图片」选一张图会随你写的文字一起发给 AI（需要模型支持看图），消息里的图点一下可放大；「时间线」右上角的「日历」可看 / 改剧情日期，TA 会按日期与星期行事。\n· 点 TA 的头像或名字可以看人物详情（只读：人设、记忆、关键词），要修改请到「智能体」页签。\n· 「智能体」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本私聊生效。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；「AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9，越低越稳定保守、越高越有创意），「API」页签最下方可设「思考等级」（Medium / High / Max，会真实作用在请求上；再点一次已选中的档位就是关闭思考，回复更快、温度也生效），两者都每个聊天单独设置；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。「世界观」页签里的「剧情时间线（世界观记忆）」会自动记录剧情发展、也可手动编辑；时间线与「总结」都只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆；经历影响自身塑造的重大剧情后，TA 还会在记忆提炼时自主新增「关键词」——关键词不限于性格，也可以是某个时间 / 地点 / 物品 / 人物 / 事件 / 身份 / 关系等，词长不限，只按重要程度给数量。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图 / 时间线 / 图片小工具（时间线即世界观记忆，随时查看 / 复制发展线，右上角还有「日历」入口：看剧情是几月几号、星期几，点某一天就能改日期）；「图片」一次最多可选 5 张（点缩略图右上角的小 ✕ 单独删掉），随你写的文字一起发给 AI，消息里的图点一下可放大。剧情日期会在第一次发言时按角色卡 / 世界观推导出来，之后随剧情自然推进（你提到「三天后」这类说法就会往后走），角色会照着日期与星期行事（学生周末不上学、深夜会犯困等）。生成回复时视图默认停在回复开头（可在全局设置里关掉）；没停在最底部时，对话区底部中间会出现「回到底部」箭头。每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。连线上的「关系名」画在角色头像之上（不会被头像挡住），名字较长时会自动折成两行。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；同时还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，接着往下续写时事件先后有据可依——角色记忆也按时间顺序记录，且只记 TA 亲身经历或被告知的事，TA 不知情的情节不会写进记忆、也不会被提起；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）；「生成温度」（默认 0.7）控制生成设定时的随机性，越低越忠于原文、越高人设越放得开。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「世界观」页签的「剧情时间线（世界观记忆）」会自动记录故事发展线、也可手动编辑；「总结」可压缩上下文、勾选也能同时压缩角色记忆——时间线与总结都只给作者（玩家）看，角色看不到，防止剧情错乱，角色只记得自己经历或听说的剧情（重要剧情不会丢）。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名；经历影响自身的重大剧情后，角色会自主给「关键词」成长（不限于性格，时间 / 地点 / 物品 / 人物 / 事件等皆可，词长不限）。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）；「＋」里还有「图片」（一次最多 5 张，随你的文字一起发给 AI，消息里的图点一下可放大）与「时间线」（右上角「日历」可看 / 改剧情日期，角色会按日期与星期行事）。\n· 点消息里 AI 的头像或名字，可以看 TA 的人物详情（只读：人设、记忆、关键词），要修改请到设置里。\n· 生成回复时视图默认停在回复开头（可在全局设置里关掉）；没停在最底部时，对话区底部中间会出现「回到底部」箭头。\n· 「故事设置 → AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本故事生效。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘；还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，角色记忆也按时间顺序记录、只记 TA 亲身经历或被告知的事（不知情的情节不会被提起）。\n· 故事默认是「书本」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 垃圾桶 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 「垃圾桶」保留你最近删除的角色卡、世界书与聊天（最多 30 个），点「恢复」即可复原——聊天会按原样恢复（成员、消息、世界观、时间线都在），角色卡与世界书回到各自的库。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事；另有「新建攻略」「新建模拟」两个占位入口，对应后面将推出的攻略 / 模拟模式。\n· 「酒馆」里点「结识角色卡 / 收集世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入；「导出」时先选格式：md / markdown 是纯文本（方便阅读、编辑与分享），梦语 json 是完整备份（可原样导入回来，含头像）。\n· 上传图片做头像时会先让你裁剪：拖动图片调整位置、滑动缩放，还能「查看原图」；角色卡 / 世界书 / 群聊 / 成员头像都一样。\n· 「关于」页的 GitHub / 哔哩哔哩 / QQ 群链接，点一下会先弹窗确认，点「取消」就不会跳转；页面上不显示具体网址。\n· 所有设置窗口的「取消 / 保存」都固定在窗口最下方，内容再多、滚到哪里都点得到。\n· 「全局设置 → 模型配置」可以填「上下文长度」（支持 128000 / 128k / 1m 三种写法），各聊天的「设置 → API」也能单独填；「总结」窗口右上角会显示当前上下文占它的百分比，自动总结也改成按它的 50% / 75% / 100% 触发。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书本图标）、单人描线是「私聊」，一眼区分。' },
+  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。「世界观」页签里的「剧情时间线（世界观记忆）」会随你们的对话自动记录推进线、也可手动编辑，「＋」里也有「时间线」小工具；时间线与「总结」都只给作者看，TA 看不到——TA 只记得自己经历过的对话，重大经历后也会在记忆提炼时自主成长「关键词」。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）/ 时间线 / 图片与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你；「图片」一次最多 5 张，会随你写的文字一起发给 AI（需要模型支持看图），消息里的图点一下可放大；「时间线」右上角的「日历」可看 / 改剧情日期，TA 会按日期与星期行事。\n· 点 TA 的头像或名字可以看人物详情（只读：人设、记忆、关键词），要修改请到「智能体」页签。\n· 「智能体」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本私聊生效。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -2346,6 +2359,7 @@ function load(){
     // 老会话没有思考等级：按全局「深度思考」开关迁移，升级前后行为一致
     if(['off','medium','high','max'].indexOf(cv.thinkLevel) === -1) cv.thinkLevel = newChatThinkLevel();
     cv.ctxLen = normalizeCtxLen(cv.ctxLen);                       // 本聊天单独的上下文长度（0 = 用全局）
+    cv.autoSummary = normalizeAutoSummary(cv.autoSummary, cv);    // 自动总结阈值：50 / 75 / 100（老的绝对字数会换算过来）
     cv.calDate = parseDate(cv.calDate) ? cv.calDate : '';         // 剧情日期（空 = 还没确定）
     if(typeof cv.calAt !== 'number') cv.calAt = 0;
     if(!cv.avatar || typeof cv.avatar !== 'object' || !cv.avatar.mode) cv.avatar = null;
@@ -3768,10 +3782,10 @@ function send(){
   if(!cv) return;
   if(missingKey(cv)){ addNote(keyNote(cv)); return; }
   var text = $('input').value.trim();
-  if(!text && !(cv.mode === 'dm' && dmAttach) && !pendingImg) return;   // 允许只发附件 / 只发图片
-  if(cv.autoSummary && estimateContextTokens(cv) >= cv.autoSummary && cv.history.length >= MIN_SUMMARY_MSGS){
+  if(!text && !(cv.mode === 'dm' && dmAttach) && !pendingImgs.length) return;   // 允许只发附件 / 只发图片
+  if(cv.autoSummary && estimateContextTokens(cv) >= autoSumLimit(cv) && cv.history.length >= MIN_SUMMARY_MSGS){
     generating = true; setGenerating(true);
-    addNote('上下文已达 '+fmtTokens(cv.autoSummary)+'，正在自动总结压缩…');
+    addNote('上下文已达「上下文长度」的 '+cv.autoSummary+'%（约 '+fmtTokens(autoSumLimit(cv))+' 字），正在自动总结压缩…');
     summarizeContext(cv).then(function(content){
       if(content){
         applySummary(cv, content);
@@ -3815,10 +3829,10 @@ function replyTargets(cv, text){
 function doSend(cv, text){
   $('input').value = ''; autoGrow();
   var attach = (cv.mode === 'dm' && dmAttach) ? { name:dmAttach.name, content:dmAttach.content } : null;
-  var imgsMeta = pendingImg ? [{ name:pendingImg.name, url:pendingImg.dataUrl }] : null;
+  var imgsMeta = pendingImgs.length ? pendingImgs.map(function(im){ return { name:im.name, url:im.dataUrl }; }) : null;
   cv.history.push({ id:seq++, speakerId:'user', speaker:'我', role:'user', text:text, attach:attach, images:imgsMeta, status:'done' });
   if(attach){ dmAttach = null; hideAttachBar(); }
-  if(pendingImg){ pendingImg = null; hideImgBar(); }
+  if(pendingImgs.length){ pendingImgs = []; renderImgBar(); }
   cv.lastActiveAt = Date.now();
   save(); renderConvList(); renderMsgs(); updateSummaryBtn();
   // 剧情日期：还没定过就先按角色卡 / 世界书推导一次；已经定了就按用户消息里的「过了多久」先本地推进
@@ -4451,6 +4465,7 @@ function importBackup(file){
       if(typeof conv.contTemp !== 'number' || isNaN(conv.contTemp) || conv.contTemp < TEMP_MIN || conv.contTemp > TEMP_MAX) conv.contTemp = DEFAULT_CONT_TEMP;
       if(['off','medium','high','max'].indexOf(conv.thinkLevel) === -1) conv.thinkLevel = newChatThinkLevel();
       conv.ctxLen = normalizeCtxLen(conv.ctxLen);
+      conv.autoSummary = normalizeAutoSummary(conv.autoSummary, conv);
       conv.calDate = parseDate(conv.calDate) ? conv.calDate : '';
       if(typeof conv.calAt !== 'number') conv.calAt = 0;
       if(typeof conv.randomOrder !== 'boolean') conv.randomOrder = false;
@@ -6256,14 +6271,17 @@ function applyTheme(theme){
   else document.documentElement.removeAttribute('data-theme');
   syncStatusBarColor(theme);
 }
-/* 手机端状态栏 / 浏览器界面条的颜色跟随当前主题（三主题各自的底色） */
+/* 手机端状态栏 / home 三键的颜色跟随当前主题（三主题各自的底色） */
 var THEME_CHROME = { default:'#eef1f6', dark:'#12141a', scroll:'#eee2c8' };
-function statusBarPlugin(){
+function isNativeApp(){
+  try{ return !!(window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() !== 'web'); }catch(e){ return false; }
+}
+function themeBarsPlugin(){
+  if(!isNativeApp()) return null;
   try{
     var C = window.Capacitor;
-    if(!C) return null;
-    if(C.Plugins && C.Plugins.StatusBar) return C.Plugins.StatusBar;
-    if(typeof C.registerPlugin === 'function') return C.registerPlugin('StatusBar');
+    if(C.Plugins && C.Plugins.ThemeBars) return C.Plugins.ThemeBars;
+    if(typeof C.registerPlugin === 'function') return C.registerPlugin('ThemeBars');
   }catch(e){}
   return null;
 }
@@ -6271,15 +6289,12 @@ function syncStatusBarColor(theme){
   var c = THEME_CHROME[theme] || THEME_CHROME['default'];
   var m = document.getElementById('metaTheme');
   if(m) m.setAttribute('content', c);
-  // 安卓壳：状态栏底色与图标明暗跟随主题（浅色主题用深色图标，深色主题用浅色图标）
-  var sb = statusBarPlugin();
-  if(!sb) return;
-  var call = function(name, arg){
-    try{ var p = sb[name] && sb[name].call(sb, arg); if(p && p.catch) p.catch(function(){}); }catch(e){}
-  };
-  call('setOverlaysWebView', { overlay:true });
-  call('setBackgroundColor', { color:c });
-  call('setStyle', { style:(theme === 'dark' ? 'DARK' : 'LIGHT') });
+  var tb = themeBarsPlugin();
+  if(!tb) return;
+  try{
+    var p = tb.setColors({ bg:c, light:(theme !== 'dark') });
+    if(p && p.catch) p.catch(function(){});
+  }catch(e){}
 }
 /* 弹窗底部按钮固定：把除标题 / 页签 / 操作栏之外的内容包进可滚动区，按钮永远贴在弹窗底部 */
 function fixModalFooters(){
@@ -6411,7 +6426,7 @@ function renderSumMode(){
     opts[i].classList.toggle('on', on);
   }
   if(cv.autoSummary){
-    $('sumModeText').textContent = '自动总结：上下文达到 '+fmtTokens(cv.autoSummary)+' 时，发送前自动压缩';
+    $('sumModeText').textContent = '自动总结：上下文达到「上下文长度」的 '+cv.autoSummary+'%（约 '+fmtTokens(autoSumLimit(cv))+' 字）时，发送前自动压缩';
     $('sumAutoArea').classList.remove('hidden');
   } else {
     $('sumModeText').textContent = '手动模式：点「手动总结」立即压缩上下文';
@@ -6555,7 +6570,7 @@ document.querySelectorAll('#sumAutoArea .sum-opt').forEach(function(b){
     if(!cv) return;
     cv.autoSummary = Number(b.dataset.t);
     save(); renderSumMode();
-    $('sumHint').textContent = '已开启自动总结：上下文达到 '+fmtTokens(cv.autoSummary)+' 时自动压缩。';
+    $('sumHint').textContent = '已开启自动总结：上下文达到「上下文长度」的 '+cv.autoSummary+'%（约 '+fmtTokens(autoSumLimit(cv))+' 字）时自动压缩。';
   });
 });
 $('btnSumAutoOff').addEventListener('click', function(){
@@ -7226,13 +7241,34 @@ $('msgList').addEventListener('click', function(e){
 
 /* ================= 上下文长度：总结的百分比按它计算 ================= */
 var DEFAULT_CTX_LEN = 128000;
+/* 上下文长度：支持填 128000 / 128k / 1m（大小写、空格都行），单位是字（约等于一个汉字算一个字） */
 function normalizeCtxLen(v){
-  var n = parseInt(String(v == null ? '' : v).replace(/[^\d]/g, ''), 10);
+  var s = String(v == null ? '' : v).trim().toLowerCase().replace(/[,\s，]/g, '');
+  if(!s) return 0;
+  var m = /^(\d+(?:\.\d+)?)([km])?$/.exec(s);
+  if(!m) return 0;
+  var n = parseFloat(m[1]);
   if(!isFinite(n) || n <= 0) return 0;
+  if(m[2] === 'k') n *= 1000;
+  else if(m[2] === 'm') n *= 1000000;
+  n = Math.round(n);
   return Math.min(20000000, n);
 }
 function globalCtxLen(){ return normalizeCtxLen(settings.ctxLen) || DEFAULT_CTX_LEN; }
 function ctxLenOf(cv){ return normalizeCtxLen(cv && cv.ctxLen) || globalCtxLen(); }
+/* 自动总结阈值：按「上下文长度」的百分比（50 / 75 / 100），不再用绝对值 */
+var SUM_PCTS = [50, 75, 100];
+function autoSumLimit(cv){ return Math.round(ctxLenOf(cv) * (cv && cv.autoSummary ? cv.autoSummary : 0) / 100); }
+function normalizeAutoSummary(v, cv){
+  var n = Number(v);
+  if(!isFinite(n) || n <= 0) return 0;
+  if(SUM_PCTS.indexOf(n) !== -1) return n;
+  // 老版本存的是绝对字数（如 30000）：按当前上下文长度换算成最接近的百分比
+  var pct = Math.round(n / ctxLenOf(cv) * 100);
+  var best = SUM_PCTS[0];
+  SUM_PCTS.forEach(function(p){ if(Math.abs(p - pct) < Math.abs(best - pct)) best = p; });
+  return best;
+}
 function ctxPctOf(cv){
   if(!cv) return 0;
   var lim = ctxLenOf(cv);
@@ -7464,15 +7500,24 @@ $('calGrid').addEventListener('click', function(e){
   showToast('剧情日期已改为 ' + calFullText(ds));
 });
 
-/* ================= 发送图片 ================= */
-var pendingImg = null;   // { name, dataUrl }
-function hideImgBar(){ $('imgBar').style.display = 'none'; $('imgThumb').removeAttribute('src'); $('imgName').textContent = ''; }
-function showImgBar(){
-  if(!pendingImg) return hideImgBar();
-  $('imgThumb').src = pendingImg.dataUrl;
-  $('imgName').textContent = pendingImg.name + '（发送时会随消息一起交给 AI）';
-  $('imgBar').style.display = 'flex';
+/* ================= 发送图片（最多 5 张，右上角小 ✕ 删除） ================= */
+var IMG_MAX = 5;
+var pendingImgs = [];   // [{ name, dataUrl }]
+function renderImgBar(){
+  var bar = $('imgBar');
+  if(!pendingImgs.length){ bar.innerHTML = ''; bar.classList.remove('on'); return; }
+  bar.innerHTML = pendingImgs.map(function(im, i){
+    return '<div class="img-thumb"><img src="'+esc(im.dataUrl)+'" alt="">' +
+      '<button type="button" class="img-x" data-i="'+i+'" title="移除这张">✕</button></div>';
+  }).join('');
+  bar.classList.add('on');
 }
+$('imgBar').addEventListener('click', function(e){
+  var b = e.target.closest('.img-x');
+  if(!b) return;
+  pendingImgs.splice(Number(b.dataset.i), 1);
+  renderImgBar();
+});
 var IMG_MAX_SIDE = 1024;   // 发送前压到这个边长内，避免请求体过大
 function shrinkImage(dataUrl, cb){
   var img = new Image();
@@ -7491,24 +7536,30 @@ function shrinkImage(dataUrl, cb){
   img.onerror = function(){ cb(dataUrl); };
   img.src = dataUrl;
 }
-$('imgFile').addEventListener('change', function(){
-  var f = this.files && this.files[0];
-  this.value = '';
+function addImageFile(f){
   if(!f) return;
   if(!/^image\//.test(f.type)){ showToast('请选择图片文件'); return; }
   if(f.size > 12 * 1024 * 1024){ showToast('图片太大了（请小于 12MB）'); return; }
+  if(pendingImgs.length >= IMG_MAX){ showToast('最多一次发 '+IMG_MAX+' 张图片'); return; }
   var reader = new FileReader();
   reader.onload = function(){
     shrinkImage(String(reader.result || ''), function(out){
-      pendingImg = { name:f.name || '图片', dataUrl:out };
-      showImgBar();
-      showToast('图片已加入，写点文字一起发送吧');
+      pendingImgs.push({ name:f.name || '图片', dataUrl:out });
+      renderImgBar();
     });
   };
   reader.onerror = function(){ showToast('读取图片失败'); };
   reader.readAsDataURL(f);
+}
+$('imgFile').addEventListener('change', function(){
+  var fs = this.files ? Array.prototype.slice.call(this.files) : [];
+  this.value = '';
+  if(!fs.length) return;
+  var room = IMG_MAX - pendingImgs.length;
+  if(room <= 0){ showToast('最多一次发 '+IMG_MAX+' 张图片'); return; }
+  if(fs.length > room) showToast('最多一次发 '+IMG_MAX+' 张图片，只加入前 '+room+' 张');
+  fs.slice(0, room).forEach(addImageFile);
 });
-$('imgX').addEventListener('click', function(){ pendingImg = null; hideImgBar(); });
 /* 点消息里的图片 → 放大查看 */
 function openImgView(src, alt){
   $('imgViewPic').src = src;
@@ -7538,12 +7589,16 @@ function syncScrollDown(){
   if(!cv || !inChatView()){ b.classList.remove('show'); return; }
   b.classList.toggle('show', !atBottom());
 }
-var sdTick = 0;
-function updateScrollDown(){ if((sdTick++ % 5) === 0) syncScrollDown(); }   // 流式逐字时别每块都量一次，避免卡顿
+var sdTick = 0, sdRaf = 0;
+function updateScrollDown(){ if((sdTick++ % 5) === 0) queueScrollDown(); }   // 流式逐字时别每块都量一次，避免卡顿
+function queueScrollDown(){
+  if(sdRaf) return;
+  sdRaf = (window.requestAnimationFrame || function(f){ return setTimeout(f, 16); })(function(){ sdRaf = 0; syncScrollDown(); });
+}
 function initScrollWatch(){
   var l = $('msgList');
-  if(l) l.addEventListener('scroll', syncScrollDown, { passive:true });
-  window.addEventListener('resize', syncScrollDown);
+  if(l) l.addEventListener('scroll', queueScrollDown, { passive:true });   // 滚动回调里量 scrollHeight 会强制布局，挪到 rAF 里做
+  window.addEventListener('resize', queueScrollDown);
   $('scrollDown').addEventListener('click', function(){ scrollBottom(true); });
   syncScrollDown();
 }
