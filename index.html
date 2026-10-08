@@ -2,22 +2,29 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#eef1f6" id="metaTheme">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>梦语</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
   :root{
     --bg:#eef1f6; --panel:#fff; --main:#f7f8fb; --border:#e7eaf0;
     --accent:#4f6ef7; --accent-2:#6a5ff0; --text:#1f2430; --muted:#7a8194;
-    --danger:#e5484d;
+    --danger:#e5484d; --modal-bg:#fff;
   }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  html,body{height:100%;}
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%; -webkit-tap-highlight-color:transparent;}
   body{font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--text); background:var(--bg); overflow:hidden;}
-  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; -webkit-tap-highlight-color:transparent;}
   input,textarea,select{font-family:inherit; font-size:14px; color:var(--text);}
 
-  .app{display:flex; height:100vh;}
+  /* 手机端：状态栏 / home 条安全区。让内容缩进安全区内，背景色（=当前主题的 --bg）自然填满刘海与手势条区域 */
+  .app{display:flex; height:100vh; height:100dvh;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);}
 
   /* ---------- Rail ---------- */
   .rail{width:68px; min-width:68px; background:#e8ebf2; border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; padding:18px 0;}
@@ -221,9 +228,11 @@
   .dice-send input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.12);}
 
   /* ---------- Modal ---------- */
-  .modal-overlay{position:fixed; inset:0; background:rgba(15,20,35,.45); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .modal-overlay{position:fixed; inset:0; background:rgba(15,20,35,.45); display:flex; align-items:center; justify-content:center; z-index:50;
+    padding-top:calc(20px + env(safe-area-inset-top)); padding-bottom:calc(20px + env(safe-area-inset-bottom));
+    padding-left:calc(20px + env(safe-area-inset-left)); padding-right:calc(20px + env(safe-area-inset-right));}
   .modal-overlay.hidden{display:none;}
-  .modal{background:#fff; border-radius:18px; width:460px; max-width:100%; max-height:90vh; overflow-y:auto; padding:22px 24px; box-shadow:0 20px 60px rgba(0,0,0,.25);}
+  .modal{background:var(--modal-bg); border-radius:18px; width:460px; max-width:100%; max-height:90vh; overflow-y:auto; padding:22px 24px; box-shadow:0 20px 60px rgba(0,0,0,.25);}
   .modal.wide{width:580px;}
   .modal.small{width:340px;}
   .modal h3{font-size:17px; margin-bottom:6px;}
@@ -261,6 +270,23 @@
   html[data-theme="scroll"] .kw-detail-wrap .kw-detail{background:#fbf3e1;}
   .kw-detail-wrap .kw-detail:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.12);}
   .kw-empty{margin:2px 0 0;}
+
+  /* ---------- 人物详情（只读） ---------- */
+  .cvm-head{display:flex; align-items:center; gap:12px; margin:10px 0 4px;}
+  .cvm-av{width:56px; height:56px; flex-shrink:0;}
+  .cvm-meta{min-width:0;}
+  .cvm-name{font-size:16px; font-weight:700; color:var(--text);}
+  .cvm-tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+  .cvm-tag{font-size:12px; padding:2px 9px; border-radius:999px; background:var(--bg); color:var(--muted); border:1px solid var(--border);}
+  .cvm-tag.on{color:var(--accent); border-color:var(--accent);}
+  .cvm-text{font-size:13px; line-height:1.7; color:var(--text); background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; white-space:pre-wrap; word-break:break-word; max-height:190px; overflow-y:auto;}
+  .cvm-text.empty{color:var(--muted);}
+  .cvm-kw{display:flex; flex-direction:column; gap:8px;}
+  .cvm-kw-row{font-size:13px; line-height:1.6; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px 12px;}
+  .cvm-kw-row b{color:var(--accent);}
+  .cvm-kw-row span{color:var(--muted);}
+  html[data-theme="dark"] .cvm-text, html[data-theme="dark"] .cvm-kw-row, html[data-theme="dark"] .cvm-tag{background:#232833;}
+  html[data-theme="scroll"] .cvm-text, html[data-theme="scroll"] .cvm-kw-row, html[data-theme="scroll"] .cvm-tag{background:#fbf3e1;}
 
   /* ---------- 关系图 ---------- */
   #relView{position:fixed; inset:0; z-index:60; background:rgba(15,20,35,.45); display:flex; align-items:center; justify-content:center; padding:20px;}
@@ -379,6 +405,98 @@
   .btn-danger:disabled{opacity:.5; cursor:not-allowed;}
 
   .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:22px;}
+  /* 有操作按钮的弹窗（JS 给 .modal 加 .flexed）：标题与「取消 / 保存」固定，中间内容独立滚动，
+     不管内容多长、滚到哪里，底部按钮始终看得见、点得到 */
+  .modal.flexed{display:flex; flex-direction:column; overflow:hidden; padding:0;}
+  .modal.flexed > h3{padding:22px 24px 0; flex-shrink:0;}
+  .modal.flexed > .tabs{padding:0 24px; flex-shrink:0;}
+  .modal.flexed > .panel-header{padding:18px 24px 0; flex-shrink:0;}
+  .modal.flexed > .modal-body{flex:1 1 auto; min-height:0; overflow-y:auto; padding:22px 24px; overscroll-behavior:contain;}
+  .modal.flexed > .modal-actions{flex-shrink:0; margin:0; padding:14px 24px; border-top:1px solid var(--border); background:var(--modal-bg); border-radius:0 0 18px 18px;}
+  .modal.flexed > .modal-actions.modal-actions-col{flex-direction:column; align-items:stretch;}
+  /* 弹窗右上角的角标 / 图标按钮（总结的上下文百分比、时间线的日历入口） */
+  .modal.flexed{position:relative;}
+  .modal-corner{position:absolute; top:16px; right:18px; z-index:6;}
+  /* 右上角有角标 / 按钮的弹窗，标题给它让出位置 */
+  #summaryModal .modal > h3, #timelineModal .modal > h3{padding-right:124px;}
+  .ctx-badge{font-size:12px; font-weight:700; color:var(--accent); background:var(--bg); border:1px solid var(--border); border-radius:999px; padding:3px 11px; white-space:nowrap;}
+  .ctx-badge.warn{color:#e8590c; border-color:#f0b48a;}
+  .ctx-badge.full{color:#fff; background:var(--danger); border-color:var(--danger);}
+  html[data-theme="dark"] .ctx-badge{background:#232833;}
+  html[data-theme="scroll"] .ctx-badge{background:#fbf3e1;}
+
+  /* ---------- 回到底部箭头（不在底部时浮在对话区底部中间，就在输入框正上方） ---------- */
+  .scroll-down{position:absolute; left:50%; bottom:100%; margin-bottom:10px; transform:translateX(-50%) scale(.86); z-index:12;
+    width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--panel); color:var(--accent); border:1px solid var(--border);
+    box-shadow:0 6px 18px rgba(20,30,60,.16); opacity:0; pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;}
+  .scroll-down.show{opacity:1; transform:translateX(-50%) scale(1); pointer-events:auto;}
+  .scroll-down svg{width:19px; height:19px;}
+  html[data-theme="dark"] .scroll-down{box-shadow:0 6px 18px rgba(0,0,0,.5);}
+  .scroll-down:active{transform:translateX(-50%) scale(.9);}
+
+  /* ---------- 发图片：待发送图片预览条 ---------- */
+  #imgBar{display:none; align-items:center; gap:10px; margin:0 0 8px; padding:6px 10px; background:var(--panel); border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--text);}
+  #imgBar img{width:44px; height:44px; object-fit:cover; border-radius:8px; border:1px solid var(--border); flex-shrink:0;}
+  #imgBar #imgName{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #imgBar .attach-x{margin-left:auto;}
+  html[data-theme="dark"] #imgBar{background:#1e222c;}
+  html[data-theme="scroll"] #imgBar{background:#f7efda;}
+  .msg-imgs{display:flex; flex-wrap:wrap; gap:8px; margin:2px 0 6px;}
+  .msg-imgs img{max-width:220px; max-height:220px; border-radius:12px; border:1px solid var(--border); display:block; cursor:zoom-in; object-fit:cover;}
+  /* 图片查看：点消息里的图片放大 */
+  .img-view{position:fixed; inset:0; z-index:400; background:rgba(8,10,16,.9); display:flex; align-items:center; justify-content:center; padding:24px;}
+  .img-view.hidden{display:none;}
+  .img-view img{max-width:100%; max-height:100%; border-radius:12px;}
+  .img-view-x{position:absolute; top:calc(14px + env(safe-area-inset-top)); right:calc(16px + env(safe-area-inset-right));
+    width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.16); color:#fff; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer;}
+
+  /* ---------- 剧情日历 ---------- */
+  .cal-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:12px 0 10px;}
+  .cal-title{font-size:15px; font-weight:700; color:var(--text);}
+  .cal-week{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px;}
+  .cal-week span{text-align:center; font-size:12px; color:var(--muted); padding:2px 0;}
+  .cal-week span:first-child, .cal-week span:last-child{color:var(--accent);}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+  .cal-cell{aspect-ratio:1 / 1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border-radius:9px; font-size:13px; color:var(--text); border:1px solid transparent; background:transparent; cursor:pointer;
+    transition:background-color .14s ease, border-color .14s ease, color .14s ease, transform .12s ease;}
+  .cal-cell:hover{background:var(--bg);}
+  .cal-cell:active{transform:scale(.94);}
+  .cal-cell.pad{visibility:hidden; cursor:default;}
+  .cal-cell.today{border-color:var(--accent); color:var(--accent); font-weight:700;}
+  .cal-cell.today::after{content:''; width:4px; height:4px; border-radius:50%; background:var(--accent); margin-top:2px;}
+  html[data-theme="dark"] .cal-cell:hover{background:#232833;}
+  html[data-theme="scroll"] .cal-cell:hover{background:#fbf3e1;}
+
+  /* ---------- UI 动画（按钮 / 弹窗 / 面板，三主题通用） ---------- */
+  button{transition:transform .12s ease, background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease, opacity .16s ease;}
+  button:active{transform:scale(.96);}
+  .rail-btn, .icon-btn, .back-btn, .fab-btn, .chip, .menu-item, .conv-item, .lib-card, .fab-item, .btn-primary, .btn-ghost, .btn-danger, .btn-add, .sum-opt, .style-opts button, .tabs button, .text-btn{
+    transition:transform .12s ease, background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease, opacity .16s ease, filter .16s ease;}
+  .rail-btn:active, .icon-btn:active, .back-btn:active, .menu-item:active, .fab-item:active,
+  .btn-primary:active, .btn-ghost:active, .btn-danger:active, .btn-add:active, .sum-opt:active, .text-btn:active{transform:scale(.94);}
+  .conv-item:active, .lib-card:active{transform:scale(.985);}
+  .fab-btn:active{transform:scale(.9);}
+  /* 弹窗淡入 + 轻微放大 */
+  @keyframes myOverlayIn{from{opacity:0;} to{opacity:1;}}
+  @keyframes myModalIn{from{opacity:0; transform:translateY(10px) scale(.97);} to{opacity:1; transform:none;}}
+  .modal-overlay:not(.hidden){animation:myOverlayIn .16s ease both;}
+  .modal-overlay:not(.hidden) > .modal{animation:myModalIn .2s cubic-bezier(.22,.9,.3,1) both;}
+  /* 页面 / 面板切换时内容轻微上浮 */
+  @keyframes myPaneIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  .panel-view:not(.hidden), .gs-pane:not(.hidden), .tabpane:not(.hidden){animation:myPaneIn .18s ease both;}
+  /* 主题切换时颜色平滑过渡，不闪白 */
+  body, .rail, .sidebar, .main, .modal, .msg, .bubble, .panel-view, .chat-header, .input-area{
+    transition:background-color .22s ease, color .22s ease, border-color .22s ease;}
+  /* 系统开启「减少动态效果」时全部关掉 */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+    button:active, .rail-btn:active, .icon-btn:active, .back-btn:active, .menu-item:active, .fab-item:active,
+    .btn-primary:active, .btn-ghost:active, .btn-danger:active, .btn-add:active, .sum-opt:active, .text-btn:active,
+    .conv-item:active, .lib-card:active, .fab-btn:active, .scroll-down:active, .cal-cell:active{transform:none;}
+  }
   .btn-primary{background:var(--accent); color:#fff; padding:9px 20px; border-radius:10px; font-size:14px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; gap:6px;}
   .btn-primary:hover{filter:brightness(1.05);}
   .btn-primary svg{width:14px; height:14px;}
@@ -559,7 +677,7 @@
   html[data-theme="dark"]{
     --bg:#12141a; --panel:#1b1e26; --main:#171a21; --border:#2a2f3a;
     --accent:#5b7cff; --accent-2:#7b6df5; --text:#e7eaf1; --muted:#9aa1b2;
-    --danger:#f2555c;
+    --danger:#f2555c; --modal-bg:#1b1e26;
   }
   html[data-theme="dark"] body{background:#12141a;}
   html[data-theme="dark"] .rail{background:#191c23;}
@@ -648,7 +766,7 @@
   html[data-theme="scroll"]{
     --bg:#eee2c8; --panel:#f5ecd6; --main:#f2e7d0; --border:#d8c6a0;
     --accent:#a03d28; --accent-2:#8a4a2f; --text:#4a3a28; --muted:#8a7558;
-    --danger:#c03a2e;
+    --danger:#c03a2e; --modal-bg:#f5ecd6;
   }
   html[data-theme="scroll"] body{
     background-color:#eee2c8;
@@ -962,6 +1080,9 @@
     </header>
     <div id="msgList" class="msg-list"></div>
     <div class="input-area">
+      <button id="scrollDown" class="scroll-down hidden" title="回到底部" aria-label="回到底部">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+      </button>
       <div class="input-inner">
         <div class="chip-row">
           <span class="chip-label">下轮对话</span>
@@ -973,7 +1094,9 @@
           <div id="chipExpandBox" class="chip-expand-box hidden"></div>
         </div>
         <div id="attachBar"><span>📎</span><span id="attachName"></span><span id="attachX" class="attach-x">移除</span></div>
+        <div id="imgBar"><img id="imgThumb" alt=""><span id="imgName"></span><span id="imgX" class="attach-x">移除</span></div>
         <input type="file" id="attachFile" accept=".txt,.md,.markdown,.csv,.json,.log,.xml,.html,.js,.py,.java,.go,.c,.cpp,.h,.css,.yml,.yaml,.ini,.sh,.bat" style="display:none;">
+        <input type="file" id="imgFile" accept="image/*" style="display:none;">
         <div class="hint" id="inputHint">Enter 发送 · Shift+Enter 换行 · 多人回复时会按顺序轮流发言</div>
         <div class="input-row">
           <textarea id="input" placeholder="输入消息…"></textarea>
@@ -989,6 +1112,7 @@
           <button class="fab-item" data-act="forcelen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>强制字数</button>
           <button class="fab-item" data-act="timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>时间线</button>
           <button class="fab-item" data-act="rel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>关系</button>
+          <button class="fab-item" data-act="image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>图片</button>
           <button class="fab-item" data-act="attach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>附件</button>
         </div>
         <button id="btnMore" class="fab-btn" title="更多工具">
@@ -1021,6 +1145,9 @@
       <label>模型名称</label>
       <input type="text" id="stModelText" placeholder="模型名，如 deepseek-v4-flash" autocomplete="off" spellcheck="false">
       <p class="hint-text">手填模型名，各家格式不同（如 deepseek-v4-flash、gpt-4o、glm-4-flash 等）。</p>
+      <label>上下文长度（字数）</label>
+      <input type="text" id="stCtxLen" inputmode="numeric" placeholder="默认 128000" autocomplete="off" spellcheck="false">
+      <p class="hint-text">本模型一次能容纳的上下文总量，按字数估算。「总结」窗口右上角的上下文百分比就按它计算；留空用默认 128000。各聊天也可在「设置 → API」里单独填。</p>
       <label class="switch-row">深度思考模式（thinking）
         <span class="switch"><input type="checkbox" id="stThinking"><span></span></span>
       </label>
@@ -1038,6 +1165,10 @@
         <span class="switch"><input type="checkbox" id="stHideChipAv"><span></span></span>
       </label>
       <p class="hint-text">开启后，聊天输入框上方的「下轮对话」人物选择条隐藏头像，只显示名字。</p>
+      <label class="switch-row">生成回复时留在回复开头
+        <span class="switch"><input type="checkbox" id="stKeepTop"><span></span></span>
+      </label>
+      <p class="hint-text">开启（默认）：AI 开始回复时把这条回复的开头停在屏幕上方，生成过程中不再往下跟着滚，方便从头读。关闭：像以前一样跟着最新内容滚动。两种情况下，只要没停在最底部，对话区底部中间都会出现「回到底部」箭头。</p>
     </div>
     <div class="modal-actions">
       <button class="btn-ghost" id="stCancel">取消</button>
@@ -1202,6 +1333,9 @@
       <input type="text" id="gsApiBase" placeholder="如 https://api.deepseek.com/v1，留空用全局" autocomplete="off">
       <label>模型名称（可选）</label>
       <input type="text" id="gsModel" placeholder="如 deepseek-v4-flash，留空用全局" autocomplete="off">
+      <label>上下文长度（字数，可选）</label>
+      <input type="text" id="gsCtxLen" inputmode="numeric" placeholder="留空用全局设置" autocomplete="off" spellcheck="false">
+      <p class="hint-text">只影响本聊天的「总结」百分比计算；留空则用全局设置的上下文长度。</p>
       <p class="hint-text">本群填了 API Key 才用自己的 API：此时接口地址 / 模型名称（留空则用全局）一起对本群生效；本群 Key 留空则完全用全局设置。</p>
       <label>思考等级（thinking）</label>
       <div class="style-opts" id="gsThinkLevel">
@@ -1245,6 +1379,7 @@
 <div id="summaryModal" class="modal-overlay hidden">
   <div class="modal">
     <h3>总结 · <span id="sumConvName"></span></h3>
+    <div class="ctx-badge modal-corner" id="sumCtxPct" title="当前上下文占「上下文长度」的比例">上下文 --</div>
     <p class="muted" id="sumModeText"></p>
     <div class="sum-btns">
       <button class="btn-primary" id="btnSumManual">手动总结</button>
@@ -1324,6 +1459,30 @@
     <div class="modal-actions">
       <button class="btn-ghost" id="emCancel">取消</button>
       <button class="btn-primary" id="emSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 人物详情（只读：对话里点 AI 头像 / 名字打开，只看不改） -->
+<div id="charViewModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>人物详情</h3>
+    <div class="cvm-head">
+      <div class="char-avatar cvm-av" id="cvmAvatar"></div>
+      <div class="cvm-meta">
+        <div class="cvm-name" id="cvmName"></div>
+        <div class="cvm-tags" id="cvmTags"></div>
+      </div>
+    </div>
+    <label>人设</label>
+    <div class="cvm-text" id="cvmPersona"></div>
+    <label>记忆</label>
+    <div class="cvm-text" id="cvmMemory"></div>
+    <label>关键词</label>
+    <div class="cvm-kw" id="cvmKeywords"></div>
+    <p class="hint-text">这里是只读的详情。要修改，请到右上角「设置」里的成员 / 智能体页签。</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cvmClose">关闭</button>
     </div>
   </div>
 </div>
@@ -1549,7 +1708,6 @@
   <div class="modal small">
     <h3>打开外部链接</h3>
     <p class="hint-text" id="linkDesc"></p>
-    <p class="link-url" id="linkUrl"></p>
     <div class="modal-actions">
       <button class="btn-ghost" id="linkCancel">取消</button>
       <button class="btn-primary" id="linkGo">打开</button>
@@ -1645,10 +1803,37 @@
 <div id="timelineModal" class="modal-overlay hidden">
   <div class="modal">
     <h3>剧情时间线 · 世界观记忆</h3>
+    <button class="icon-btn modal-corner" id="timelineCal" title="查看剧情日历（年月日 / 星期）">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+    </button>
     <p class="hint-text" id="timelineSub"></p>
     <div class="timeline-body" id="timelineBody"></div>
     <p class="cost-note">这是故事一路发展下来的时间线，只给你（作者 / 玩家）看，角色看不到——角色只知道他们亲身经历或听说的剧情，防止角色知道不该知道的事、剧情错乱。想修改，请到「设置」里的「剧情时间线」。</p>
     <div class="modal-actions"><button class="btn-ghost" id="timelineCopy">复制</button><button class="btn-ghost" id="timelineClose">关闭</button></div>
+  </div>
+</div>
+
+<!-- 剧情日历（年月日 + 按星期排列的月历，可手动把剧情日期定到某一天） -->
+<div id="calModal" class="modal-overlay hidden">
+  <div class="modal small">
+    <h3>剧情日历</h3>
+    <p class="hint-text" id="calSub"></p>
+    <div class="cal-head">
+      <button class="icon-btn" id="calPrev" title="上个月">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div class="cal-title" id="calTitle"></div>
+      <button class="icon-btn" id="calNext" title="下个月">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
+    <div class="cal-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <p class="hint-text">点某一天即可把剧情日期定到那天；AI 也会按剧情推进自动改日期，角色会照着日期与星期行事。</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="calToday">设为今天</button>
+      <button class="btn-ghost" id="calClose">关闭</button>
+    </div>
   </div>
 </div>
 
@@ -1663,6 +1848,9 @@
 
 <!-- 居中提醒（渐变红字，淡入淡出） -->
 <div id="toast" class="toast"><span class="toast-txt"></span></div>
+
+<!-- 图片查看（点消息里的图片放大，再点一下关闭） -->
+<div id="imgView" class="img-view hidden"><img id="imgViewPic" alt=""><span class="img-view-x" id="imgViewClose">✕</span></div>
 
 <!-- 关系图（当前群聊/故事的人物关系连线） -->
 <div id="relView" class="hidden">
@@ -1689,14 +1877,24 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.4.6';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.4.7';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.4.7', date:'2026-09-10', title:'发图片 · 剧情日历 · 人物详情 · 上下文长度 · 回到底部 · 手机安全区 · 动效', items:[
+    '「＋」里新增「图片」：三个模式都能选一张图，配着你写的文字一起发给 AI；图片会显示在消息里，点一下可以放大看',
+    '消息区新增「剧情日历」：在「＋」→「时间线」右上角点日历图标，就能看年月日与星期（正常月历排布）。剧情第一次发言时会按角色卡 / 世界观推导出当天日期，之后随剧情推进自动改（你提到「三天后」这类说法就会往后走），也可以自己点某一天改日期；AI 角色会照着日期与星期行事（学生周末不上学、深夜会犯困等）',
+    '点消息里 AI 的头像或名字，就能查看 TA 的人物详情——人设、记忆、关键词一屏看完（只读，不给改），要修改仍到设置里',
+    '「总结」窗口右上角新增上下文百分比；「全局设置 → 模型配置」与各聊天的「设置 → API」都能填「上下文长度」，百分比就按它算（全局留空用默认 128000）',
+    '生成回复时视图默认停在回复开头，不再跟着最新内容一路往下滚（可在「全局设置 → 界面设置」关掉）；不管开关如何，只要没停在最底部，对话区底部中间就会出现「回到底部」箭头，点一下平滑回到最新',
+    '手机端：状态栏与 home 条（手势条）适配当前界面风格，内容自动缩进安全区不被挡住；点击界面不再出现蓝色半透明高亮块；点设置里的「详情」不再自动弹出输入法，要点文本框才弹',
+    '所有设置窗口的底部「取消 / 保存」固定在窗口最下方，内容再长也随时点得到；界面上不再显示具体网址（跳转功能不变）',
+    '界面动效优化：按钮点击有轻微反馈、弹窗与面板切换更顺滑，三种界面风格都适配；系统开启「减少动态效果」时会自动关掉动画'
+  ]},
   { v:'0.4.6', date:'2026-09-10', title:'对话温度 · 思考等级 · 续写生成温度 · 酒馆措辞 · 故事头像 · QQ 群链接', items:[
     '「AI成员 / 智能体」页签最下方新增「对话温度」滑杆（0.0–2.0，默认 0.9）：控制本聊天里 AI 回复的随机性，越低越稳定保守、越高越有创意，每个聊天单独设置',
     '「续写剧情」页签新增「生成温度」滑杆（默认 0.7）：控制生成成员人设 / 世界观 / 玩家设定时的随机性，越低越忠于原文、越高人设越放得开',
     '「API」页签最下方新增「思考等级」：Medium / High / Max 三档，每个聊天单独设置，会真实作用在请求上（深度思考模式）；再点一次已选中的档位即可关闭思考——关闭后回复更快，且「对话温度」正常生效',
     '全局设置里的「深度思考模式」改为决定「新建聊天」的默认档位（开启＝Medium），已有聊天以各自的思考等级为准',
-    'QQ 群链接改为新地址 https://qm.qq.com/q/JY41MrDQQy，界面上不再显示群号',
+    'QQ 群链接换成新的入群链接，界面上不再显示群号',
     '「酒馆」里「结识世界书」统一改为「收集世界书」（按钮、弹窗与提示语）',
     '故事模式的默认头像改为一本摊开的书，去掉原来多余的笔画；教程措辞同步更新'
   ]},
@@ -1897,7 +2095,7 @@ var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往�
     '「关于」面板的哔哩哔哩按钮接入作者主页，点击在新窗口打开'
   ]},
   { v:'0.1.2', date:'2026-08-23', title:'GitHub 开源', items:[
-    '「关于」面板的 GitHub 按钮接入开源仓库（https://github.com/mingyuezai0/Dreamchat），点击在新窗口打开'
+    '「关于」面板的 GitHub 按钮接入开源仓库，点击在新窗口打开'
   ]},
   { v:'0.1.1', date:'2026-08-23', title:'骰子工具 · 主题开关修复', items:[
     '🎲 骰子工具：可选 4 / 6 / 8 / 12 面并自定义每面内容，投出后可重投 / 取消 / 附消息确认发出',
@@ -1990,7 +2188,7 @@ var ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 var AV_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';   // 群聊默认头像：两个人形（描边）
 var AV_STORY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v13"/><path d="M3 18a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>';   // 故事默认头像：一本摊开的书（描边，v0.4.6 起去掉多余的笔）
 var AV_DM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';   // 私聊默认头像：单人描线人形
-var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null, hideChipAvatar:false, relMode:'avatar' };
+var settings = { apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE, diceFaces:DICE_DEFAULT_FACES, diceLabels:null, hideChipAvatar:false, relMode:'avatar', keepReplyTop:true, ctxLen:0 };
 var convs = [];
 var activeId = null;
 var seq = 1;
@@ -2026,12 +2224,12 @@ var boardColorIdx = 0;
 var BOARD_COLORS = ['c0','c1','c2','c3'];   // 便签颜色轮换
 // 首次打开黑板的「功能教程」便签（用户可自行删除，不固定）
 // 每次功能有较大更新时，记得同步更新这里的内容，并把 BOARD_TUT_VERSION +1，老用户也会补收到一次新教程。
-var BOARD_TUT_VERSION = 22;
+var BOARD_TUT_VERSION = 23;
 var BOARD_TUTORIAL = [
-  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；「AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9，越低越稳定保守、越高越有创意），「API」页签最下方可设「思考等级」（Medium / High / Max，会真实作用在请求上；再点一次已选中的档位就是关闭思考，回复更快、温度也生效），两者都每个聊天单独设置；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。「世界观」页签里的「剧情时间线（世界观记忆）」会自动记录剧情发展、也可手动编辑；时间线与「总结」都只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆；经历影响自身塑造的重大剧情后，TA 还会在记忆提炼时自主新增「关键词」——关键词不限于性格，也可以是某个时间 / 地点 / 物品 / 人物 / 事件 / 身份 / 关系等，词长不限，只按重要程度给数量。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图 / 时间线小工具（时间线即世界观记忆，随时查看 / 复制发展线）；每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。连线上的「关系名」画在角色头像之上（不会被头像挡住），名字较长时会自动折成两行。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；同时还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，接着往下续写时事件先后有据可依——角色记忆也按时间顺序记录，且只记 TA 亲身经历或被告知的事，TA 不知情的情节不会写进记忆、也不会被提起；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）；「生成温度」（默认 0.7）控制生成设定时的随机性，越低越忠于原文、越高人设越放得开。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
-  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「世界观」页签的「剧情时间线（世界观记忆）」会自动记录故事发展线、也可手动编辑；「总结」可压缩上下文、勾选也能同时压缩角色记忆——时间线与总结都只给作者（玩家）看，角色看不到，防止剧情错乱，角色只记得自己经历或听说的剧情（重要剧情不会丢）。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名；经历影响自身的重大剧情后，角色会自主给「关键词」成长（不限于性格，时间 / 地点 / 物品 / 人物 / 事件等皆可，词长不限）。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）。\n· 「故事设置 → AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本故事生效。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘；还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，角色记忆也按时间顺序记录、只记 TA 亲身经历或被告知的事（不知情的情节不会被提起）。\n· 故事默认是「书本」头像、暖色方形头像框，可在故事设置里更换。' },
-  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 垃圾桶 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 「垃圾桶」保留你最近删除的角色卡、世界书与聊天（最多 30 个），点「恢复」即可复原——聊天会按原样恢复（成员、消息、世界观、时间线都在），角色卡与世界书回到各自的库。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事；另有「新建攻略」「新建模拟」两个占位入口，对应后面将推出的攻略 / 模拟模式。\n· 「酒馆」里点「结识角色卡 / 收集世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入；「导出」时先选格式：md / markdown 是纯文本（方便阅读、编辑与分享），梦语 json 是完整备份（可原样导入回来，含头像）。\n· 上传图片做头像时会先让你裁剪：拖动图片调整位置、滑动缩放，还能「查看原图」；角色卡 / 世界书 / 群聊 / 成员头像都一样。\n· 「关于」页的 GitHub / 哔哩哔哩 / QQ 群链接，点一下会先弹窗确认，点「取消」就不会跳转。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书本图标）、单人描线是「私聊」，一眼区分。' },
-  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。「世界观」页签里的「剧情时间线（世界观记忆）」会随你们的对话自动记录推进线、也可手动编辑，「＋」里也有「时间线」小工具；时间线与「总结」都只给作者看，TA 看不到——TA 只记得自己经历过的对话，重大经历后也会在记忆提炼时自主成长「关键词」。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）/ 时间线与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你。\n· 「智能体」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本私聊生效。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
+  { color:'c0', head:'📌 群聊教程', text:'📌 群聊教程\n· 左上角「＋」→「新建群聊」开一个群。\n· 右上角「⚙ 群设置」：加 AI 成员、群名头像与世界观、单独配 API；「AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9，越低越稳定保守、越高越有创意），「API」页签最下方可设「思考等级」（Medium / High / Max，会真实作用在请求上；再点一次已选中的档位就是关闭思考，回复更快、温度也生效），两者都每个聊天单独设置；成员和世界观都能加「关键词」；「破甲/提示」页签可写最高优先级的规则词，角色与世界观都必须遵守。「世界观」页签里的「剧情时间线（世界观记忆）」会自动记录剧情发展、也可手动编辑；时间线与「总结」都只给作者（玩家）看，角色不会看到，防止角色知道不该知道的事、剧情错乱。\n· 点成员名可改人设 / 记忆 / 关键词，还能标记为「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要。开「成员自动记忆」后 TA 会记住自己亲身经历、剧情里合理知晓的事——没在场、不知情的情节不会被写进记忆；经历影响自身塑造的重大剧情后，TA 还会在记忆提炼时自主新增「关键词」——关键词不限于性格，也可以是某个时间 / 地点 / 物品 / 人物 / 事件 / 身份 / 关系等，词长不限，只按重要程度给数量。\n· 输入框上方点选「下轮对话」的人，或消息里 @ 在场成员，他们就会回复；「随机顺序」按钮固定在「下轮对话」右侧，角色多了可以横向滑动查看（桌面鼠标滚轮或按住左键拖动、手机手指滑动）；「⌄」展开按钮会向上列出全部在场角色、按重要程度（主要→次要→路人）排序，人再多也能快速选。\n· 输入框右下「＋」有搜索 / 骰子 / 费用 / 字数 / 关系图 / 时间线 / 图片小工具（时间线即世界观记忆，随时查看 / 复制发展线，右上角还有「日历」入口：看剧情是几月几号、星期几，点某一天就能改日期）；「图片」选一张图会随你写的文字一起发给 AI，消息里的图点一下可放大。剧情日期会在第一次发言时按角色卡 / 世界观推导出来，之后随剧情自然推进（你提到「三天后」这类说法就会往后走），角色会照着日期与星期行事（学生周末不上学、深夜会犯困等）。生成回复时视图默认停在回复开头（可在全局设置里关掉）；没停在最底部时，对话区底部中间会出现「回到底部」箭头。每条消息可「删除 / 编辑 / 复制 / 重置」，右下角会显示该条消息的字数。重置消息会删掉它之后的内容、按之前的剧情重新生成（重置 AI 回复就是让 TA 重说一遍）。「＋」里的「字数」分成「字数范围」与「强制字数」：「字数范围」按上限 / 下限执行；「强制字数」用 O / N 开关打开、可点档位或输入目标字数，AI 回复会强制写到约 N 字（±10%），关闭后回到「字数范围」。\n「关系图」自动分析成员间的人物关系：点角色切换中心，可切换头像/名字显示；「我」始终与每个成员相连、关系不明显示「关系未知」，登场过的路人角色也会收录。连线上的「关系名」画在角色头像之上（不会被头像挡住），名字较长时会自动折成两行。\n· 「群设置 → 续写剧情」：导入一部小说 / 剧情文本，AI 自动生成一批 AI 成员（角色分级、人设、记忆、关键词）、世界观与玩家设定（角色与世界观的关键词数量按重要程度而定——可能没有，也可能有好几个），直接应用到本群；可选「第一人称」（主角由你扮演、不生成主角角色卡）或「第三人称」（主角也生成角色卡）；「总结精炼度」会把剧情流程写进会话「总结」，续写时原剧情走向不会遗忘；同时还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，接着往下续写时事件先后有据可依——角色记忆也按时间顺序记录，且只记 TA 亲身经历或被告知的事，TA 不知情的情节不会写进记忆、也不会被提起；还可切换「生成重要角色」（合计 ≤8 位、人设精细）或「生成所有角色」（按文本人数无上限、路人从简）；「生成温度」（默认 0.7）控制生成设定时的随机性，越低越忠于原文、越高人设越放得开。\n· 群聊默认是「双人」头像、方形头像框，可在群设置里更换。' },
+  { color:'c1', head:'🎭 故事教程', text:'🎭 故事教程\n· 「＋」→「新建故事」创建，AI 会用「旁白 / 神态 / 台词」一起演剧情（台词带“引号”）。\n· 右上角「⚙ 故事设置」管理成员与世界观，还有「破甲/提示」页签可写最高优先级的规则词；「世界观」页签的「剧情时间线（世界观记忆）」会自动记录故事发展线、也可手动编辑；「总结」可压缩上下文、勾选也能同时压缩角色记忆——时间线与总结都只给作者（玩家）看，角色看不到，防止剧情错乱，角色只记得自己经历或听说的剧情（重要剧情不会丢）。\n· 编辑成员可标记「主要 / 次要 / 路人角色」：主要角色记忆保留更多细节、次要保留关键信息、路人按剧情需要；剧情需要临时路人时 AI 会起新名字登场，不会和已设定成员重名；经历影响自身的重大剧情后，角色会自主给「关键词」成长（不限于性格，时间 / 地点 / 物品 / 人物 / 事件等皆可，词长不限）。\n· 旁白单独成块显示在消息之间，只能复制。\n· 输入框右下「＋」的「字数」可设「字数范围」（上限 / 下限），也能开「强制字数」让 AI 写到约 N 字（±10%），AI 必须遵守（台词也算字数）；「＋」里还有「图片」（选图随你的文字一起发给 AI，消息里的图点一下可放大）与「时间线」（右上角「日历」可看 / 改剧情日期，角色会按日期与星期行事）。\n· 点消息里 AI 的头像或名字，可以看 TA 的人物详情（只读：人设、记忆、关键词），要修改请到设置里。\n· 生成回复时视图默认停在回复开头（可在全局设置里关掉）；没停在最底部时，对话区底部中间会出现「回到底部」箭头。\n· 「故事设置 → AI成员」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本故事生效。\n· 故事里的「世界观」会随剧情自动更新：剧情让世界发生重大变化时，AI 会改写世界观描述，跟进当前剧情。\n· 「故事设置 → 续写剧情」：导入剧情文本，AI 自动铺好成员、世界观与玩家设定，可直接接着续写（生成的关键词数量按重要程度而定，可能没有也可能多个）；同样可选人称视角与「总结精炼度」，剧情流程会写进「总结」不遗忘；还会把原文剧情按发生顺序整理成「剧情时间线（世界观记忆）」，角色记忆也按时间顺序记录、只记 TA 亲身经历或被告知的事（不知情的情节不会被提起）。\n· 故事默认是「书本」头像、暖色方形头像框，可在故事设置里更换。' },
+  { color:'c2', head:'🏠 主页教程', text:'🏠 主页教程\n· 左边一列：酒馆 / 垃圾桶 / 黑板 / 角色卡 / 世界书 / 关于 / 设置，都是描线图标。\n· 「垃圾桶」保留你最近删除的角色卡、世界书与聊天（最多 30 个），点「恢复」即可复原——聊天会按原样恢复（成员、消息、世界观、时间线都在），角色卡与世界书回到各自的库。\n· 中间是会话列表，每个聊天右侧的小图标可「置顶」，再点取消。\n· 左上角「＋」→「新建群聊 / 新建私聊 / 新建故事」，分别开启群聊、与单个 AI 的一对一私聊、AI 演的故事；另有「新建攻略」「新建模拟」两个占位入口，对应后面将推出的攻略 / 模拟模式。\n· 「酒馆」里点「结识角色卡 / 收集世界书」会先弹窗填写意向：角色卡填「姓名 / 性别 / 大致人设」，世界书填「世界名 / 类型 / 大致世界观」，填了尽量沿用（姓名 / 世界名固定采用）、没填交给 AI 补全；也可以从已有角色卡生成配套的世界书、从已有世界书生成配套的角色卡，生成的内容直接存入角色卡库 / 世界书库。\n· 点「角色卡 / 世界书」页的「导入」会先弹窗确认文件类型（txt / md / markdown 或梦语 json）；导入 txt / md / markdown 时会自动判断是否符合本软件格式——符合就直接用，不符合（小说 / 散文 / 零散设定）就调用 AI 整理成规范格式：人设与世界观内容一字不改，只按剧情与重要程度提炼关键词。世界书还能用 AI「提取」小说世界观（可调「精炼度」控制生成字数），或填「模仿要求」仿写一本相似的新世界书；提取 / 模仿生成的世界书会按剧情自动带上「关键词」，数量按世界观要素的重要程度而定——可能没有，也可能有好几个。\n· 角色卡也能用 AI「提取 / 模仿」：选一个文本文件、填上角色名，就会生成该角色的人设与关键词角色卡（关键词数量按重要程度而定，可能没有也可能多个）；文本里没有这个角色时会提示「该文本没有该角色」。「模仿」则按该角色风格原创一个新角色。\n· 角色卡 / 世界书能存「关键词」，导入群时一并带入；「导出」时先选格式：md / markdown 是纯文本（方便阅读、编辑与分享），梦语 json 是完整备份（可原样导入回来，含头像）。\n· 上传图片做头像时会先让你裁剪：拖动图片调整位置、滑动缩放，还能「查看原图」；角色卡 / 世界书 / 群聊 / 成员头像都一样。\n· 「关于」页的 GitHub / 哔哩哔哩 / QQ 群链接，点一下会先弹窗确认，点「取消」就不会跳转；页面上不显示具体网址。\n· 所有设置窗口的「取消 / 保存」都固定在窗口最下方，内容再多、滚到哪里都点得到。\n· 「全局设置 → 模型配置」可以填「上下文长度」，各聊天的「设置 → API」也能单独填；「总结」窗口右上角会显示当前上下文占它的百分比。\n· 黑板便签随便写、自动保存；点某条会话进入聊天，手机上点左上「⟵ 返回」回主页。\n· 会话列表里：紫色方形头像框是「群聊」（双人图标）、暖色方形是「故事」（书本图标）、单人描线是「私聊」，一眼区分。' },
+  { color:'c3', head:'💬 私聊教程', text:'💬 私聊教程\n· 主页左上角「＋」→「新建私聊」，和一位 AI 一对一聊天；没有「选择下一轮对话」，因为 TA 总会回复你。\n· 右上角「⚙ 私聊设置」：这里保留了世界观 / 破甲/提示 / 玩家设定 / API 等页签，其中「智能体」页签直接编辑 TA 的名字、头像、人设、记忆与关键词（关键词每条右侧的「详情」可展开查看或改写），也可以点「从已有角色卡导入」，把角色卡库里的角色一键覆盖成当前智能体（3 秒内确认）。「世界观」页签里的「剧情时间线（世界观记忆）」会随你们的对话自动记录推进线、也可手动编辑，「＋」里也有「时间线」小工具；时间线与「总结」都只给作者看，TA 看不到——TA 只记得自己经历过的对话，重大经历后也会在记忆提炼时自主成长「关键词」。\n· 消息区右下角「＋」里有搜索 / 骰子 / 费用 / 字数（字数范围上限 / 下限，或强制字数）/ 时间线 / 图片与「附件」：「附件」选一个文本文件（txt / md 等）会随消息一起发给 AI，不限字数，AI 会阅读文件内容再回复你；「图片」选一张图会随你写的文字一起发给 AI（需要模型支持看图），消息里的图点一下可放大；「时间线」右上角的「日历」可看 / 改剧情日期，TA 会按日期与星期行事。\n· 点 TA 的头像或名字可以看人物详情（只读：人设、记忆、关键词），要修改请到「智能体」页签。\n· 「智能体」页签最下方可调「对话温度」（0.0–2.0，默认 0.9），「API」页签最下方可设「思考等级」（Medium / High / Max，再点一次已选档位即关闭思考），都只对本私聊生效。\n· 桌面 / 手机操作一致，私聊同样适配三种界面风格；会话列表里用单人描线头像区分。' }
 ];
 /* 判断便签属于哪条教程槽位（新教程便签带 tut 数字标记；老便签按标题头部匹配），不是教程便签返回 -1 */
 function tutSlotOf(n){
@@ -2045,6 +2243,10 @@ var libMode = 'card';
 var libId = null;
 
 function $(id){ return document.getElementById(id); }
+/* 触屏设备上不要用代码抢焦点：手机端会立刻弹出输入法，挡住刚展开的内容。
+   只在非触屏（鼠标 / 触控板）时自动聚焦，手机上一律等用户自己点文本框。 */
+function isTouchUI(){ return (window.matchMedia && window.matchMedia('(hover: none)').matches); }
+function focusSoft(el){ if(el && !isTouchUI()){ try{ el.focus(); }catch(e){} } }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function cleanNamePrefix(name, text){
   // 去掉回复开头多余的「名字：」前缀（AI 模仿历史格式时可能多写一遍），避免出现「小智：小智：」。
@@ -2091,7 +2293,7 @@ function newConv(name, chars, history){
   chars.forEach(function(c){ if(typeof c.present==='undefined') c.present = true; if(typeof c.memory!=='string') c.memory=''; if(['main','minor','extra'].indexOf(c.role)===-1) c.role='minor'; assignId(c); });
   history.forEach(assignId);
   var now = Date.now();
-  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', worldMem:'', worldMemAt:0, player:'', breakPrompt:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, minReplyLen:DEFAULT_MINLEN, forceLen:0, forceOn:false, temperature:DEFAULT_TEMP, contTemp:DEFAULT_CONT_TEMP, thinkLevel:newChatThinkLevel(), relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
+  return { id:seq++, mode:'chat', name:name || ('群聊 '+(convs.length+1)), chars:chars, history:history, selectedNext:[], randomOrder:false, world:'', worldMem:'', worldMemAt:0, player:'', breakPrompt:'', apiKey:'', avatar:null, autoMemory:true, summary:'', summaryTs:0, autoSummary:0, maxReplyLen:CHAT_MAXLEN, minReplyLen:DEFAULT_MINLEN, forceLen:0, forceOn:false, temperature:DEFAULT_TEMP, contTemp:DEFAULT_CONT_TEMP, thinkLevel:newChatThinkLevel(), ctxLen:0, calDate:'', calAt:0, relations:[], relationsTs:0, createdAt:now, lastActiveAt:now };
 }
 function load(){
   try{ settings = Object.assign({apiKey:'', model:'deepseek-v4-flash', thinking:false, theme:'default', apiBase:DEFAULT_BASE}, JSON.parse(localStorage.getItem(LS.set)||'{}')); }catch(e){}
@@ -2102,6 +2304,8 @@ function load(){
   if(!Array.isArray(settings.diceLabels) || settings.diceLabels.length !== settings.diceFaces) settings.diceLabels = null;   // 长度不符则重建
   if(typeof settings.hideChipAvatar !== 'boolean') settings.hideChipAvatar = false;
   if(settings.relMode !== 'name') settings.relMode = 'avatar';   // 关系图显示模式：avatar 头像 / name 名字
+  if(typeof settings.keepReplyTop !== 'boolean') settings.keepReplyTop = true;   // 生成回复时留在回复开头（默认开）
+  settings.ctxLen = normalizeCtxLen(settings.ctxLen);            // 全局上下文长度（0 = 用默认值）
 
   try{ convs = JSON.parse(localStorage.getItem(LS.convs)||'null'); }catch(e){ convs = null; }
   if(!Array.isArray(convs)){
@@ -2141,6 +2345,9 @@ function load(){
     if(typeof cv.contTemp !== 'number' || isNaN(cv.contTemp) || cv.contTemp < TEMP_MIN || cv.contTemp > TEMP_MAX) cv.contTemp = DEFAULT_CONT_TEMP;
     // 老会话没有思考等级：按全局「深度思考」开关迁移，升级前后行为一致
     if(['off','medium','high','max'].indexOf(cv.thinkLevel) === -1) cv.thinkLevel = newChatThinkLevel();
+    cv.ctxLen = normalizeCtxLen(cv.ctxLen);                       // 本聊天单独的上下文长度（0 = 用全局）
+    cv.calDate = parseDate(cv.calDate) ? cv.calDate : '';         // 剧情日期（空 = 还没确定）
+    if(typeof cv.calAt !== 'number') cv.calAt = 0;
     if(!cv.avatar || typeof cv.avatar !== 'object' || !cv.avatar.mode) cv.avatar = null;
     if(typeof cv.compressMem !== 'boolean') cv.compressMem = false;
     if(!Array.isArray(cv.relations)) cv.relations = [];
@@ -2543,6 +2750,7 @@ $('fabMenu').addEventListener('click', function(e){
   else if(act === 'forcelen') openForceLen();
   else if(act === 'timeline') openTimeline();
   else if(act === 'rel') openRel();
+  else if(act === 'image') $('imgFile').click();
   else if(act === 'attach') $('attachFile').click();
 });
 document.addEventListener('click', closeFabMenu);
@@ -2879,7 +3087,8 @@ function openTimeline(){
   var cv = current();
   if(!cv) return;
   var name = cv.name || '';
-  $('timelineSub').textContent = cv.mode === 'story' ? '「'+name+'」的故事发展线' : (cv.mode === 'dm' ? '「'+name+'」的对话推进线' : '「'+name+'」的剧情推进线');
+  $('timelineSub').textContent = (cv.mode === 'story' ? '「'+name+'」的故事发展线' : (cv.mode === 'dm' ? '「'+name+'」的对话推进线' : '「'+name+'」的剧情推进线'))
+    + (parseDate(cv.calDate) ? '　·　当前日期 ' + calFullText(cv.calDate) : '　·　日期未定（发一条消息后自动推导，或点右上角日历设定）');
   var body = $('timelineBody');
   body.textContent = cv.worldMem && cv.worldMem.trim() ? cv.worldMem : '（还没有记录剧情时间线。随着剧情推进，AI 会在这里自动续写；也可以在「设置」里手动写。）';
   $('timelineModal').classList.remove('hidden');
@@ -3072,10 +3281,14 @@ function appendMsgEl(list, m){
   else { av = '<div class="avatar">'+avatarHtml(getChar(cv, m.speakerId))+'</div>'; }
   var nameHtml = (m.speakerId === 'user') ? '' : '<div class="name">'+esc(msgLabel(m))+'</div>';
   var attachHtml = (m.attach && m.attach.name) ? '<div class="msg-attach">📎 '+esc(m.attach.name)+'</div>' : '';
+  var imgsHtml = (m.images && m.images.length)
+    ? '<div class="msg-imgs">' + m.images.map(function(im){ return '<img src="'+esc(im.url)+'" alt="'+esc(im.name || '图片')+'">'; }).join('') + '</div>'
+    : '';
   wrap.innerHTML =
     av +
     '<div class="bubble">' + nameHtml +
       attachHtml +
+      imgsHtml +
       '<div class="text"></div>' +
       '<div class="status"></div>' +
       '<div class="msg-actions">' +
@@ -3387,15 +3600,29 @@ function showToast(text){
   if(toastTimer) clearTimeout(toastTimer);
   toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2000);
 }
-function scrollBottom(){
+function scrollBottom(smooth){
   var l = $('msgList');
-  l.scrollTop = l.scrollHeight;
+  if(smooth && l.scrollTo){ try{ l.scrollTo({ top:l.scrollHeight, behavior:'smooth' }); }catch(e){ l.scrollTop = l.scrollHeight; } }
+  else l.scrollTop = l.scrollHeight;
+  syncScrollDown();
 }
 function isNearBottom(){
   var l = $('msgList');
   return l.scrollTop + l.clientHeight >= l.scrollHeight - 90;
 }
 function maybeScroll(){ if(isNearBottom()) scrollBottom(); }
+/* 把某条消息的顶部对齐到对话区顶部（「生成回复时留在回复开头」用） */
+function stickMsgTop(el){
+  var l = $('msgList');
+  if(!el || !l) return;
+  var d = el.getBoundingClientRect().top - l.getBoundingClientRect().top;
+  l.scrollTop = Math.max(0, l.scrollTop + d - 8);
+  syncScrollDown();
+}
+function afterAppendScroll(el){
+  if(settings.keepReplyTop !== false && el) stickMsgTop(el);
+  else scrollBottom();
+}
 
 /* ---------- 下轮对话选择条 ---------- */
 function renderChips(){
@@ -3541,7 +3768,7 @@ function send(){
   if(!cv) return;
   if(missingKey(cv)){ addNote(keyNote(cv)); return; }
   var text = $('input').value.trim();
-  if(!text && !(cv.mode === 'dm' && dmAttach)) return;   // 私聊允许只发附件不写文字
+  if(!text && !(cv.mode === 'dm' && dmAttach) && !pendingImg) return;   // 允许只发附件 / 只发图片
   if(cv.autoSummary && estimateContextTokens(cv) >= cv.autoSummary && cv.history.length >= MIN_SUMMARY_MSGS){
     generating = true; setGenerating(true);
     addNote('上下文已达 '+fmtTokens(cv.autoSummary)+'，正在自动总结压缩…');
@@ -3588,10 +3815,18 @@ function replyTargets(cv, text){
 function doSend(cv, text){
   $('input').value = ''; autoGrow();
   var attach = (cv.mode === 'dm' && dmAttach) ? { name:dmAttach.name, content:dmAttach.content } : null;
-  cv.history.push({ id:seq++, speakerId:'user', speaker:'我', role:'user', text:text, attach:attach, status:'done' });
+  var imgsMeta = pendingImg ? [{ name:pendingImg.name, url:pendingImg.dataUrl }] : null;
+  cv.history.push({ id:seq++, speakerId:'user', speaker:'我', role:'user', text:text, attach:attach, images:imgsMeta, status:'done' });
   if(attach){ dmAttach = null; hideAttachBar(); }
+  if(pendingImg){ pendingImg = null; hideImgBar(); }
   cv.lastActiveAt = Date.now();
   save(); renderConvList(); renderMsgs(); updateSummaryBtn();
+  // 剧情日期：还没定过就先按角色卡 / 世界书推导一次；已经定了就按用户消息里的「过了多久」先本地推进
+  var needDate = !parseDate(cv.calDate);
+  if(!needDate){
+    var shift = heuristicDateShift(cv, text);
+    if(shift > 0){ cv.calDate = addDaysStr(cv.calDate, shift); save(); }
+  }
 
   var sel = replyTargets(cv, text);
   var targets = sel.targets, absent = sel.absent;
@@ -3603,7 +3838,13 @@ function doSend(cv, text){
   if(missingKey(cv)){ addNote(keyNote(cv)); return; }
   stopFlag = false;
   setGenerating(true);
-  runSequence(targets, cv);
+  if(needDate){
+    addNote('正在按角色卡 / 世界书确定剧情日期…');
+    var guard = new Promise(function(res){ setTimeout(res, 8000); });   // 万一接口卡住，最多等 8 秒就用兜底日期继续
+    Promise.race([ensureCalDate(cv), guard]).then(function(){ runSequence(targets, cv); });
+  } else {
+    runSequence(targets, cv);
+  }
 }
 /* 多人轮流回复：一个说完 -> 间隔 -> 下一个；后一个能看到前一个的消息 */
 function shuffle(arr){
@@ -3616,14 +3857,23 @@ function shuffle(arr){
 function runSequence(targets, cv){
   var i = 0;
   function next(){
-    if(stopFlag || i >= targets.length){ setGenerating(false); return; }
+    if(stopFlag || i >= targets.length){ finishSequence(cv); return; }
     var c = targets[i++];
     generateReply(c, cv).then(function(){
-      if(stopFlag || i >= targets.length){ setGenerating(false); return; }
+      if(stopFlag || i >= targets.length){ finishSequence(cv); return; }
       setTimeout(next, REPLY_GAP);
     });
   }
   next();
+}
+/* 一轮回复结束：每过若干条消息，让 AI 按剧情把剧情日期往后推一次（静默） */
+function finishSequence(cv){
+  setGenerating(false);
+  if(!cv || !parseDate(cv.calDate)) return;
+  if(cv.history.length - (cv.calAt || 0) < 6) return;
+  cv.calAt = cv.history.length;
+  save();
+  advanceCalDate(cv);
 }
 /* 关键词提示注入：最近对话里提到某个关键词时，把它的详情追加进该角色的系统提示。
    角色的关键词只给该角色看；世界观关键词则每个角色都能看到（全体回忆），并按剧情需要选择性反应。 */
@@ -3705,7 +3955,8 @@ function buildMessages(c, cv){
   // 记忆与时间顺序：三种模式统一追加，保证角色对「事情先来后到」的认知一致
   sys += '\n\n【记忆与时间顺序】\n' +
     '1. 上面「你的记忆」是按时间先后记的，越靠前的事发生得越早；提到过去的事时，先后顺序要与之一致，不要颠倒。\n' +
-    '2. 你只知道「你的记忆」里记着的事，以及这段对话里正在发生、你亲身在场的事。你没参与、也没人告诉过你的事，你并不知情——不要凭空知道这些事，也不要提起它们。';
+    '2. 你只知道「你的记忆」里记着的事，以及这段对话里正在发生、你亲身在场的事。你没参与、也没人告诉过你的事，你并不知情——不要凭空知道这些事，也不要提起它们。' +
+    dateBlock(cv);
   var ctx = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-40);
   var kwBlock = kwBlockFor(c, cv, ctx);
   if(kwBlock) sys += kwBlock;
@@ -3714,7 +3965,14 @@ function buildMessages(c, cv){
     if(m.speakerId === 'user'){
       var uc = '我：'+m.text;
       if(m.attach && m.attach.name) uc += '\n\n【附件「'+m.attach.name+'」（用户提供的文件，请仔细阅读并参考其中的内容）】\n' + m.attach.content;
-      msgs.push({ role:'user', content:uc });
+      if(m.images && m.images.length){
+        // 带图片的消息按 OpenAI 多模态格式发（需要模型本身支持看图）
+        var parts = [{ type:'text', text: uc + '\n\n【用户发来了 ' + m.images.length + ' 张图片，请看图后回应】' }];
+        m.images.forEach(function(im){ parts.push({ type:'image_url', image_url:{ url: im.url } }); });
+        msgs.push({ role:'user', content: parts });
+      } else {
+        msgs.push({ role:'user', content: uc });
+      }
     }
     else msgs.push({ role:'assistant', content:msgLabel(m)+'：'+m.text });
   });
@@ -3742,7 +4000,7 @@ function generateReply(c, cv){
   cv.lastActiveAt = Date.now();
   save();
   appendMsgEl($('msgList'), msg);
-  scrollBottom();
+  afterAppendScroll(msgEls[msg.id]);
 
   var ctrl = new AbortController();
   activeCtrls[c.id] = ctrl;
@@ -3799,7 +4057,8 @@ function generateReply(c, cv){
               } else {
                 msg.text += d.content;
               }
-              setMsgText(msg); maybeScroll();
+              setMsgText(msg);
+              if(settings.keepReplyTop !== false) updateScrollDown(); else maybeScroll();
             }
           }catch(e){}
         }
@@ -4191,6 +4450,9 @@ function importBackup(file){
       if(typeof conv.temperature !== 'number' || isNaN(conv.temperature) || conv.temperature < TEMP_MIN || conv.temperature > TEMP_MAX) conv.temperature = DEFAULT_TEMP;
       if(typeof conv.contTemp !== 'number' || isNaN(conv.contTemp) || conv.contTemp < TEMP_MIN || conv.contTemp > TEMP_MAX) conv.contTemp = DEFAULT_CONT_TEMP;
       if(['off','medium','high','max'].indexOf(conv.thinkLevel) === -1) conv.thinkLevel = newChatThinkLevel();
+      conv.ctxLen = normalizeCtxLen(conv.ctxLen);
+      conv.calDate = parseDate(conv.calDate) ? conv.calDate : '';
+      if(typeof conv.calAt !== 'number') conv.calAt = 0;
       if(typeof conv.randomOrder !== 'boolean') conv.randomOrder = false;
       if(!conv.avatar || typeof conv.avatar !== 'object' || !conv.avatar.mode) conv.avatar = null;
       if(typeof conv.compressMem !== 'boolean') conv.compressMem = false;
@@ -4304,7 +4566,6 @@ var linkDraft = null;
 function openLinkConfirm(url, desc, after){
   linkDraft = { url:url, after:after || null };
   $('linkDesc').textContent = desc;
-  $('linkUrl').textContent = url;
   $('linkModal').classList.remove('hidden');
 }
 function closeLinkConfirm(){ $('linkModal').classList.add('hidden'); linkDraft = null; }
@@ -5491,6 +5752,7 @@ function openGroupSettings(tab){
   $('gsApiKey').value = cv.apiKey || '';
   $('gsApiBase').value = cv.apiBase || '';
   $('gsModel').value = cv.model || '';
+  $('gsCtxLen').value = normalizeCtxLen(cv.ctxLen) ? String(normalizeCtxLen(cv.ctxLen)) : '';
   $('gsAutoMem').checked = !!cv.autoMemory;
   setTempInputs(cv);
   $('contTemp').value = convContTemp(cv); $('contTempVal').textContent = convContTemp(cv).toFixed(1);
@@ -5561,6 +5823,7 @@ function saveGroupSettings(){
   cv.apiKey = $('gsApiKey').value.trim();
   cv.apiBase = $('gsApiBase').value.trim();
   cv.model = $('gsModel').value.trim();
+  cv.ctxLen = normalizeCtxLen($('gsCtxLen').value);
   if((gsAvatarDraft.mode === 'url' || gsAvatarDraft.mode === 'upload') && !gsAvatarDraft.value) gsAvatarDraft = defaultAvatar();
   cv.avatar = { mode:gsAvatarDraft.mode, value:gsAvatarDraft.value };
   save(); renderConvList(); renderChatHeader(); renderMsgs(); renderChips();
@@ -5853,7 +6116,7 @@ function bindKwEditor(box, getList, addBtn){
       renderKwBox(box, list);
       if(wasOpen){
         var rows2 = box.querySelectorAll('.kw-row');
-        if(rows2[i]){ var ta = rows2[i].querySelector('.kw-detail'); if(ta) ta.focus(); }
+        if(rows2[i]){ var ta = rows2[i].querySelector('.kw-detail'); focusSoft(ta); }
       }
       return;
     }
@@ -5887,7 +6150,7 @@ function bindKwEditor(box, getList, addBtn){
     list.push({ id:seq++, key:'', detail:'' });
     renderKwBox(box, list);
     var rows = box.querySelectorAll('.kw-row');
-    if(rows.length){ var k = rows[rows.length-1].querySelector('.kw-key'); if(k) k.focus(); }
+    if(rows.length){ var k = rows[rows.length-1].querySelector('.kw-key'); focusSoft(k); }
   });
 }
 function kwDraftFrom(list){
@@ -5991,6 +6254,42 @@ function applyTheme(theme){
   if(theme === 'dark') document.documentElement.setAttribute('data-theme','dark');
   else if(theme === 'scroll') document.documentElement.setAttribute('data-theme','scroll');
   else document.documentElement.removeAttribute('data-theme');
+  syncStatusBarColor(theme);
+}
+/* 手机端状态栏 / 浏览器界面条的颜色跟随当前主题（三主题各自的底色） */
+var THEME_CHROME = { default:'#eef1f6', dark:'#12141a', scroll:'#eee2c8' };
+function syncStatusBarColor(theme){
+  var c = THEME_CHROME[theme] || THEME_CHROME['default'];
+  var m = document.getElementById('metaTheme');
+  if(m) m.setAttribute('content', c);
+  // 安卓壳：状态栏样式跟随主题（深色主题用浅色图标）。没有插件时静默跳过。
+  try{
+    var sb = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar;
+    if(sb){
+      sb.setBackgroundColor({ color: c });
+      sb.setStyle({ style: (theme === 'default') ? 'LIGHT' : 'DARK' });
+    }
+  }catch(e){}
+}
+/* 弹窗底部按钮固定：把除标题 / 页签 / 操作栏之外的内容包进可滚动区，按钮永远贴在弹窗底部 */
+function fixModalFooters(){
+  var isKeep = function(el){
+    return el.classList.contains('modal-actions') || el.tagName === 'H3' ||
+           el.classList.contains('tabs') || el.classList.contains('panel-header') ||
+           el.classList.contains('modal-corner');
+  };
+  Array.prototype.forEach.call(document.querySelectorAll('.modal'), function(m){
+    if(m.classList.contains('flexed')) return;
+    var acts = null;
+    for(var i=0;i<m.children.length;i++){ if(m.children[i].classList.contains('modal-actions')) acts = m.children[i]; }
+    if(!acts) return;   // 没有操作栏的弹窗维持原样
+    var body = document.createElement('div');
+    body.className = 'modal-body';
+    var kids = Array.prototype.slice.call(m.children);
+    kids.forEach(function(k){ if(k !== acts && !isKeep(k)) body.appendChild(k); });
+    m.insertBefore(body, acts);
+    m.classList.add('flexed');
+  });
 }
 function setStTab(tab){
   var btns = document.querySelectorAll('#stTabs button');
@@ -6006,8 +6305,10 @@ function openSettings(){
   $('stBaseUrl').value = settings.apiBase;
   $('stKey').value = settings.apiKey;
   $('stModelText').value = settings.model;
+  $('stCtxLen').value = normalizeCtxLen(settings.ctxLen) ? String(normalizeCtxLen(settings.ctxLen)) : '';
   $('stThinking').checked = !!settings.thinking;
   $('stHideChipAv').checked = !!settings.hideChipAvatar;
+  $('stKeepTop').checked = settings.keepReplyTop !== false;
   applyTheme(settings.theme);
   setStTab('model');
   syncThemeBtns(settings.theme);
@@ -6033,6 +6334,8 @@ $('stSave').addEventListener('click', function(){
   if(!settings.model){ alert('请填写模型名称'); return; }
   settings.thinking = $('stThinking').checked;
   settings.hideChipAvatar = $('stHideChipAv').checked;
+  settings.keepReplyTop = $('stKeepTop').checked;
+  settings.ctxLen = normalizeCtxLen($('stCtxLen').value);
   var sel = document.querySelector('#stThemeOpts button.on');
   var th = sel && sel.dataset.theme;
   settings.theme = (th === 'dark' || th === 'scroll') ? th : 'default';
@@ -6085,6 +6388,7 @@ function openSummary(){
   $('sumCompressMem').checked = !!cv.compressMem;
   $('sumHint').textContent = '';
   renderSumMode();
+  updateSumCtxPct();
   $('summaryModal').classList.remove('hidden');
 }
 function closeSummary(){ $('summaryModal').classList.add('hidden'); }
@@ -6858,8 +7162,386 @@ function renderGlobal(){
   renderMsgs();
   renderChips();
 }
+/* ================= 人物详情（只读）：点消息里的 AI 头像 / 名字查看，不给编辑 ================= */
+function charRoleLabel(role){ return role === 'main' ? '主要角色' : role === 'extra' ? '路人角色' : '次要角色'; }
+function setCvmText(el, txt, emptyText){
+  var s = (txt || '').trim();
+  el.textContent = s || (emptyText || '');
+  el.classList.toggle('empty', !s);
+}
+function renderCvmKw(cv, list){
+  var box = $('cvmKeywords');
+  list = (list || []).filter(function(k){ return k && (k.key || k.detail); });
+  if(!list.length){ box.innerHTML = '<div class="cvm-text empty">（还没有关键词）</div>'; return; }
+  box.innerHTML = list.map(function(k){
+    return '<div class="cvm-kw-row"><b>'+esc(k.key || '（未命名）')+'</b>' +
+      (k.detail ? '<br><span>'+esc(k.detail)+'</span>' : '') + '</div>';
+  }).join('');
+}
+function openCharView(speakerId, npcName){
+  var cv = current();
+  if(!cv) return;
+  var c = getChar(cv, speakerId);
+  if(c){
+    $('cvmAvatar').innerHTML = avatarHtml(c);
+    $('cvmName').textContent = c.name || 'AI';
+    $('cvmTags').innerHTML = '<span class="cvm-tag">'+charRoleLabel(c.role)+'</span>' +
+      '<span class="cvm-tag'+(c.present ? ' on' : '')+'">'+(c.present ? '在场' : '不在场')+'</span>' +
+      (cv.mode === 'dm' ? '<span class="cvm-tag on">私聊对象</span>' : '');
+    setCvmText($('cvmPersona'), c.persona, '（还没有写人设）');
+    setCvmText($('cvmMemory'), c.memory, '（还没有记忆）');
+    renderCvmKw(cv, c.keywords);
+  } else {
+    if(!npcName) return;
+    $('cvmAvatar').innerHTML = avatarHtml({ avatar: npcRoleAvatar(npcName) });
+    $('cvmName').textContent = npcName;
+    $('cvmTags').innerHTML = '<span class="cvm-tag">剧情里提到的角色</span>';
+    setCvmText($('cvmPersona'), '', '（TA 没有独立角色卡：这是剧情里提到、被记录下来的角色。）');
+    setCvmText($('cvmMemory'), '', '（暂无）');
+    renderCvmKw(cv, []);
+  }
+  $('charViewModal').classList.remove('hidden');
+}
+function closeCharView(){ $('charViewModal').classList.add('hidden'); }
+$('cvmClose').addEventListener('click', closeCharView);
+$('msgList').addEventListener('click', function(e){
+  var hit = e.target.closest('.msg .avatar, .msg .name');
+  if(!hit) return;
+  var wrap = hit.closest('.msg[data-id]');
+  if(!wrap) return;
+  var m = findMsg(current(), Number(wrap.dataset.id));
+  if(!m || m.speakerId === 'user') return;   // 「我」自己的头像不打开详情
+  openCharView(m.speakerId, m.npcRole || m.speaker);
+});
+
+/* ================= 上下文长度：总结的百分比按它计算 ================= */
+var DEFAULT_CTX_LEN = 128000;
+function normalizeCtxLen(v){
+  var n = parseInt(String(v == null ? '' : v).replace(/[^\d]/g, ''), 10);
+  if(!isFinite(n) || n <= 0) return 0;
+  return Math.min(20000000, n);
+}
+function globalCtxLen(){ return normalizeCtxLen(settings.ctxLen) || DEFAULT_CTX_LEN; }
+function ctxLenOf(cv){ return normalizeCtxLen(cv && cv.ctxLen) || globalCtxLen(); }
+function ctxPctOf(cv){
+  if(!cv) return 0;
+  var lim = ctxLenOf(cv);
+  if(!lim) return 0;
+  return Math.round(estimateContextTokens(cv) / lim * 1000) / 10;   // 保留一位小数
+}
+function updateSumCtxPct(){
+  var el = $('sumCtxPct');
+  if(!el) return;
+  var cv = current();
+  var pct = cv ? ctxPctOf(cv) : 0;
+  el.textContent = '上下文 ' + (pct >= 100 ? Math.round(pct) : pct.toFixed(1).replace(/\.0$/, '')) + '%';
+  el.classList.toggle('warn', pct >= 70 && pct < 100);
+  el.classList.toggle('full', pct >= 100);
+}
+
+/* ================= 剧情日历：日期推导 / 推进 / 日历弹窗 ================= */
+var WEEK_CN = ['日','一','二','三','四','五','六'];
+function pad2(n){ return (n < 10 ? '0' : '') + n; }
+function dateToStr(y, m, d){ return y + '-' + pad2(m) + '-' + pad2(d); }
+function parseDate(s){
+  var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(String(s || '').trim());
+  if(!m) return null;
+  var y = +m[1], mo = +m[2], d = +m[3];
+  if(y < 1 || y > 9999 || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  var dim = new Date(y, mo, 0).getDate();
+  if(d > dim) return null;
+  return { y:y, m:mo, d:d };
+}
+function todayStr(){ var t = new Date(); return dateToStr(t.getFullYear(), t.getMonth() + 1, t.getDate()); }
+function weekdayOf(o){ return new Date(o.y, o.m - 1, o.d).getDay(); }
+function dateText(s){ var o = parseDate(s); return o ? (o.y + '年' + o.m + '月' + o.d + '日') : ''; }
+function calFullText(s){ var o = parseDate(s); return o ? (dateText(s) + '（星期' + WEEK_CN[weekdayOf(o)] + '）') : ''; }
+function addDaysStr(s, n){
+  var o = parseDate(s);
+  if(!o) return todayStr();
+  var t = new Date(o.y, o.m - 1, o.d + n);
+  return dateToStr(t.getFullYear(), t.getMonth() + 1, t.getDate());
+}
+function daysBetweenStr(a, b){
+  var A = parseDate(a), B = parseDate(b);
+  if(!A || !B) return 0;
+  return Math.round((new Date(B.y, B.m - 1, B.d) - new Date(A.y, A.m - 1, A.d)) / 86400000);
+}
+/* 角色提示词里的「时间与日期」块：让角色按日期与星期行事 */
+function dateBlock(cv){
+  if(!cv || !parseDate(cv.calDate)) return '';
+  return '\n\n【时间与日期】\n' +
+    '1. 故事现在的时间是：' + calFullText(cv.calDate) + '。往后发生的事都在这条时间线上。\n' +
+    '2. 你要按这个日期和星期安排自己的言行：工作日 / 周末 / 节假日、白天还是夜晚、什么季节，都要符合常识。例如身份是学生，周末和假期就不该在上学；周五傍晚可以感叹「终于到周末了」；深夜该犯困、店家该打烊。\n' +
+    '3. 剧情里明确说了过去多久（如「三天后」「翌日清晨」「一周过去」），就按那个时间理解，不要一直停在同一天。';
+}
+/* 从最近的用户消息里读「过了多久」：本地先推进（立刻见效），后台再让 AI 校正 */
+var CN_NUM = { 零:0, 一:1, 两:2, 二:2, 三:3, 四:4, 五:5, 六:6, 七:7, 八:8, 九:9, 十:10 };
+function cnNum(s){
+  s = String(s || '');
+  if(/^\d+$/.test(s)) return parseInt(s, 10);
+  if(s === '半') return 0.5;
+  if(s === '十') return 10;
+  if(s.length === 1) return (s in CN_NUM) ? CN_NUM[s] : NaN;
+  if(s.length === 2){
+    if(s[0] === '十') return 10 + (CN_NUM[s[1]] || 0);       // 十三
+    if(s[1] === '十') return (CN_NUM[s[0]] || 0) * 10;       // 三十
+  }
+  if(s.length === 3 && s[1] === '十') return (CN_NUM[s[0]] || 0) * 10 + (CN_NUM[s[2]] || 0);   // 二十三
+  return NaN;
+}
+function heuristicDateShift(cv, text){
+  if(!parseDate(cv.calDate)) return 0;
+  var t = String(text || '');
+  var NUM = '(\\d+|[零一两二三四五六七八九十]+|半)';
+  var m = new RegExp(NUM + '\\s*(天|日|个月|月|年|周|星期|礼拜)\\s*(后|之后|以后|过去|过去了)').exec(t);
+  if(m){
+    var n = cnNum(m[1]);
+    if(!isFinite(n)) return 0;
+    if(m[2] === '年') return Math.round(n * 365);
+    if(m[2] === '个月' || m[2] === '月') return Math.round(n * 30);
+    if(m[2] === '周' || m[2] === '星期' || m[2] === '礼拜') return Math.round(n * 7);
+    return Math.round(n);
+  }
+  if(/(翌日|次日|第二天|隔天|转天|第二天一早|第二天早上|隔日)/.test(t)) return 1;
+  if(/(半个月后|半月后)/.test(t)) return 15;
+  if(/(一周后|一星期后|过了一周|一周过去|一周之后|过了两周)/.test(t)) return 7;
+  if(/(一个月后|过了一个月|一月之后)/.test(t)) return 30;
+  if(/(一年后|过了一年|一年之后)/.test(t)) return 365;
+  return 0;
+}
+function setCalDate(cv, ds, noteText){
+  if(!cv || !parseDate(ds)) return;
+  var changed = cv.calDate !== ds;
+  cv.calDate = ds;
+  save();
+  if(changed && noteText) addNote(noteText);
+}
+/* 首次确定日期：按角色卡 / 世界书推导；模型答不上来就用真实今天 */
+function ensureCalDate(cv){
+  if(!cv || parseDate(cv.calDate)) return Promise.resolve(cv && cv.calDate);
+  cv.calDate = todayStr();   // 先兜底，避免界面空着
+  save();
+  if(missingKey(cv)) return Promise.resolve(cv.calDate);
+  var info = '世界观：' + (cv.world || '（无）');
+  var names = (cv.chars || []).map(function(c){ return c.name + '：' + (c.persona || '').slice(0, 120); }).join('\n');
+  if(names) info += '\n角色卡：\n' + names;
+  var msgs = [
+    { role:'system', content:'你是「梦语」的剧情时间助手，负责判断一段故事开始于哪一天。只输出一个日期，不要任何说明。' },
+    { role:'user', content: info + '\n\n请判断这段故事开始时是几月几号：如果设定里明确提到年代 / 年份 / 日期，就用那个时间；如果只提到季节，就用那个季节的某一天（今天的月日不需要相同）；如果完全没有提到时间，就用真实的今天。只按「YYYY-MM-DD」格式输出一行日期，例如 1987-06-14。' }
+  ];
+  var b = { model: groupModel(cv), messages: msgs, stream:false, temperature:0, max_tokens:24 };
+  if(isDeepseek(cv)) b.thinking = { type:'disabled' };
+  var hd = { 'Content-Type':'application/json' };
+  var gk = groupKey(cv);
+  if(gk && gk.trim()) hd['Authorization'] = 'Bearer ' + gk;
+  return fetch(apiUrl(cv), { method:'POST', headers:hd, body:JSON.stringify(b) })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var txt = (j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
+      var m = /(\d{4})-(\d{1,2})-(\d{1,2})/.exec(txt);
+      var ds = m ? dateToStr(+m[1], +m[2], +m[3]) : '';
+      if(parseDate(ds) && ds !== cv.calDate){
+        cv.calDate = ds;
+        save();
+      }
+      addNote('剧情日期已确定为 ' + calFullText(cv.calDate) + '，可在「时间线 → 日历」里查看或修改。');
+      return cv.calDate;
+    })
+    .catch(function(){ return cv.calDate; });
+}
+/* 后台按剧情推进日期（每若干条消息一次，静默） */
+var calBusy = {};
+function advanceCalDate(cv){
+  if(!cv || !parseDate(cv.calDate) || calBusy[cv.id]) return;
+  if(missingKey(cv)) return;
+  calBusy[cv.id] = true;
+  var ctx = cv.history.filter(function(m){ return m.status !== 'streaming'; }).slice(-24);
+  if(!ctx.length){ calBusy[cv.id] = false; return; }
+  var lines = ctx.map(function(m){ return (m.speakerId === 'user' ? '我' : msgLabel(m)) + '：' + String(m.text || '').slice(0, 200); }).join('\n');
+  var msgs = [
+    { role:'system', content:'你是「梦语」的剧情时间助手。你只负责判断剧情推进到了哪一天，不要扮演任何角色。' },
+    { role:'user', content:'故事当前的日期是 ' + cv.calDate + '（' + calFullText(cv.calDate) + '）。\n\n下面是最近的对话：\n' + lines +
+      '\n\n请判断：按剧情推进，故事现在应该是哪一天？如果对话里明确说了过去多久（如「三天后」「翌日」「一周过去」），就照那个时间往后推；如果只是同一段连续对话，就还是原日期。只输出一行「YYYY-MM-DD」，不要任何说明。' }
+  ];
+  var b = { model: groupModel(cv), messages: msgs, stream:false, temperature:0, max_tokens:24 };
+  if(isDeepseek(cv)) b.thinking = { type:'disabled' };
+  var hd = { 'Content-Type':'application/json' };
+  var gk = groupKey(cv);
+  if(gk && gk.trim()) hd['Authorization'] = 'Bearer ' + gk;
+  fetch(apiUrl(cv), { method:'POST', headers:hd, body:JSON.stringify(b) })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var txt = (j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
+      var m = /(\d{4})-(\d{1,2})-(\d{1,2})/.exec(txt);
+      if(!m) return;
+      var ds = dateToStr(+m[1], +m[2], +m[3]);
+      if(parseDate(ds) && ds !== cv.calDate){
+        cv.calDate = ds;
+        save();
+        addNote('剧情日期推进到 ' + calFullText(ds) + '。');
+        if(!$('calModal').classList.contains('hidden')) renderCal();
+      }
+    })
+    .catch(function(){})
+    .then(function(){ calBusy[cv.id] = false; });
+}
+/* 日历弹窗 */
+var calView = null;   // { y, m } 当前显示的月份
+function openCal(){
+  var cv = current();
+  if(!cv) return;
+  var o = parseDate(cv.calDate) || parseDate(todayStr());
+  calView = { y:o.y, m:o.m };
+  $('timelineModal').classList.add('hidden');
+  renderCal();
+  $('calModal').classList.remove('hidden');
+}
+function closeCal(){ $('calModal').classList.add('hidden'); }
+function renderCal(){
+  var cv = current();
+  if(!cv || !calView) return;
+  var cur = cv.calDate;
+  var curO = parseDate(cur);
+  $('calSub').textContent = curO
+    ? ('剧情当前时间：' + calFullText(cur) + '　·　点下面某一天即可改到那天')
+    : '还没有确定剧情日期，点下面某一天即可设定。';
+  $('calTitle').textContent = calView.y + ' 年 ' + calView.m + ' 月';
+  var first = new Date(calView.y, calView.m - 1, 1).getDay();
+  var dim = new Date(calView.y, calView.m, 0).getDate();
+  var td = todayStr();
+  var html = '';
+  for(var i=0;i<first;i++) html += '<button class="cal-cell pad" disabled></button>';
+  for(var d=1; d<=dim; d++){
+    var ds = dateToStr(calView.y, calView.m, d);
+    var cls = 'cal-cell';
+    if(cur === ds) cls += ' today';
+    else if(ds === td) cls += ' today';
+    html += '<button class="'+cls+'" data-date="'+ds+'">'+d+'</button>';
+  }
+  $('calGrid').innerHTML = html;
+}
+function calStep(n){
+  if(!calView) return;
+  var m = calView.m + n, y = calView.y;
+  if(m < 1){ m = 12; y--; }
+  if(m > 12){ m = 1; y++; }
+  calView = { y:y, m:m };
+  renderCal();
+}
+$('timelineCal').addEventListener('click', openCal);
+$('calPrev').addEventListener('click', function(){ calStep(-1); });
+$('calNext').addEventListener('click', function(){ calStep(1); });
+$('calClose').addEventListener('click', closeCal);
+$('calToday').addEventListener('click', function(){
+  var cv = current();
+  if(!cv) return;
+  var td = todayStr();
+  setCalDate(cv, td);
+  calView = { y:parseDate(td).y, m:parseDate(td).m };
+  renderCal();
+  showToast('剧情日期已设为今天 ' + calFullText(td));
+});
+$('calGrid').addEventListener('click', function(e){
+  var b = e.target.closest('[data-date]');
+  if(!b) return;
+  var cv = current();
+  if(!cv) return;
+  var ds = b.dataset.date;
+  cv.calDate = ds;
+  save();
+  renderCal();
+  showToast('剧情日期已改为 ' + calFullText(ds));
+});
+
+/* ================= 发送图片 ================= */
+var pendingImg = null;   // { name, dataUrl }
+function hideImgBar(){ $('imgBar').style.display = 'none'; $('imgThumb').removeAttribute('src'); $('imgName').textContent = ''; }
+function showImgBar(){
+  if(!pendingImg) return hideImgBar();
+  $('imgThumb').src = pendingImg.dataUrl;
+  $('imgName').textContent = pendingImg.name + '（发送时会随消息一起交给 AI）';
+  $('imgBar').style.display = 'flex';
+}
+var IMG_MAX_SIDE = 1024;   // 发送前压到这个边长内，避免请求体过大
+function shrinkImage(dataUrl, cb){
+  var img = new Image();
+  img.onload = function(){
+    var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    var k = Math.min(1, IMG_MAX_SIDE / Math.max(w, h));
+    if(k >= 1 && dataUrl.length < 900000){ cb(dataUrl); return; }
+    var cw = Math.max(1, Math.round(w * k)), ch = Math.max(1, Math.round(h * k));
+    var cvs = document.createElement('canvas');
+    cvs.width = cw; cvs.height = ch;
+    var g = cvs.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, cw, ch);   // 透明图铺白底，转 JPEG
+    g.drawImage(img, 0, 0, cw, ch);
+    try{ cb(cvs.toDataURL('image/jpeg', 0.85)); }catch(e){ cb(dataUrl); }
+  };
+  img.onerror = function(){ cb(dataUrl); };
+  img.src = dataUrl;
+}
+$('imgFile').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  this.value = '';
+  if(!f) return;
+  if(!/^image\//.test(f.type)){ showToast('请选择图片文件'); return; }
+  if(f.size > 12 * 1024 * 1024){ showToast('图片太大了（请小于 12MB）'); return; }
+  var reader = new FileReader();
+  reader.onload = function(){
+    shrinkImage(String(reader.result || ''), function(out){
+      pendingImg = { name:f.name || '图片', dataUrl:out };
+      showImgBar();
+      showToast('图片已加入，写点文字一起发送吧');
+    });
+  };
+  reader.onerror = function(){ showToast('读取图片失败'); };
+  reader.readAsDataURL(f);
+});
+$('imgX').addEventListener('click', function(){ pendingImg = null; hideImgBar(); });
+/* 点消息里的图片 → 放大查看 */
+function openImgView(src, alt){
+  $('imgViewPic').src = src;
+  $('imgViewPic').alt = alt || '';
+  $('imgView').classList.remove('hidden');
+}
+function closeImgView(){ $('imgView').classList.add('hidden'); $('imgViewPic').removeAttribute('src'); }
+$('imgViewClose').addEventListener('click', closeImgView);
+$('imgView').addEventListener('click', function(e){ if(e.target === this) closeImgView(); });
+$('msgList').addEventListener('click', function(e){
+  var im = e.target.closest('.msg-imgs img');
+  if(!im) return;
+  openImgView(im.getAttribute('src'), im.getAttribute('alt'));
+});
+
+/* ================= 生成时留在回复开头 + 回到底部箭头 ================= */
+function atBottom(){
+  var l = $('msgList');
+  if(!l) return true;
+  return l.scrollTop + l.clientHeight >= l.scrollHeight - 90;
+}
+function inChatView(){ return window.innerWidth > 780 || document.body.classList.contains('chat-open'); }
+function syncScrollDown(){
+  var b = $('scrollDown');
+  if(!b) return;
+  var cv = current();
+  if(!cv || !inChatView()){ b.classList.remove('show'); return; }
+  b.classList.toggle('show', !atBottom());
+}
+var sdTick = 0;
+function updateScrollDown(){ if((sdTick++ % 5) === 0) syncScrollDown(); }   // 流式逐字时别每块都量一次，避免卡顿
+function initScrollWatch(){
+  var l = $('msgList');
+  if(l) l.addEventListener('scroll', syncScrollDown, { passive:true });
+  window.addEventListener('resize', syncScrollDown);
+  $('scrollDown').addEventListener('click', function(){ scrollBottom(true); });
+  syncScrollDown();
+}
+
 load();
 applyTheme(settings.theme);
+fixModalFooters();
+initScrollWatch();
 buildEmojiGrid();
 buildGsEmojiGrid();
 buildDmEmojiGrid();
