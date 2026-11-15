@@ -608,6 +608,7 @@
   .cl-head b{font-size:13px; color:var(--accent);}
   .cl-date{font-size:11px; color:var(--muted);}
   .cl-item ul{margin:6px 0 0; padding-left:16px; font-size:12px; line-height:1.8; color:var(--text);}
+.cl-item ul .cl-cat{list-style:none; margin:8px 0 2px -16px; font-weight:700; color:var(--accent);}
   .lib-card{position:relative; background:#fff; border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer; transition:.15s;}
   .lib-card:hover{border-color:var(--accent); box-shadow:0 4px 14px rgba(79,110,247,.16); transform:translateY(-1px);}
   .lib-thumb{aspect-ratio:1/1; background:linear-gradient(135deg,#eef1fb,#f7f3ff); display:flex; align-items:center; justify-content:center; font-size:46px; overflow:hidden;}
@@ -1940,8 +1941,20 @@ var DEFAULT_BASE = 'https://api.deepseek.com/v1';
 var PRICES = { 'deepseek-v4-flash':{in:0.14,out:0.28}, 'deepseek-v4-pro':{in:0.435,out:0.87} }; // USD / 百万 token
 var REPLY_GAP = 1500;   // 多人轮流回复之间的间隔（毫秒）
 var CLEAR_WAIT = 5;     // 清空记录确认等待秒数
-var APP_VERSION = '0.4.8';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
+var APP_VERSION = '0.4.9';   // 当前版本：每次更新 +0.0.1，逢十进一（0.2.9 → 0.3.0，不使用 0.2.10）
 var CHANGELOG = [            // 更新日志（v 最新在前，每次更新往列表头部加一条）
+  { v:'0.4.9', date:'2026-11-15', title:'存档更可靠 · 图片占用保护 · 更新日志分类', items:[
+    '#新增',
+    '更新日志按「新增 / 修复 / 优化」三类分组显示，一眼看清这次改了什么',
+    '#修复',
+    '存储写满时保存会失败却没有任何提示（关掉页面才发现记录没了），现在会明确提醒并给出处理办法',
+    '交接包里的测试脚本与安卓 / 桌面打包脚本写死了旧项目路径，换目录后校验与打包直接报错',
+    '#优化',
+    '存档只写真正变化的部分，聊天记录和图片多时保存更顺、更省',
+    '单个聊天的图片占用接近本机上限时会提前拦住并提示，不再出现「发得出去、存不进去」',
+    '上下文占用与费用估算改用接口回报的真实用量校准，数字更准',
+    '桌面版改为只提供便携版（单个 exe、免安装、拷走即用），不再出安装包'
+  ]},
   { v:'0.4.8', date:'2026-09-10', title:'剧情转场角色 · 私聊开场白 · 续写剧情搬家 · 酒馆 png 导入导出 · 费用真实统计 · 垃圾桶清理', items:[
     '群聊 / 故事新增默认的「转场」角色：在「下轮对话」里选中它就是开启剧情转场，它会第一个回复，把上一段剧情平滑地过渡到下一段。它不是故事里的角色，不参与对话——只能设置「转场风格」和「发言格式」两项，也删不掉',
     '私聊新增「开场白」：在「智能体」页签写好 TA 的第一句话，新建私聊时会自动发出来；写好后想重来，点「重发开场白」即可',
@@ -2454,6 +2467,7 @@ function load(){
     cv.calDate = parseDate(cv.calDate) ? cv.calDate : '';         // 剧情日期（空 = 还没确定）
     if(typeof cv.calAt !== 'number') cv.calAt = 0;
     ['usageIn','usageOut','usageCalls'].forEach(function(k){ if(typeof cv[k] !== 'number' || isNaN(cv[k])) cv[k] = 0; });
+    if(typeof cv.tokRatio !== 'number' || !(cv.tokRatio > 0.3 && cv.tokRatio < 3)) cv.tokRatio = 0;   // 「字 → token」校准比例，0 = 还没校准过（按 1:1 估）
     if(!cv.avatar || typeof cv.avatar !== 'object' || !cv.avatar.mode) cv.avatar = null;
     if(typeof cv.compressMem !== 'boolean') cv.compressMem = false;
     if(!Array.isArray(cv.relations)) cv.relations = [];
@@ -2555,13 +2569,34 @@ function load(){
   if(!getConv(activeId) && convs.length) activeId = convs[0].id;   // 没有会话时保持空（不选中任何会话）
   renderGlobal();
 }
-function save(){
-  try{ localStorage.setItem(LS.set, JSON.stringify(settings)); }catch(e){}
-  try{ localStorage.setItem(LS.convs, JSON.stringify(convs)); }catch(e){}
-  try{ localStorage.setItem(LS.cards, JSON.stringify(cards)); }catch(e){}
-  try{ localStorage.setItem(LS.worlds, JSON.stringify(worlds)); }catch(e){}
-  try{ localStorage.setItem(LS.board, JSON.stringify(board)); }catch(e){}
-  try{ localStorage.setItem(LS.trash, JSON.stringify(trash)); }catch(e){}
+/* ---------- 存档 ----------
+   旧实现每次 save() 都把 6 个键全量 stringify + setItem，而 setItem 外面套的是
+   try{}catch(e){} —— 连「配额已满」都被吞掉，界面照常像保存成功，关掉页面才发现丢档。
+   现在：① 内容没变的键直接跳过；② 支持 save(['convs']) 只写关心的键；
+        ③ 写失败一定让用户看见（toast 说明原因与对策），控制台留完整信息。 */
+var _lsCache = {};        // 键 -> 上次成功写入的字符串，用于跳过无变化的写入
+var _lsWarned = false;    // 配额提示一次就够，别每次保存都弹
+function save(keys){
+  var map = { set:settings, convs:convs, cards:cards, worlds:worlds, board:board, trash:trash };
+  var list = (keys && keys.length) ? keys : ['set','convs','cards','worlds','board','trash'];
+  for(var i=0;i<list.length;i++){
+    var k = list[i];
+    if(!Object.prototype.hasOwnProperty.call(map, k)) continue;
+    var str;
+    try{ str = JSON.stringify(map[k]); }catch(e){ console.error('存档序列化失败：' + k, e); continue; }
+    if(_lsCache[k] === str) continue;   // 内容没变，不必重复写（纯渲染 / 流式追加的常见情形）
+    try{
+      localStorage.setItem(LS[k], str);
+      _lsCache[k] = str;
+    }catch(e){
+      console.error('存档写入失败：' + k + '（约 ' + Math.round(str.length/1024) + ' KB）', e);
+      if(!_lsWarned){
+        _lsWarned = true;
+        var tip = '存档失败：本机存储空间已满。请到主页「垃圾桶」清理旧记录，或删掉一些带图片的消息后再试。';
+        if(typeof showToast === 'function' && $('toast')) showToast(tip);
+      }
+    }
+  }
 }
 /* ---------- 垃圾桶：记住最近删除的角色卡 / 世界书 / 聊天，可一键恢复 ---------- */
 var TRASH_KIND = { card:'角色卡', world:'世界书', conv:'聊天' };
@@ -4191,6 +4226,7 @@ function completeLen(t, cap){
 }
 function generateReply(c, cv){
   var msgs = buildMessages(c, cv);
+  var promptChars = contextChars(cv);   // 发请求这一刻的上下文字数，用于拿真实 prompt_tokens 校准 token 估算
   var msg = { id:seq++, speakerId:c.id, speaker:c.name, role:'ai', text:'', status:'streaming' };
   cv.history.push(msg);
   cv.lastActiveAt = Date.now();
@@ -4276,7 +4312,10 @@ function generateReply(c, cv){
     return pump();
   }).then(function(){
     msg.status = 'done';
-    if(usage){ recordUsage(cv, msg, usage); }
+    if(usage){
+      recordUsage(cv, msg, usage);
+      calibrateTokRatio(cv, promptChars, Number(usage.prompt_tokens) || 0);
+    }
     finalizeMsg(cv, msg);
   }).catch(function(err){
     if(/^HTTP 401/.test(err.message || '')) err.message += '。所选接口需要有效的 API Key：请到 ⚙ 全局设置「API Key」里核对（要与「接口地址」对应服务一致）。';
@@ -4687,6 +4726,7 @@ function importBackup(file){
       conv.calDate = parseDate(conv.calDate) ? conv.calDate : '';
       if(typeof conv.calAt !== 'number') conv.calAt = 0;
       ['usageIn','usageOut','usageCalls'].forEach(function(k){ if(typeof conv[k] !== 'number' || isNaN(conv[k])) conv[k] = 0; });
+      if(typeof conv.tokRatio !== 'number' || !(conv.tokRatio > 0.3 && conv.tokRatio < 3)) conv.tokRatio = 0;   // 与 load() 同口径
       if(typeof conv.randomOrder !== 'boolean') conv.randomOrder = false;
       if(!conv.avatar || typeof conv.avatar !== 'object' || !conv.avatar.mode) conv.avatar = null;
       if(typeof conv.compressMem !== 'boolean') conv.compressMem = false;
@@ -4840,7 +4880,11 @@ function showLogView(v){
   box.innerHTML = '';
   CHANGELOG.forEach(function(e){
     if(v && e.v !== v) return;
-    var ul = e.items.map(function(it){ return '<li>' + it + '</li>'; }).join('');
+    var ul = e.items.map(function(it){
+      // 以 # 开头的是分类小标题（CHANGELOG 统一按「新增 / 修复 / 优化」三类书写）
+      if(it.charAt(0) === '#') return '<li class="cl-cat">' + it.slice(1) + '</li>';
+      return '<li>' + it + '</li>';
+    }).join('');
     box.insertAdjacentHTML('beforeend', '<div class="cl-item"><div class="cl-head"><b>v' + e.v + '</b><span class="cl-date">' + e.date + '</span></div><ul>' + ul + '</ul></div>');
   });
   showPanelView('log');
@@ -7037,8 +7081,11 @@ function fmtMoney(cost){
   if(cost < 0.0001) return '<$0.0001';
   return '$' + cost.toFixed(4).replace(/0+$/,'').replace(/\.$/,'');
 }
-/* 粗略估算当前会注入到模型的上下文 token 量（中文 1 字 ≈ 1 token） */
-function estimateContextTokens(cv){
+/* 上下文用量的单位一直是「字数」（estimateContextTokens 返回的是字数，不是 token）。
+   为了让「上下文档位 / 自动总结百分比 / 费用」这些数字更准，这里用接口回报的真实
+   prompt_tokens 反推「1 字 ≈ 多少 token」，并对每个会话做指数平滑校准（cv.tokRatio）。
+   没校准过的会话 ratio=1，与旧行为完全一致。 */
+function contextChars(cv){
   if(!cv) return 0;
   var chars = 0;
   if(cv.world) chars += cv.world.length;
@@ -7052,6 +7099,21 @@ function estimateContextTokens(cv){
     if(m.speaker) chars += m.speaker.length;
   });
   return Math.max(1, chars);
+}
+function tokRatioOf(cv){
+  var r = cv && cv.tokRatio;
+  return (typeof r === 'number' && r > 0.3 && r < 3) ? r : 1;
+}
+/* 用真实用量校准：chars 是发请求那一刻上下文大约多少字，pt 是接口回报的 prompt_tokens */
+function calibrateTokRatio(cv, chars, pt){
+  if(!cv || !chars || chars < 200) return;        // 太短的样本噪声大，跳过
+  if(!(pt > 0) || pt > chars * 3) return;          // 明显不合理的回报（如网关改写）不信
+  var r = pt / chars;
+  var old = tokRatioOf(cv);
+  cv.tokRatio = Math.round((old * 0.7 + r * 0.3) * 1000) / 1000;   // 指数平滑，避免一次抖动带偏
+}
+function estimateContextTokens(cv){
+  return Math.max(1, Math.round(contextChars(cv) * tokRatioOf(cv)));
 }
 function updateSummaryBtn(){
   var b = $('btnSummary');
@@ -8233,6 +8295,23 @@ $('imgBar').addEventListener('click', function(e){
   renderImgBar();
 });
 var IMG_MAX_SIDE = 1024;   // 发送前压到这个边长内，避免请求体过大
+/* 图片以 dataURL 直接存在会话历史里（浏览器 localStorage 一般只有 5MB），
+   单个聊天里图片 dataURL 的总字符数超过预算就当场拦住，避免「发得出去、存不进去」。 */
+var IMG_STORE_BUDGET = 2400000;   // ≈2.4MB 字符，其余额度留给文本、角色卡与世界书、垃圾桶
+function convImageChars(cv){
+  var n = 0;
+  ((cv && cv.history) || []).forEach(function(m){
+    if(m && m.images && m.images.length){
+      m.images.forEach(function(im){ if(im && im.url) n += im.url.length; });
+    }
+  });
+  return n;
+}
+function pendingImgChars(){
+  var n = 0;
+  pendingImgs.forEach(function(im){ if(im && im.dataUrl) n += im.dataUrl.length; });
+  return n;
+}
 function shrinkImage(dataUrl, cb){
   var img = new Image();
   img.onload = function(){
@@ -8258,6 +8337,13 @@ function addImageFile(f){
   var reader = new FileReader();
   reader.onload = function(){
     shrinkImage(String(reader.result || ''), function(out){
+      // 图片是存进会话历史的 dataURL，浏览器 localStorage 通常只有 5MB：超预算就当场拦住，
+      // 否则会「发得出去、存不进去」，下次打开就丢图。
+      var cvNow = (typeof current === 'function') ? current() : null;
+      if(cvNow && convImageChars(cvNow) + pendingImgChars() + out.length > IMG_STORE_BUDGET){
+        showToast('这个聊天的图片已接近本机存储上限，请先删掉一些带图片的消息');
+        return;
+      }
       pendingImgs.push({ name:f.name || '图片', dataUrl:out });
       renderImgBar();
     });

@@ -1,0 +1,36 @@
+name: tests
+
+# 机器门禁：把交接文档第 8 节的「测试全绿才能提交」从口头约定变成 CI 红灯。
+# 五项依次是：语法检查 / id 双向核对 / 静态断言 / jsdom 运行时断言 / 版本号六处一致性。
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [ '20', '22' ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: 安装测试依赖（jsdom）
+        working-directory: tests
+        run: npm ci
+
+      - name: 版本号六处一致性
+        run: node tools/bump.js --check
+
+      - name: 抽取 script + 语法检查 + id 核对 + 静态断言 + 运行时断言
+        working-directory: tests
+        run: npm test

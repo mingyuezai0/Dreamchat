@@ -1,0 +1,4 @@
+# 测试工程本地依赖与生成物
+node_modules/
+check-latest.js
+package-lock.json.bak

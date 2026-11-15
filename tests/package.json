@@ -1,0 +1,21 @@
+{
+  "name": "dreamchat-tests",
+  "version": "1.0.0",
+  "description": "梦语（Dreamchat）无头测试：语法检查 + id 双向核对 + 静态断言 + jsdom 运行时断言",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "node re-extract.js && node --check check-latest.js && node idcheck.js && node test17.js && node test18.js",
+    "extract": "node re-extract.js",
+    "check": "node --check check-latest.js",
+    "ids": "node idcheck.js",
+    "static": "node test17.js",
+    "runtime": "node test18.js"
+  },
+  "keywords": [],
+  "author": "mingyuezai0",
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^30.1.2"
+  }
+}

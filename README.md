@@ -20,15 +20,14 @@
 
 想以**桌面软件**的方式用（双击 exe 打开、独立窗口、桌面 / 开始菜单快捷方式），打包工程独立放在 **`D:\electron`**（不随仓库走，和 `D:\Capacitor` 一样的本地工具链模式）：
 
-- **两种产物**（构建后都在 `D:\electron\dist\`）：
-  - `梦语 Setup <版本>.exe` —— **安装包**：双击安装，可选安装目录，自动创建桌面 / 开始菜单快捷方式；卸载走「设置 → 应用」。
-  - `梦语-便携版-<版本>.exe` —— **单文件便携版**：双击直接运行，不写注册表、不用安装，拷到 U 盘也能带走。
+- **产物**（构建后在 `D:\electron\dist\`）：
+  - `梦语-便携版-<版本>.exe` —— **单文件便携版，只出这一种**：双击直接运行，不写注册表、不用安装，拷到 U 盘也能带走。
 - **重新构建**：装好 Node.js 后，在 `D:\electron` 目录下执行：
   ```bash
   npm install      # 首次需要，安装 electron / electron-builder
-  npm run dist     # 一键构建两种 Windows 产物
+  npm run dist     # 出便携版 exe
   ```
-  `scripts/copy-html.js` 用绝对路径把仓库根的 `index.html` 复制进 `D:\electron\app\`，保证应用本体永远是仓库里那一份。`build.electronDist` 指向工程内 `node_modules/electron/dist`，打包直接复用本地已解压的发行版、零下载（不依赖网络，也不往系统缓存写东西）。
+  `scripts/copy-html.js` 会按 `DREAMCHAT_INDEX` 环境变量 → 相对布局 → 工程里 `build.config.json` 的顺序找到仓库中的 `index.html` 并复制进 `app/`（换仓库位置后跑一次 `node tools/link-toolchains.js` 即可，不用改脚本）。`build.electronDist` 指向工程内 `node_modules/electron/dist`，打包直接复用本地已解压的发行版、零下载。
 - 桌面版加载的正是网页版同一份 `index.html`，界面与网页版**完全一致**；「关于」面板里的 GitHub / 哔哩链接会在**系统默认浏览器**里打开。
 - 注意：桌面版的数据存在它**自己的本地存储**里，与浏览器里打开的网页版互不相通；首次运行请重新配置 API Key。
 
